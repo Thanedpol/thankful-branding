@@ -8,7 +8,7 @@ import type { Portfolio, PortfolioCategory } from "@/lib/types";
 
 const CATS: PortfolioCategory[] = ["Video", "Web", "Design", "Other"];
 const field =
-  "w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-cyan/50";
+  "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50";
 
 export default function PortfolioManager({ items }: { items: Portfolio[] }) {
   const [editing, setEditing] = useState<Portfolio | "new" | null>(null);
@@ -25,13 +25,13 @@ export default function PortfolioManager({ items }: { items: Portfolio[] }) {
         </button>
       </div>
 
-      <div className="glass divide-y divide-white/[0.06]">
+      <div className="glass divide-y divide-line/[0.06]">
         {items.length === 0 ? (
           <p className="p-6 font-mono text-sm text-muted">No projects yet.</p>
         ) : (
           items.map((p) => (
             <div key={p.id} className="flex items-center gap-4 p-4">
-              <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-white/5">
+              <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-surface/5">
                 {p.thumbnail_url && (
                   <Image src={p.thumbnail_url} alt="" fill className="object-cover" sizes="64px" />
                 )}

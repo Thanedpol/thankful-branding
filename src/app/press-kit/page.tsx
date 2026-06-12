@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import PressDownload from "@/components/PressDownload";
+import T from "@/components/T";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured, demoPressKit } from "@/lib/demo-data";
 import type { PressKit, LogoFile } from "@/lib/types";
@@ -26,9 +27,9 @@ export default async function PressKitPage() {
       <main className="min-h-screen pt-32">
         <div className="section-pad !pt-0">
           <Reveal>
-            <p className="eyebrow">// For media & collaborators</p>
-            <h1 className="font-display text-4xl font-bold md:text-5xl">
-              Press <span className="text-gradient">Kit</span>
+            <p className="eyebrow"><T k="press.eyebrow" /></p>
+            <h1 className="font-display text-4xl font-bold md:text-5xl text-gradient">
+              <T k="press.heading" />
             </h1>
           </Reveal>
 
@@ -56,7 +57,7 @@ export default async function PressKitPage() {
               {kit?.media_contact_email && (
                 <div className="mt-6 text-center">
                   <p className="font-mono text-xs uppercase tracking-wider text-muted">
-                    Media contact
+                    <T k="press.mediaContact" />
                   </p>
                   <a
                     href={`mailto:${kit.media_contact_email}`}
@@ -72,11 +73,11 @@ export default async function PressKitPage() {
             <Reveal delay={120}>
               <div className="space-y-10">
                 <div>
-                  <h2 className="mb-3 font-display text-xl font-bold">Short bio</h2>
+                  <h2 className="mb-3 font-display text-xl font-bold"><T k="press.shortBio" /></h2>
                   <p className="leading-relaxed text-muted">{kit?.short_bio}</p>
                 </div>
                 <div>
-                  <h2 className="mb-3 font-display text-xl font-bold">Full bio</h2>
+                  <h2 className="mb-3 font-display text-xl font-bold"><T k="press.fullBio" /></h2>
                   <p className="whitespace-pre-line leading-relaxed text-muted">
                     {kit?.long_bio}
                   </p>
@@ -85,7 +86,7 @@ export default async function PressKitPage() {
                 {kit?.awards && kit.awards.length > 0 && (
                   <div>
                     <h2 className="mb-3 font-display text-xl font-bold">
-                      Awards & recognition
+                      <T k="press.awards" />
                     </h2>
                     <ul className="space-y-2">
                       {kit.awards.map((a) => (

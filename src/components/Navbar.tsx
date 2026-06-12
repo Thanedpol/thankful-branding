@@ -4,18 +4,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useT } from "@/components/providers/AppProvider";
+import { ThemeToggle, LanguageSwitcher } from "@/components/Controls";
 
 const LINKS = [
-  { href: "/#about", label: "About" },
-  { href: "/#portfolio", label: "Portfolio" },
-  { href: "/blog", label: "Blog" },
-  { href: "/press-kit", label: "Press Kit" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/#about", key: "nav.about" },
+  { href: "/#portfolio", key: "nav.portfolio" },
+  { href: "/blog", key: "nav.blog" },
+  { href: "/press-kit", key: "nav.pressKit" },
 ];
 
 export default function Navbar() {
   const router = useRouter();
   const supabase = createClient();
+  const t = useT();
   const [email, setEmail] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -44,7 +46,7 @@ export default function Navbar() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "border-b border-white/[0.06] bg-space/80 backdrop-blur-md"
+          ? "border-b border-line/[0.06] bg-space/80 backdrop-blur-md"
           : "border-b border-transparent"
       }`}
     >
@@ -52,7 +54,7 @@ export default function Navbar() {
         <Link href="/" className="group flex items-center gap-2">
           <span className="font-display text-lg font-bold tracking-tight">
             <span className="text-gradient">TT</span>
-            <span className="text-white/40">_</span>
+            <span className="text-ink/40">_</span>
           </span>
         </Link>
 
@@ -63,37 +65,40 @@ export default function Navbar() {
               href={l.href}
               className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-cyan"
             >
-              {l.label}
+              {t(l.key)}
             </Link>
           ))}
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <LanguageSwitcher />
+          <ThemeToggle />
           {email ? (
-            <>
-              <span className="font-mono text-xs text-cyan/70">{email}</span>
-              <button onClick={signOut} className="btn-ghost !px-4 !py-2 text-xs">
-                Logout
-              </button>
-            </>
+            <button onClick={signOut} className="btn-ghost !px-4 !py-2 text-xs">
+              {t("nav.logout")}
+            </button>
           ) : (
             <Link href="/login" className="btn-neon !px-4 !py-2 text-xs">
-              Login
+              {t("nav.login")}
             </Link>
           )}
         </div>
 
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="text-cyan md:hidden"
-          aria-label="Toggle menu"
-        >
-          {open ? "✕" : "☰"}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
+          <ThemeToggle />
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="text-cyan"
+            aria-label="Toggle menu"
+          >
+            {open ? "✕" : "☰"}
+          </button>
+        </div>
       </nav>
 
       {open && (
-        <div className="border-t border-white/[0.06] bg-space/95 px-6 py-4 backdrop-blur-md md:hidden">
+        <div className="border-t border-line/[0.06] bg-space/95 px-6 py-4 backdrop-blur-md md:hidden">
           <div className="flex flex-col gap-4">
             {LINKS.map((l) => (
               <Link
@@ -102,16 +107,16 @@ export default function Navbar() {
                 onClick={() => setOpen(false)}
                 className="font-mono text-sm uppercase tracking-wider text-muted hover:text-cyan"
               >
-                {l.label}
+                {t(l.key)}
               </Link>
             ))}
             {email ? (
               <button onClick={signOut} className="btn-ghost mt-2 text-xs">
-                Logout
+                {t("nav.logout")}
               </button>
             ) : (
               <Link href="/login" className="btn-neon mt-2 text-xs">
-                Login
+                {t("nav.login")}
               </Link>
             )}
           </div>

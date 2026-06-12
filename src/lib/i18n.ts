@@ -1,0 +1,190 @@
+export type Locale = "th" | "en" | "zh";
+
+export const LOCALES: { code: Locale; label: string; short: string }[] = [
+  { code: "th", label: "ไทย", short: "TH" },
+  { code: "en", label: "English", short: "EN" },
+  { code: "zh", label: "中文", short: "中" },
+];
+
+export const DEFAULT_LOCALE: Locale = "th";
+
+type Dict = Record<string, string>;
+
+export const dict: Record<Locale, Dict> = {
+  th: {
+    "nav.about": "เกี่ยวกับ",
+    "nav.portfolio": "ผลงาน",
+    "nav.blog": "บทความ",
+    "nav.pressKit": "Press Kit",
+    "nav.login": "เข้าสู่ระบบ",
+    "nav.logout": "ออกจากระบบ",
+
+    "hero.status": "◢ กำลังเชื่อมต่อโหนดส่วนตัว // สถานะ: ออนไลน์",
+    "hero.tagline": "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ",
+    "hero.viewWork": "ดูผลงาน →",
+    "hero.pressKit": "Press Kit",
+
+    "about.eyebrow": "// เกี่ยวกับ",
+    "about.heading": "เล่าเรื่อง AI & ธุรกิจ",
+    "about.bio":
+      "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
+
+    "portfolio.eyebrow": "// ผลงานคัดสรร",
+    "portfolio.heading": "ผลงานเด่น",
+    "portfolio.empty": "ยังไม่มีผลงาน",
+
+    "blog.eyebrow": "// บทความ",
+    "blog.heading": "บทความล่าสุด",
+    "blog.all": "ดูทั้งหมด →",
+    "blog.read": "อ่าน →",
+    "blog.members": "⬡ สมาชิก",
+    "blog.empty": "ยังไม่มีบทความ",
+    "blogPage.heading": "บทความ",
+    "blogPage.subtitle":
+      "เรื่อง AI ธุรกิจ และเทคโนโลยีอนาคต — บางบทความเปิดเฉพาะสมาชิก",
+    "blog.locked.tag": "⬡ เฉพาะสมาชิก",
+    "blog.locked.title": "เนื้อหานี้ถูกล็อก",
+    "blog.locked.body": "เข้าสู่ระบบหรือสมัครสมาชิก (ฟรี) เพื่ออ่านบทความเต็ม",
+    "blog.locked.login": "เข้าสู่ระบบเพื่ออ่าน →",
+    "blog.locked.register": "สมัครสมาชิก",
+    "blog.back": "← บทความทั้งหมด",
+
+    "press.eyebrow": "// สำหรับสื่อและพาร์ตเนอร์",
+    "press.heading": "Press Kit",
+    "press.shortBio": "ประวัติย่อ",
+    "press.fullBio": "ประวัติฉบับเต็ม",
+    "press.awards": "รางวัลและการยอมรับ",
+    "press.mediaContact": "ติดต่อสื่อ",
+    "press.downloads": "ไฟล์ดาวน์โหลด",
+    "press.empty": "ยังไม่มีไฟล์",
+    "press.download": "ดาวน์โหลด",
+    "press.loginRequired": "ต้องเข้าสู่ระบบ",
+    "press.gateTitle": "กรุณา Login",
+    "press.gateBody": "ไฟล์ Press Kit เปิดให้เฉพาะสมาชิก เข้าสู่ระบบหรือสมัคร (ฟรี) เพื่อดาวน์โหลด",
+    "press.loginBtn": "เข้าสู่ระบบ →",
+    "press.registerBtn": "สมัครสมาชิก",
+
+    "project.visit": "เปิดดูโปรเจกต์ →",
+
+    "footer.tagline": "ข่าว AI & ธุรกิจ",
+    "ui.theme": "สลับโทนสว่าง/มืด",
+    "ui.lang": "เปลี่ยนภาษา",
+  },
+  en: {
+    "nav.about": "About",
+    "nav.portfolio": "Portfolio",
+    "nav.blog": "Blog",
+    "nav.pressKit": "Press Kit",
+    "nav.login": "Login",
+    "nav.logout": "Logout",
+
+    "hero.status": "◢ Initializing personal node // status: online",
+    "hero.tagline": "Content Creator — AI & Business news, Thailand & worldwide",
+    "hero.viewWork": "View Work →",
+    "hero.pressKit": "Press Kit",
+
+    "about.eyebrow": "// About",
+    "about.heading": "Telling the story of AI & Business",
+    "about.bio":
+      "A content creator covering AI and business — turning technology and market moves in Thailand and around the world into clear, timely, useful stories.",
+
+    "portfolio.eyebrow": "// Selected Work",
+    "portfolio.heading": "Featured Work",
+    "portfolio.empty": "No projects yet.",
+
+    "blog.eyebrow": "// Transmissions",
+    "blog.heading": "Latest Writing",
+    "blog.all": "All posts →",
+    "blog.read": "Read →",
+    "blog.members": "⬡ Members",
+    "blog.empty": "No posts yet.",
+    "blogPage.heading": "The Blog",
+    "blogPage.subtitle":
+      "Notes on AI, business, and future technology — some posts are members-only.",
+    "blog.locked.tag": "⬡ Members only",
+    "blog.locked.title": "This content is locked",
+    "blog.locked.body": "Sign in or create a free member account to read the full article.",
+    "blog.locked.login": "Login to read →",
+    "blog.locked.register": "Become a member",
+    "blog.back": "← All posts",
+
+    "press.eyebrow": "// For media & collaborators",
+    "press.heading": "Press Kit",
+    "press.shortBio": "Short bio",
+    "press.fullBio": "Full bio",
+    "press.awards": "Awards & recognition",
+    "press.mediaContact": "Media contact",
+    "press.downloads": "Downloadable assets",
+    "press.empty": "No assets uploaded yet.",
+    "press.download": "Download",
+    "press.loginRequired": "Login required",
+    "press.gateTitle": "Please log in",
+    "press.gateBody": "Press assets are available to members. Sign in or register (free) to download.",
+    "press.loginBtn": "Login →",
+    "press.registerBtn": "Register",
+
+    "project.visit": "Visit Project →",
+
+    "footer.tagline": "AI & Business news",
+    "ui.theme": "Toggle light/dark",
+    "ui.lang": "Change language",
+  },
+  zh: {
+    "nav.about": "关于",
+    "nav.portfolio": "作品",
+    "nav.blog": "博客",
+    "nav.pressKit": "媒体资料",
+    "nav.login": "登录",
+    "nav.logout": "退出",
+
+    "hero.status": "◢ 正在初始化个人节点 // 状态：在线",
+    "hero.tagline": "内容创作者 — 报道泰国及全球的 AI 与商业新闻",
+    "hero.viewWork": "查看作品 →",
+    "hero.pressKit": "媒体资料",
+
+    "about.eyebrow": "// 关于",
+    "about.heading": "讲述 AI 与商业的故事",
+    "about.bio":
+      "专注 AI 与商业领域的内容创作者，把泰国与全球的科技和商业动态，转化为清晰、及时、实用的内容。",
+
+    "portfolio.eyebrow": "// 精选作品",
+    "portfolio.heading": "精选作品",
+    "portfolio.empty": "暂无作品。",
+
+    "blog.eyebrow": "// 文章",
+    "blog.heading": "最新文章",
+    "blog.all": "全部文章 →",
+    "blog.read": "阅读 →",
+    "blog.members": "⬡ 会员",
+    "blog.empty": "暂无文章。",
+    "blogPage.heading": "博客",
+    "blogPage.subtitle": "关于 AI、商业与未来科技的笔记 — 部分文章仅限会员。",
+    "blog.locked.tag": "⬡ 仅限会员",
+    "blog.locked.title": "此内容已加密",
+    "blog.locked.body": "登录或免费注册会员即可阅读全文。",
+    "blog.locked.login": "登录阅读 →",
+    "blog.locked.register": "成为会员",
+    "blog.back": "← 全部文章",
+
+    "press.eyebrow": "// 供媒体与合作伙伴",
+    "press.heading": "媒体资料",
+    "press.shortBio": "简短简介",
+    "press.fullBio": "完整简介",
+    "press.awards": "奖项与荣誉",
+    "press.mediaContact": "媒体联系",
+    "press.downloads": "可下载文件",
+    "press.empty": "暂无文件。",
+    "press.download": "下载",
+    "press.loginRequired": "需要登录",
+    "press.gateTitle": "请先登录",
+    "press.gateBody": "媒体资料仅向会员开放。请登录或免费注册以下载。",
+    "press.loginBtn": "登录 →",
+    "press.registerBtn": "注册",
+
+    "project.visit": "查看项目 →",
+
+    "footer.tagline": "AI 与商业新闻",
+    "ui.theme": "切换明暗主题",
+    "ui.lang": "切换语言",
+  },
+};

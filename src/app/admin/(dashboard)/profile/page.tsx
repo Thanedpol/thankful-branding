@@ -6,7 +6,7 @@ import type { SiteProfile } from "@/lib/types";
 export const revalidate = 0;
 
 const field =
-  "w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-cyan/50";
+  "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50";
 
 export default async function AdminProfilePage() {
   const supabase = await createClient();

@@ -27,10 +27,9 @@ export function isSupabaseConfigured() {
 export const demoProfile: SiteProfile = {
   id: 1,
   name: "Thank Thanedpol",
-  headline:
-    "AI Engineer & Researcher — building intelligent systems from the future",
+  headline: "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ",
   long_bio:
-    "I design and ship AI systems at the intersection of research and product. My work spans large language models, autonomous agents, and human-centred machine intelligence. I believe the most powerful technology feels inevitable — quiet, precise, and a little bit like science fiction.",
+    "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
   avatar_url: null,
   background_reel_url: null,
   social_links: {

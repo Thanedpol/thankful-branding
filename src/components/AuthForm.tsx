@@ -57,7 +57,7 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   const field =
-    "w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 font-body text-white placeholder:text-white/30 outline-none transition-colors focus:border-cyan/50 focus:shadow-glow-cyan";
+    "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-4 py-3 font-body text-ink placeholder:text-ink/30 outline-none transition-colors focus:border-cyan/50 focus:shadow-glow-cyan";
 
   return (
     <div className="glass relative w-full max-w-md overflow-hidden p-8">

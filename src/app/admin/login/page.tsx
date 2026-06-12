@@ -48,7 +48,7 @@ function AdminLoginForm() {
   }
 
   const field =
-    "w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 font-mono text-sm text-white placeholder:text-white/30 outline-none transition-colors focus:border-cyan/50 focus:shadow-glow-cyan";
+    "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-4 py-3 font-mono text-sm text-ink placeholder:text-ink/30 outline-none transition-colors focus:border-cyan/50 focus:shadow-glow-cyan";
 
   return (
     <div className="glass relative w-full max-w-md overflow-hidden p-8">
@@ -90,7 +90,7 @@ function AdminLoginForm() {
         </form>
 
         {/* No registration here by design — admin is seeded only. */}
-        <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-widest text-white/20">
+        <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-widest text-ink/20">
           Single-operator system · no public signup
         </p>
       </div>

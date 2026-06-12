@@ -1,8 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useT } from "@/components/providers/AppProvider";
 import type { BlogPreview } from "@/lib/types";
 
 export default function BlogCard({ post }: { post: BlogPreview }) {
+  const t = useT();
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -22,15 +26,15 @@ export default function BlogCard({ post }: { post: BlogPreview }) {
         )}
         {!post.is_public && (
           <span className="absolute right-3 top-3 flex items-center gap-1 rounded-md border border-purple/40 bg-purple/15 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-purple">
-            ⬡ Members
+            {t("blog.members")}
           </span>
         )}
       </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex flex-wrap gap-1.5">
-          {post.tags.slice(0, 2).map((t) => (
-            <span key={t} className="tag">
-              {t}
+          {post.tags.slice(0, 2).map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
             </span>
           ))}
         </div>
@@ -41,7 +45,7 @@ export default function BlogCard({ post }: { post: BlogPreview }) {
           {post.excerpt}
         </p>
         <span className="mt-4 font-mono text-xs uppercase tracking-wider text-cyan/70">
-          Read →
+          {t("blog.read")}
         </span>
       </div>
     </Link>

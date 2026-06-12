@@ -3,9 +3,11 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Reveal from "./Reveal";
+import { useT } from "@/components/providers/AppProvider";
 import type { Portfolio } from "@/lib/types";
 
 export default function PortfolioSection({ items }: { items: Portfolio[] }) {
+  const t = useT();
   const [active, setActive] = useState<Portfolio | null>(null);
 
   useEffect(() => {
@@ -26,14 +28,14 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
   return (
     <section id="portfolio" className="section-pad scroll-mt-20">
       <Reveal>
-        <p className="eyebrow">// Selected Work</p>
-        <h2 className="mb-12 font-display text-3xl font-bold md:text-4xl">
-          Featured <span className="text-gradient">Projects</span>
+        <p className="eyebrow">{t("portfolio.eyebrow")}</p>
+        <h2 className="mb-12 font-display text-3xl font-bold md:text-4xl text-gradient">
+          {t("portfolio.heading")}
         </h2>
       </Reveal>
 
       {items.length === 0 ? (
-        <p className="font-mono text-sm text-muted">No featured projects yet.</p>
+        <p className="font-mono text-sm text-muted">{t("portfolio.empty")}</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((p, i) => (
@@ -53,7 +55,7 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-grid-faint bg-grid">
-                      <span className="font-display text-3xl text-white/20">
+                      <span className="font-display text-3xl text-ink/20">
                         {p.category}
                       </span>
                     </div>
@@ -95,7 +97,7 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
           >
             <button
               onClick={() => setActive(null)}
-              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-space/60 text-cyan transition-colors hover:border-cyan/50"
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-line/10 bg-space/60 text-cyan transition-colors hover:border-cyan/50"
               aria-label="Close"
             >
               ✕
@@ -138,7 +140,7 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
                   rel="noopener noreferrer"
                   className="btn-neon mt-8"
                 >
-                  Visit Project →
+                  {t("project.visit")}
                 </a>
               )}
             </div>

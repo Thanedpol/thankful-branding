@@ -64,7 +64,7 @@ export default async function AdminMessagesPage() {
                   </form>
                 </div>
               </div>
-              <p className="mt-3 whitespace-pre-wrap border-t border-white/[0.06] pt-3 text-sm leading-relaxed text-muted">
+              <p className="mt-3 whitespace-pre-wrap border-t border-line/[0.06] pt-3 text-sm leading-relaxed text-muted">
                 {m.body}
               </p>
             </div>

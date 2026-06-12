@@ -6,7 +6,7 @@ import ImageUpload from "./ImageUpload";
 import type { BlogPost } from "@/lib/types";
 
 const field =
-  "w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-cyan/50";
+  "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50";
 
 export default function BlogManager({ posts }: { posts: BlogPost[] }) {
   const [editing, setEditing] = useState<BlogPost | "new" | null>(null);
@@ -23,7 +23,7 @@ export default function BlogManager({ posts }: { posts: BlogPost[] }) {
         </button>
       </div>
 
-      <div className="glass divide-y divide-white/[0.06]">
+      <div className="glass divide-y divide-line/[0.06]">
         {posts.length === 0 ? (
           <p className="p-6 font-mono text-sm text-muted">No posts yet.</p>
         ) : (
@@ -46,7 +46,7 @@ export default function BlogManager({ posts }: { posts: BlogPost[] }) {
                   >
                     {p.is_public ? "public" : "⬡ members"}
                   </span>
-                  <span className="text-white/30">/{p.slug}</span>
+                  <span className="text-ink/30">/{p.slug}</span>
                 </p>
               </div>
               <button
@@ -77,7 +77,7 @@ function Badge({ on, yes, no }: { on: boolean; yes: string; no: string }) {
   return (
     <span
       className={`rounded px-1.5 py-0.5 ${
-        on ? "border border-green-400/30 text-green-400" : "border border-white/15 text-muted"
+        on ? "border border-green-400/30 text-green-400" : "border border-line/15 text-muted"
       }`}
     >
       {on ? yes : no}

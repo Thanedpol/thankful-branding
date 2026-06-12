@@ -5,21 +5,26 @@ const config: Config = {
     "./src/app/**/*.{ts,tsx}",
     "./src/components/**/*.{ts,tsx}",
   ],
+  darkMode: ["selector", '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
-        // Dark Sci-Fi / Cyberpunk palette
-        space: "#050508", // near-black deep space background
-        "space-light": "#0a0a12",
+        // All theme-aware — driven by CSS variables in globals.css so they
+        // flip between dark and light. <alpha-value> keeps /opacity working.
+        space: "rgb(var(--bg) / <alpha-value>)",
+        "space-light": "rgb(var(--bg-2) / <alpha-value>)",
+        ink: "rgb(var(--text) / <alpha-value>)", // primary text
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)", // overlays
+        line: "rgb(var(--line) / <alpha-value>)", // borders
         cyan: {
-          DEFAULT: "#00F5FF", // primary neon cyan
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
           dim: "#0bbfca",
         },
         purple: {
-          DEFAULT: "#7B2FFF", // electric purple secondary
+          DEFAULT: "rgb(var(--accent-2) / <alpha-value>)",
           dim: "#5a1fc0",
         },
-        muted: "#8892A4", // muted text
       },
       fontFamily: {
         // Wired up in layout.tsx via next/font CSS variables

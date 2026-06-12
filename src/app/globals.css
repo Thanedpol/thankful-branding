@@ -2,10 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --cyan: #00f5ff;
-  --purple: #7b2fff;
-  --space: #050508;
+/* ── Theme tokens ───────────────────────────────────────────────────────────
+   Colors are space-separated RGB channels so Tailwind's <alpha-value> works
+   (e.g. text-ink/70). Text always uses --text, which flips with the theme, so
+   foreground can never blend into the background. */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: 5 5 8; /* #050508 deep space */
+  --bg-2: 10 10 18;
+  --text: 255 255 255; /* primary foreground */
+  --muted: 136 146 164; /* #8892A4 */
+  --surface: 255 255 255; /* low-alpha overlays (inputs, chips) */
+  --line: 255 255 255; /* borders */
+  --accent: 0 245 255; /* neon cyan */
+  --accent-2: 123 47 255; /* electric purple */
+
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --field-bg: rgba(255, 255, 255, 0.03);
+  --field-border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: 240 243 248; /* soft light grey */
+  --bg-2: 255 255 255;
+  --text: 13 18 28; /* near-black ink */
+  --muted: 82 92 110;
+  --surface: 13 18 28;
+  --line: 15 23 42;
+  --accent: 8 145 178; /* readable teal (cyan is too low-contrast on light) */
+  --accent-2: 109 40 217; /* readable violet */
+
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --field-bg: rgba(255, 255, 255, 0.85);
+  --field-border: rgba(15, 23, 42, 0.15);
 }
 
 * {
@@ -17,45 +50,68 @@ html {
 }
 
 body {
-  background-color: var(--space);
-  color: #ffffff;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
+  font-family: var(--font-inter), var(--font-noto-thai), var(--font-noto-sc),
+    system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* ── Selection ─────────────────────────────────────────────────────────────*/
 ::selection {
-  background: rgba(0, 245, 255, 0.3);
-  color: #fff;
+  background: rgb(var(--accent) / 0.3);
+  color: rgb(var(--text));
 }
 
-/* ── Custom scrollbar ──────────────────────────────────────────────────────*/
 ::-webkit-scrollbar {
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #050508;
+  background: rgb(var(--bg));
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(var(--cyan), var(--purple));
+  background: linear-gradient(rgb(var(--accent)), rgb(var(--accent-2)));
   border-radius: 99px;
 }
 
 @layer components {
   /* Glassmorphism card */
   .glass {
-    @apply rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md;
+    border-radius: 1rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
 
   .glass-hover {
-    @apply transition-all duration-300;
+    transition: all 0.3s ease;
   }
   .glass-hover:hover {
-    border-color: rgba(0, 245, 255, 0.4);
-    box-shadow: 0 0 24px rgba(0, 245, 255, 0.18),
-      inset 0 0 24px rgba(0, 245, 255, 0.04);
+    border-color: rgb(var(--accent) / 0.45);
+    box-shadow: 0 0 24px rgb(var(--accent) / 0.18),
+      inset 0 0 24px rgb(var(--accent) / 0.04);
     transform: translateY(-4px);
+  }
+
+  /* Form field — themed so inputs stay legible in both modes */
+  .field {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: rgb(var(--text));
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .field::placeholder {
+    color: rgb(var(--text) / 0.35);
+  }
+  .field:focus {
+    border-color: rgb(var(--accent) / 0.55);
   }
 
   /* Neon gradient text */
@@ -65,25 +121,30 @@ body {
 
   /* Primary neon button */
   .btn-neon {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-cyan/40
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-cyan/50
       bg-cyan/10 px-6 py-3 font-mono text-sm uppercase tracking-wider text-cyan
       transition-all duration-300;
   }
   .btn-neon:hover {
-    background: rgba(0, 245, 255, 0.18);
-    box-shadow: 0 0 24px rgba(0, 245, 255, 0.35);
+    background: rgb(var(--accent) / 0.18);
+    box-shadow: 0 0 24px rgb(var(--accent) / 0.3);
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/15
-      px-6 py-3 font-mono text-sm uppercase tracking-wider text-muted
-      transition-all duration-300 hover:border-white/40 hover:text-white;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3
+      font-mono text-sm uppercase tracking-wider text-muted transition-all duration-300
+      hover:text-ink;
+    border-color: var(--glass-border);
+  }
+  .btn-ghost:hover {
+    border-color: rgb(var(--text) / 0.4);
   }
 
   /* Mono tag chip */
   .tag {
-    @apply inline-block rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5
-      font-mono text-xs text-cyan/80;
+    @apply inline-block rounded-md px-2 py-0.5 font-mono text-xs text-cyan;
+    border: 1px solid var(--glass-border);
+    background: rgb(var(--surface) / 0.04);
   }
 
   .section-pad {
@@ -91,7 +152,7 @@ body {
   }
 
   .eyebrow {
-    @apply mb-3 font-mono text-xs uppercase tracking-[0.3em] text-cyan/70;
+    @apply mb-3 font-mono text-xs uppercase tracking-[0.3em] text-cyan;
   }
 }
 
@@ -99,7 +160,7 @@ body {
 .glitch {
   position: relative;
   display: inline-block;
-  color: #fff;
+  color: rgb(var(--text));
 }
 .glitch::before,
 .glitch::after {
@@ -110,13 +171,13 @@ body {
 }
 .glitch::before {
   left: 2px;
-  text-shadow: -2px 0 var(--cyan);
+  text-shadow: -2px 0 rgb(var(--accent));
   clip-path: inset(0 0 0 0);
   animation: glitch-top 2.5s infinite linear alternate-reverse;
 }
 .glitch::after {
   left: -2px;
-  text-shadow: -2px 0 var(--purple);
+  text-shadow: -2px 0 rgb(var(--accent-2));
   clip-path: inset(0 0 0 0);
   animation: glitch-bottom 2s infinite linear alternate-reverse;
 }
@@ -136,7 +197,6 @@ body {
   100% { clip-path: inset(0 0 90% 0); transform: translate(0); }
 }
 
-/* Strong one-shot glitch on load */
 .glitch-load {
   animation: glitch-load 0.9s steps(2, end) 1;
 }
@@ -148,7 +208,7 @@ body {
   100% { opacity: 1; transform: translate(0) skew(0); filter: none; }
 }
 
-/* ── Scroll reveal (fade-up) — toggled by Int.Observer adding .in-view ──────*/
+/* ── Scroll reveal ─────────────────────────────────────────────────────────*/
 .reveal {
   opacity: 0;
   transform: translateY(28px);
@@ -162,9 +222,25 @@ body {
 
 /* ── Prose tuning for blog bodies ──────────────────────────────────────────*/
 .prose-cyber {
-  @apply prose prose-invert max-w-none prose-headings:font-display
-    prose-a:text-cyan prose-strong:text-white prose-code:text-cyan
-    prose-code:font-mono;
+  @apply prose max-w-none;
+  color: rgb(var(--text) / 0.85);
+}
+.prose-cyber :where(h1, h2, h3, h4) {
+  color: rgb(var(--text));
+  font-family: var(--font-space-grotesk);
+}
+.prose-cyber :where(p, li) {
+  color: rgb(var(--text) / 0.8);
+}
+.prose-cyber :where(a) {
+  color: rgb(var(--accent));
+}
+.prose-cyber :where(strong) {
+  color: rgb(var(--text));
+}
+.prose-cyber :where(code) {
+  color: rgb(var(--accent));
+  font-family: var(--font-share-tech-mono);
 }
 
 @media (prefers-reduced-motion: reduce) {

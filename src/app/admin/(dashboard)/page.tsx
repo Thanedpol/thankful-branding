@@ -62,7 +62,7 @@ export default async function DashboardOverview() {
             View all →
           </Link>
         </div>
-        <div className="glass divide-y divide-white/[0.06]">
+        <div className="glass divide-y divide-line/[0.06]">
           {(recent.data ?? []).length === 0 ? (
             <p className="p-6 font-mono text-sm text-muted">No messages yet.</p>
           ) : (
@@ -75,7 +75,7 @@ export default async function DashboardOverview() {
                     <span className="ml-2 text-muted">— {m.subject || "(no subject)"}</span>
                   </p>
                 </div>
-                <span className="shrink-0 font-mono text-xs text-white/40">
+                <span className="shrink-0 font-mono text-xs text-ink/40">
                   {new Date(m.received_at).toLocaleDateString()}
                 </span>
               </div>

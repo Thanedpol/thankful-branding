@@ -38,7 +38,7 @@ export default function Toast({
         <span className="text-lg leading-none">
           {toast.kind === "success" ? "◉" : "⚠"}
         </span>
-        <span className="text-white">{toast.message}</span>
+        <span className="text-ink">{toast.message}</span>
       </div>
     </div>
   );

@@ -82,7 +82,7 @@ export default function FileUpload({
           value={path}
           onChange={(e) => setPath(e.target.value)}
           placeholder="object path in bucket"
-          className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[11px] text-white placeholder:text-white/30 outline-none focus:border-cyan/50"
+          className="w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-1.5 font-mono text-[11px] text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50"
         />
       </div>
       {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}

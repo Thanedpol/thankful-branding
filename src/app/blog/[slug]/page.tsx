@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import T from "@/components/T";
 import { createClient } from "@/lib/supabase/server";
 import {
   isSupabaseConfigured,
@@ -69,7 +70,7 @@ function PublishedPost({ post }: { post: BlogPost }) {
             href="/blog"
             className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
           >
-            ← All posts
+            <T k="blog.back" />
           </Link>
 
           <div className="mt-6 flex flex-wrap gap-2">
@@ -79,7 +80,7 @@ function PublishedPost({ post }: { post: BlogPost }) {
               </span>
             ))}
             {!post.is_public && (
-              <span className="tag !border-purple/40 !text-purple">⬡ Members</span>
+              <span className="tag !border-purple/40 !text-purple"><T k="blog.members" /></span>
             )}
           </div>
 
@@ -130,11 +131,11 @@ function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
             href="/blog"
             className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
           >
-            ← All posts
+            <T k="blog.back" />
           </Link>
 
           <span className="mt-6 inline-block tag !border-purple/40 !text-purple">
-            ⬡ Members only
+            <T k="blog.locked.tag" />
           </span>
           <h1 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
             {preview.title}
@@ -164,24 +165,23 @@ function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
                 ⬡
               </div>
               <h2 className="font-display text-xl font-bold">
-                This transmission is encrypted
+                <T k="blog.locked.title" />
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-                Sign in or create a free member account to decrypt the full
-                article.
+                <T k="blog.locked.body" />
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link
                   href={`/login?redirect=/blog/${slug}`}
                   className="btn-neon"
                 >
-                  Login to read →
+                  <T k="blog.locked.login" />
                 </Link>
                 <Link
                   href={`/register?redirect=/blog/${slug}`}
                   className="btn-ghost"
                 >
-                  Become a member
+                  <T k="blog.locked.register" />
                 </Link>
               </div>
             </div>

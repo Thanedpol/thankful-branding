@@ -3,7 +3,6 @@ import Hero from "@/components/Hero";
 import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
-import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -54,7 +53,6 @@ export default async function HomePage() {
         <About profile={profile} />
         <PortfolioSection items={featured} />
         <BlogPreview posts={posts} />
-        <ContactForm />
       </main>
       <Footer social={profile?.social_links} />
     </>

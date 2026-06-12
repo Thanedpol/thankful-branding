@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import Reveal from "@/components/Reveal";
+import T from "@/components/T";
 import { createClient } from "@/lib/supabase/server";
 import {
   isSupabaseConfigured,
@@ -40,19 +41,18 @@ export default async function BlogIndex() {
       <main className="min-h-screen pt-32">
         <div className="section-pad !py-0">
           <Reveal>
-            <p className="eyebrow">// Transmissions</p>
-            <h1 className="font-display text-4xl font-bold md:text-5xl">
-              The <span className="text-gradient">Blog</span>
+            <p className="eyebrow"><T k="blog.eyebrow" /></p>
+            <h1 className="font-display text-4xl font-bold md:text-5xl text-gradient">
+              <T k="blogPage.heading" />
             </h1>
             <p className="mt-4 max-w-2xl text-muted">
-              Notes on AI, autonomous systems, and designing software that feels
-              like the future. Some posts are exclusive to members.
+              <T k="blogPage.subtitle" />
             </p>
           </Reveal>
 
           <div className="mt-12 grid gap-6 pb-24 sm:grid-cols-2 lg:grid-cols-3">
             {list.length === 0 ? (
-              <p className="font-mono text-sm text-muted">No posts yet.</p>
+              <p className="font-mono text-sm text-muted"><T k="blog.empty" /></p>
             ) : (
               list.map((post, i) => (
                 <Reveal key={post.id} delay={i * 60}>

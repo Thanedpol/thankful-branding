@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useT } from "@/components/providers/AppProvider";
 import type { LogoFile } from "@/lib/types";
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
  */
 export default function PressDownload({ kitPdfPath, logoFiles }: Props) {
   const supabase = createClient();
+  const t = useT();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [showGate, setShowGate] = useState(false);
 
@@ -43,10 +45,10 @@ export default function PressDownload({ kitPdfPath, logoFiles }: Props) {
 
   return (
     <div>
-      <h3 className="mb-4 font-display text-xl font-bold">Downloadable assets</h3>
+      <h3 className="mb-4 font-display text-xl font-bold">{t("press.downloads")}</h3>
 
       {assets.length === 0 ? (
-        <p className="font-mono text-sm text-muted">No assets uploaded yet.</p>
+        <p className="font-mono text-sm text-muted">{t("press.empty")}</p>
       ) : (
         <div className="space-y-3">
           {assets.map((a) => (
@@ -60,7 +62,7 @@ export default function PressDownload({ kitPdfPath, logoFiles }: Props) {
                 <span className="font-body">{a.label}</span>
               </span>
               <span className="font-mono text-xs uppercase tracking-wider text-muted">
-                {authed ? "Download" : "Login required"}
+                {authed ? t("press.download") : t("press.loginRequired")}
               </span>
             </button>
           ))}
@@ -80,20 +82,17 @@ export default function PressDownload({ kitPdfPath, logoFiles }: Props) {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-cyan/40 bg-cyan/10 text-2xl text-cyan">
               ⬡
             </div>
-            <h4 className="font-display text-lg font-bold">กรุณา Login</h4>
-            <p className="mt-2 text-sm text-muted">
-              Press assets are available to members. Sign in or register (free)
-              to download.
-            </p>
+            <h4 className="font-display text-lg font-bold">{t("press.gateTitle")}</h4>
+            <p className="mt-2 text-sm text-muted">{t("press.gateBody")}</p>
             <div className="mt-6 flex flex-col gap-3">
               <Link href="/login?redirect=/press-kit" className="btn-neon w-full">
-                Login →
+                {t("press.loginBtn")}
               </Link>
               <Link
                 href="/register?redirect=/press-kit"
                 className="btn-ghost w-full"
               >
-                Register
+                {t("press.registerBtn")}
               </Link>
             </div>
           </div>

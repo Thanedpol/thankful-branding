@@ -57,12 +57,12 @@ export default function ImageUpload({ name, defaultValue = "", bucket, label }: 
 
       <div className="flex items-start gap-3">
         {/* Preview */}
-        <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md border border-line/10 bg-surface/5">
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt="" className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center font-mono text-[10px] text-white/30">
+            <div className="flex h-full w-full items-center justify-center font-mono text-[10px] text-ink/30">
               no image
             </div>
           )}
@@ -89,7 +89,7 @@ export default function ImageUpload({ name, defaultValue = "", bucket, label }: 
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="…or paste an image URL"
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[11px] text-white placeholder:text-white/30 outline-none focus:border-cyan/50"
+            className="w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-1.5 font-mono text-[11px] text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50"
           />
           {err && <p className="font-mono text-[11px] text-red-400">⚠ {err}</p>}
         </div>

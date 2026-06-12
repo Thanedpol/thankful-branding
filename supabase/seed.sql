@@ -20,8 +20,8 @@ insert into public.site_profile (id, name, headline, long_bio, social_links)
 values (
   1,
   'Thank Thanedpol',
-  'AI Engineer & Researcher — building intelligent systems from the future',
-  'I design and ship AI systems at the intersection of research and product. My work spans large language models, autonomous agents, and human-centred machine intelligence. I believe the most powerful technology feels inevitable — quiet, precise, and a little bit like science fiction.',
+  'Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ',
+  'ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง',
   '{"github":"https://github.com/","linkedin":"https://linkedin.com/in/","x":"https://x.com/","email":"thank@example.com"}'::jsonb
 )
 on conflict (id) do update set

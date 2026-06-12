@@ -25,7 +25,7 @@ export default function Sidebar({ email }: { email: string }) {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-60 flex-col border-r border-white/[0.06] bg-space-light/50 p-5 backdrop-blur-md">
+    <aside className="sticky top-0 flex h-screen w-60 flex-col border-r border-line/[0.06] bg-space-light/50 p-5 backdrop-blur-md">
       <Link href="/admin" className="mb-8 flex items-center gap-2">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-cyan/40 bg-cyan/10 font-display font-bold text-cyan">
           ◈
@@ -48,7 +48,7 @@ export default function Sidebar({ email }: { email: string }) {
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 font-mono text-sm transition-colors ${
                 active
                   ? "border border-cyan/30 bg-cyan/10 text-cyan"
-                  : "text-muted hover:bg-white/[0.04] hover:text-white"
+                  : "text-muted hover:bg-surface/[0.04] hover:text-ink"
               }`}
             >
               <span className="w-4 text-center">{item.icon}</span>
@@ -58,7 +58,7 @@ export default function Sidebar({ email }: { email: string }) {
         })}
       </nav>
 
-      <div className="space-y-3 border-t border-white/[0.06] pt-4">
+      <div className="space-y-3 border-t border-line/[0.06] pt-4">
         <Link
           href="/"
           target="_blank"
@@ -66,10 +66,10 @@ export default function Sidebar({ email }: { email: string }) {
         >
           ↗ View live site
         </Link>
-        <p className="truncate font-mono text-[11px] text-white/40">{email}</p>
+        <p className="truncate font-mono text-[11px] text-ink/40">{email}</p>
         <button
           onClick={signOut}
-          className="w-full rounded-lg border border-white/10 py-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:border-red-500/40 hover:text-red-400"
+          className="w-full rounded-lg border border-line/10 py-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:border-red-500/40 hover:text-red-400"
         >
           Logout
         </button>

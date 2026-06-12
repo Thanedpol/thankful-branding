@@ -1,11 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Reveal from "./Reveal";
+import { useT } from "@/components/providers/AppProvider";
 import type { SiteProfile } from "@/lib/types";
 
 export default function About({ profile }: { profile: SiteProfile | null }) {
-  const bio =
-    profile?.long_bio ??
-    "I design and ship AI systems at the intersection of research and product.";
+  const t = useT();
 
   return (
     <section id="about" className="section-pad scroll-mt-20">
@@ -32,12 +33,12 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
         </Reveal>
 
         <Reveal delay={120}>
-          <p className="eyebrow">// About</p>
+          <p className="eyebrow">{t("about.eyebrow")}</p>
           <h2 className="mb-6 font-display text-3xl font-bold md:text-4xl">
-            {profile?.headline ?? "Engineering intelligence"}
+            {t("about.heading")}
           </h2>
           <p className="whitespace-pre-line text-lg leading-relaxed text-muted">
-            {bio}
+            {t("about.bio")}
           </p>
         </Reveal>
       </div>
