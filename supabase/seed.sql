@@ -48,6 +48,11 @@ insert into public.portfolio (title, description, tech_tags, category, featured,
   ('Quantum Notes', 'A research-grade note tool with bidirectional links and local-first sync.', array['Svelte','SQLite','CRDT'], 'Web', true, 5, 'https://picsum.photos/seed/quantum/800/600', 'https://example.com'),
   ('Aurora Render Engine', 'Experimental WebGPU renderer for volumetric sci-fi environments.', array['WebGPU','WGSL','TypeScript'], 'Other', true, 6, 'https://picsum.photos/seed/aurora/800/600', 'https://example.com');
 
+-- ─── Real video-editor work ───────────────────────────────────────────────────
+insert into public.portfolio (title, description, tech_tags, category, featured, display_order, thumbnail_url, project_url) values
+  ('Video Editor — Y.E.M. Young Executive Management', 'Internship social activity at Y.E.M. Young Executive Management (Allianz Ayudhya). Video editor for content on practical life skills — capturing the internship atmosphere and interviews.', array['Video Editing','Storytelling','Social Content'], 'Design', true, 1, '/portfolio/yem-internship.jpg', 'https://fb.watch/q7dPzSPYiK/'),
+  ('Siam Global Group — SUMO Service', 'End-to-end video production for SUMO tool-repair content, pre to post. Lighting setup (brightness & angle), camera framing, set & background dressing, briefing technicians on script & storytelling, scene-by-scene shooting, editing in CapCut, and publishing to TikTok with captions and post copy.', array['CapCut','TikTok','Videography','Lighting'], 'Design', true, 2, '/portfolio/sumo-service.jpg', null);
+
 -- ─── Sample blog posts ────────────────────────────────────────────────────────
 insert into public.blog_posts (title, slug, excerpt, body, tags, is_public, status, published_at, cover_image_url) values
   ('Why Agents Beat Pipelines', 'why-agents-beat-pipelines',
