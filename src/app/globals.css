@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cyan: #00f5ff;
+  --purple: #7b2fff;
+  --space: #050508;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--space);
+  color: #ffffff;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Selection ─────────────────────────────────────────────────────────────*/
+::selection {
+  background: rgba(0, 245, 255, 0.3);
+  color: #fff;
+}
+
+/* ── Custom scrollbar ──────────────────────────────────────────────────────*/
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #050508;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--cyan), var(--purple));
+  border-radius: 99px;
+}
+
+@layer components {
+  /* Glassmorphism card */
+  .glass {
+    @apply rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md;
+  }
+
+  .glass-hover {
+    @apply transition-all duration-300;
+  }
+  .glass-hover:hover {
+    border-color: rgba(0, 245, 255, 0.4);
+    box-shadow: 0 0 24px rgba(0, 245, 255, 0.18),
+      inset 0 0 24px rgba(0, 245, 255, 0.04);
+    transform: translateY(-4px);
+  }
+
+  /* Neon gradient text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyan to-purple bg-clip-text text-transparent;
+  }
+
+  /* Primary neon button */
+  .btn-neon {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-cyan/40
+      bg-cyan/10 px-6 py-3 font-mono text-sm uppercase tracking-wider text-cyan
+      transition-all duration-300;
+  }
+  .btn-neon:hover {
+    background: rgba(0, 245, 255, 0.18);
+    box-shadow: 0 0 24px rgba(0, 245, 255, 0.35);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/15
+      px-6 py-3 font-mono text-sm uppercase tracking-wider text-muted
+      transition-all duration-300 hover:border-white/40 hover:text-white;
+  }
+
+  /* Mono tag chip */
+  .tag {
+    @apply inline-block rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5
+      font-mono text-xs text-cyan/80;
+  }
+
+  .section-pad {
+    @apply mx-auto max-w-6xl px-6 py-24 md:py-32;
+  }
+
+  .eyebrow {
+    @apply mb-3 font-mono text-xs uppercase tracking-[0.3em] text-cyan/70;
+  }
+}
+
+/* ── Glitch text animation ─────────────────────────────────────────────────*/
+.glitch {
+  position: relative;
+  display: inline-block;
+  color: #fff;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 var(--cyan);
+  clip-path: inset(0 0 0 0);
+  animation: glitch-top 2.5s infinite linear alternate-reverse;
+}
+.glitch::after {
+  left: -2px;
+  text-shadow: -2px 0 var(--purple);
+  clip-path: inset(0 0 0 0);
+  animation: glitch-bottom 2s infinite linear alternate-reverse;
+}
+@keyframes glitch-top {
+  0% { clip-path: inset(0 0 85% 0); transform: translate(0); }
+  20% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, 0); }
+  40% { clip-path: inset(60% 0 10% 0); transform: translate(2px, 0); }
+  60% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 0); }
+  80% { clip-path: inset(40% 0 40% 0); transform: translate(1px, 0); }
+  100% { clip-path: inset(80% 0 5% 0); transform: translate(0); }
+}
+@keyframes glitch-bottom {
+  0% { clip-path: inset(80% 0 5% 0); transform: translate(0); }
+  25% { clip-path: inset(30% 0 50% 0); transform: translate(2px, 0); }
+  50% { clip-path: inset(50% 0 30% 0); transform: translate(-2px, 0); }
+  75% { clip-path: inset(10% 0 75% 0); transform: translate(1px, 0); }
+  100% { clip-path: inset(0 0 90% 0); transform: translate(0); }
+}
+
+/* Strong one-shot glitch on load */
+.glitch-load {
+  animation: glitch-load 0.9s steps(2, end) 1;
+}
+@keyframes glitch-load {
+  0% { opacity: 0; transform: translate(-6px, 0) skew(8deg); filter: hue-rotate(90deg); }
+  20% { opacity: 1; transform: translate(6px, 0) skew(-6deg); }
+  40% { transform: translate(-3px, 0) skew(3deg); }
+  60% { transform: translate(3px, 0); filter: hue-rotate(-40deg); }
+  100% { opacity: 1; transform: translate(0) skew(0); filter: none; }
+}
+
+/* ── Scroll reveal (fade-up) — toggled by Int.Observer adding .in-view ──────*/
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Prose tuning for blog bodies ──────────────────────────────────────────*/
+.prose-cyber {
+  @apply prose prose-invert max-w-none prose-headings:font-display
+    prose-a:text-cyan prose-strong:text-white prose-code:text-cyan
+    prose-code:font-mono;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch::before,
+  .glitch::after,
+  .glitch-load,
+  .reveal {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
