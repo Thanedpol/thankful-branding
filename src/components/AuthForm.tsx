@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/demo-data";
 
 export default function AuthForm({ mode }: { mode: "login" | "register" }) {
   const supabase = createClient();
@@ -19,6 +20,12 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isSupabaseConfigured()) {
+      setError(
+        "Supabase is not configured yet. Set the NEXT_PUBLIC_SUPABASE_URL / ANON_KEY env vars and redeploy."
+      );
+      return;
+    }
     setLoading(true);
     setError(null);
     setNotice(null);

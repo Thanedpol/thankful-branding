@@ -3,12 +3,14 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/demo-data";
 
 function AdminLoginForm() {
   const supabase = createClient();
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") || "/admin";
+  const configured = isSupabaseConfigured();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,12 +21,27 @@ function AdminLoginForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Guard: without real Supabase env vars the auth fetch goes to a
+    // placeholder host and fails with an opaque "Failed to fetch".
+    if (!configured) {
+      setError(
+        "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (then redeploy) before logging in."
+      );
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error || !data.user) {
-      setError(error?.message ?? "Login failed.");
+      const msg = error?.message ?? "Login failed.";
+      setError(
+        /failed to fetch/i.test(msg)
+          ? "Can't reach Supabase. Check NEXT_PUBLIC_SUPABASE_URL is correct and the project isn't paused."
+          : msg
+      );
       setLoading(false);
       return;
     }
@@ -65,6 +82,13 @@ function AdminLoginForm() {
             <h1 className="font-display text-lg font-bold">Admin Console</h1>
           </div>
         </div>
+
+        {!configured && (
+          <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 font-mono text-[11px] leading-relaxed text-amber-300">
+            ⚠ Supabase ยังไม่ถูกตั้งค่า — ต้องใส่ env vars (NEXT_PUBLIC_SUPABASE_URL,
+            NEXT_PUBLIC_SUPABASE_ANON_KEY) แล้ว redeploy ก่อนจึงจะ login ได้
+          </div>
+        )}
 
         <form onSubmit={submit} className="space-y-4">
           <input
