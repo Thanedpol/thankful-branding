@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import { savePortfolio, deletePortfolio } from "@/app/admin/actions";
+import ImageUpload from "./ImageUpload";
 import type { Portfolio, PortfolioCategory } from "@/lib/types";
 
-const CATS: PortfolioCategory[] = ["Web", "AI", "Design", "Other"];
+const CATS: PortfolioCategory[] = ["Video", "Web", "Design", "Other"];
 const field =
   "w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-cyan/50";
 
@@ -93,14 +94,15 @@ function Editor({ item, onClose }: { item: Portfolio | null; onClose: () => void
         <Label l="Description">
           <textarea name="description" rows={3} defaultValue={item?.description ?? ""} className={`${field} resize-none`} />
         </Label>
-        <div className="grid grid-cols-2 gap-4">
-          <Label l="Thumbnail URL">
-            <input name="thumbnail_url" defaultValue={item?.thumbnail_url ?? ""} className={field} />
-          </Label>
-          <Label l="Project URL">
-            <input name="project_url" defaultValue={item?.project_url ?? ""} className={field} />
-          </Label>
-        </div>
+        <ImageUpload
+          name="thumbnail_url"
+          defaultValue={item?.thumbnail_url ?? ""}
+          bucket="portfolio-images"
+          label="Thumbnail"
+        />
+        <Label l="Project URL">
+          <input name="project_url" defaultValue={item?.project_url ?? ""} className={field} />
+        </Label>
         <Label l="Tech tags (comma separated)">
           <input name="tech_tags" defaultValue={item?.tech_tags.join(", ")} className={field} />
         </Label>

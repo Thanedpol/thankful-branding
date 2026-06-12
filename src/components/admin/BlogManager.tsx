@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { saveBlog, deleteBlog } from "@/app/admin/actions";
+import ImageUpload from "./ImageUpload";
 import type { BlogPost } from "@/lib/types";
 
 const field =
@@ -103,14 +104,15 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
         <L l="Title">
           <input name="title" required defaultValue={item?.title} className={field} />
         </L>
-        <div className="grid grid-cols-2 gap-4">
-          <L l="Slug (auto from title if blank)">
-            <input name="slug" defaultValue={item?.slug} className={field} />
-          </L>
-          <L l="Cover image URL">
-            <input name="cover_image_url" defaultValue={item?.cover_image_url ?? ""} className={field} />
-          </L>
-        </div>
+        <L l="Slug (auto from title if blank)">
+          <input name="slug" defaultValue={item?.slug} className={field} />
+        </L>
+        <ImageUpload
+          name="cover_image_url"
+          defaultValue={item?.cover_image_url ?? ""}
+          bucket="blog-images"
+          label="Cover image"
+        />
         <L l="Excerpt (shown publicly as preview)">
           <textarea name="excerpt" rows={2} defaultValue={item?.excerpt ?? ""} className={`${field} resize-none`} />
         </L>

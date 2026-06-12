@@ -6,7 +6,7 @@
 
 -- ─── Enums ───────────────────────────────────────────────────────────────────
 create type public.user_role     as enum ('member', 'admin');
-create type public.portfolio_cat  as enum ('Web', 'AI', 'Design', 'Other');
+create type public.portfolio_cat  as enum ('Video', 'Web', 'Design', 'Other');
 create type public.blog_status    as enum ('draft', 'published');
 
 -- ─── profiles: mirrors auth.users + holds the role ───────────────────────────

@@ -16,7 +16,7 @@ values
     'Video Editor — Y.E.M. Young Executive Management',
     'Internship social activity at Y.E.M. Young Executive Management (Allianz Ayudhya). Video editor for content on practical life skills — capturing the internship atmosphere and interviews.',
     array['Video Editing', 'Storytelling', 'Social Content'],
-    'Design', true, 1,
+    'Video', true, 1,
     '/portfolio/yem-internship.jpg',
     'https://fb.watch/q7dPzSPYiK/'
   ),
@@ -24,7 +24,7 @@ values
     'Siam Global Group — SUMO Service',
     'End-to-end video production for SUMO tool-repair content, pre to post. Lighting setup (brightness & angle), camera framing, set & background dressing, briefing technicians on script & storytelling, scene-by-scene shooting, editing in CapCut, and publishing to TikTok with captions and post copy.',
     array['CapCut', 'TikTok', 'Videography', 'Lighting'],
-    'Design', true, 2,
+    'Video', true, 2,
     '/portfolio/sumo-service.jpg',
     null
   );

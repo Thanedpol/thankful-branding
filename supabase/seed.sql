@@ -39,19 +39,10 @@ values (
 )
 on conflict (id) do nothing;
 
--- ─── Sample portfolio projects ───────────────────────────────────────────────
+-- ─── Portfolio: real video-editor work ───────────────────────────────────────
 insert into public.portfolio (title, description, tech_tags, category, featured, display_order, thumbnail_url, project_url) values
-  ('Neural Agent Orchestrator', 'A multi-agent runtime that coordinates autonomous LLM workers across long-horizon tasks.', array['TypeScript','LangGraph','Postgres'], 'AI', true, 1, 'https://picsum.photos/seed/agent/800/600', 'https://example.com'),
-  ('Synaptic — Realtime ML Dashboard', 'Streaming inference observability with sub-second latency visualisation.', array['Next.js','WebGL','Rust'], 'Web', true, 2, 'https://picsum.photos/seed/synaptic/800/600', 'https://example.com'),
-  ('Glitch UI Kit', 'A cyberpunk design system with motion primitives and shader-driven components.', array['Figma','Framer','GLSL'], 'Design', true, 3, 'https://picsum.photos/seed/glitch/800/600', 'https://example.com'),
-  ('Vision Transformer Playground', 'Interactive notebook for probing attention maps in vision transformers.', array['Python','PyTorch','Jupyter'], 'AI', true, 4, 'https://picsum.photos/seed/vit/800/600', 'https://example.com'),
-  ('Quantum Notes', 'A research-grade note tool with bidirectional links and local-first sync.', array['Svelte','SQLite','CRDT'], 'Web', true, 5, 'https://picsum.photos/seed/quantum/800/600', 'https://example.com'),
-  ('Aurora Render Engine', 'Experimental WebGPU renderer for volumetric sci-fi environments.', array['WebGPU','WGSL','TypeScript'], 'Other', true, 6, 'https://picsum.photos/seed/aurora/800/600', 'https://example.com');
-
--- ─── Real video-editor work ───────────────────────────────────────────────────
-insert into public.portfolio (title, description, tech_tags, category, featured, display_order, thumbnail_url, project_url) values
-  ('Video Editor — Y.E.M. Young Executive Management', 'Internship social activity at Y.E.M. Young Executive Management (Allianz Ayudhya). Video editor for content on practical life skills — capturing the internship atmosphere and interviews.', array['Video Editing','Storytelling','Social Content'], 'Design', true, 1, '/portfolio/yem-internship.jpg', 'https://fb.watch/q7dPzSPYiK/'),
-  ('Siam Global Group — SUMO Service', 'End-to-end video production for SUMO tool-repair content, pre to post. Lighting setup (brightness & angle), camera framing, set & background dressing, briefing technicians on script & storytelling, scene-by-scene shooting, editing in CapCut, and publishing to TikTok with captions and post copy.', array['CapCut','TikTok','Videography','Lighting'], 'Design', true, 2, '/portfolio/sumo-service.jpg', null);
+  ('Video Editor — Y.E.M. Young Executive Management', 'Internship social activity at Y.E.M. Young Executive Management (Allianz Ayudhya). Video editor for content on practical life skills — capturing the internship atmosphere and interviews.', array['Video Editing','Storytelling','Social Content'], 'Video', true, 1, '/portfolio/yem-internship.jpg', 'https://fb.watch/q7dPzSPYiK/'),
+  ('Siam Global Group — SUMO Service', 'End-to-end video production for SUMO tool-repair content, pre to post. Lighting setup (brightness & angle), camera framing, set & background dressing, briefing technicians on script & storytelling, scene-by-scene shooting, editing in CapCut, and publishing to TikTok with captions and post copy.', array['CapCut','TikTok','Videography','Lighting'], 'Video', true, 2, '/portfolio/sumo-service.jpg', null);
 
 -- ─── Sample blog posts ────────────────────────────────────────────────────────
 insert into public.blog_posts (title, slug, excerpt, body, tags, is_public, status, published_at, cover_image_url) values

@@ -1,5 +1,5 @@
 export type UserRole = "member" | "admin";
-export type PortfolioCategory = "Web" | "AI" | "Design" | "Other";
+export type PortfolioCategory = "Video" | "Web" | "Design" | "Other";
 export type BlogStatus = "draft" | "published";
 
 export interface Profile {

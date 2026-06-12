@@ -1,4 +1,6 @@
 import { savePressKit } from "@/app/admin/actions";
+import ImageUpload from "@/components/admin/ImageUpload";
+import FileUpload from "@/components/admin/FileUpload";
 import { createClient } from "@/lib/supabase/server";
 import type { PressKit, LogoFile } from "@/lib/types";
 
@@ -32,29 +34,39 @@ export default async function AdminPressKitPage() {
         <L l="Long bio">
           <textarea name="long_bio" rows={5} defaultValue={k?.long_bio ?? ""} className={`${field} resize-none`} />
         </L>
-        <div className="grid grid-cols-2 gap-4">
-          <L l="Headshot URL">
-            <input name="headshot_url" defaultValue={k?.headshot_url ?? ""} className={field} />
-          </L>
-          <L l="Media contact email">
-            <input name="media_contact_email" defaultValue={k?.media_contact_email ?? ""} className={field} />
-          </L>
-        </div>
-        <L l="Downloadable kit — object path in 'press-assets' bucket (e.g. kit/press-kit.pdf)">
-          <input name="downloadable_kit_pdf_url" defaultValue={k?.downloadable_kit_pdf_url ?? ""} className={field} />
+        <ImageUpload
+          name="headshot_url"
+          defaultValue={k?.headshot_url ?? ""}
+          bucket="avatars"
+          label="Headshot (shown publicly)"
+        />
+        <L l="Media contact email">
+          <input name="media_contact_email" defaultValue={k?.media_contact_email ?? ""} className={field} />
         </L>
+        <FileUpload
+          name="downloadable_kit_pdf_url"
+          defaultValue={k?.downloadable_kit_pdf_url ?? ""}
+          bucket="press-assets"
+          label="Downloadable press kit (login-gated PDF)"
+          accept="application/pdf"
+        />
         <L l="Awards (comma separated)">
           <input name="awards" defaultValue={k?.awards?.join(", ") ?? ""} className={field} />
         </L>
 
         <p className="pt-2 font-mono text-[11px] uppercase tracking-wider text-cyan/70">
-          Logo / asset files — label + object path in 'press-assets' bucket
+          Logo / asset files — label + private file (login-gated download)
         </p>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {logos.map((logo, i) => (
-            <div key={i} className="grid grid-cols-2 gap-3">
+            <div key={i} className="grid gap-2 sm:grid-cols-[1fr_2fr]">
               <input name="logo_label" placeholder="Label" defaultValue={logo.label} className={field} />
-              <input name="logo_url" placeholder="path/in/bucket.svg" defaultValue={logo.file_url} className={field} />
+              <FileUpload
+                name="logo_url"
+                defaultValue={logo.file_url}
+                bucket="press-assets"
+                label=""
+              />
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import { saveProfile } from "@/app/admin/actions";
+import ImageUpload from "@/components/admin/ImageUpload";
 import { createClient } from "@/lib/supabase/server";
 import type { SiteProfile } from "@/lib/types";
 
@@ -27,14 +28,15 @@ export default async function AdminProfilePage() {
         <L l="Long bio">
           <textarea name="long_bio" rows={5} defaultValue={p?.long_bio ?? ""} className={`${field} resize-none`} />
         </L>
-        <div className="grid grid-cols-2 gap-4">
-          <L l="Avatar URL">
-            <input name="avatar_url" defaultValue={p?.avatar_url ?? ""} className={field} />
-          </L>
-          <L l="Background reel URL">
-            <input name="background_reel_url" defaultValue={p?.background_reel_url ?? ""} className={field} />
-          </L>
-        </div>
+        <ImageUpload
+          name="avatar_url"
+          defaultValue={p?.avatar_url ?? ""}
+          bucket="avatars"
+          label="Avatar"
+        />
+        <L l="Background reel URL">
+          <input name="background_reel_url" defaultValue={p?.background_reel_url ?? ""} className={field} />
+        </L>
 
         <p className="pt-2 font-mono text-[11px] uppercase tracking-wider text-cyan/70">
           Social links
