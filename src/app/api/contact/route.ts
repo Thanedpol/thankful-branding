@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendContactNotification } from "@/lib/email";
+import { isSupabaseConfigured } from "@/lib/demo-data";
 
 export async function POST(request: Request) {
+  // Demo mode (no backend) — accept the submission but don't persist/email.
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ ok: true, demo: true });
+  }
+
   let payload: Record<string, unknown>;
   try {
     payload = await request.json();

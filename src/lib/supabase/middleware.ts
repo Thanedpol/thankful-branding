@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isSupabaseConfigured } from "@/lib/demo-data";
 
 /**
  * Refreshes the Supabase session on every request and guards /admin/*.
@@ -11,6 +12,13 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+
+  // Without Supabase configured the app runs in demo mode — there are no
+  // sessions to refresh and /admin can't authenticate, so skip auth entirely
+  // and let the public (demo) site render instead of erroring.
+  if (!isSupabaseConfigured()) {
+    return supabaseResponse;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
