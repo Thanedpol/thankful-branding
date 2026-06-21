@@ -55,7 +55,7 @@ export default async function BlogIndex() {
               <p className="font-mono text-sm text-muted"><T k="blog.empty" /></p>
             ) : (
               list.map((post, i) => (
-                <Reveal key={post.id} delay={i * 60}>
+                <Reveal key={post.id} delay={i * 60} className="h-full">
                   <BlogCard post={post} />
                 </Reveal>
               ))

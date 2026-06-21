@@ -32,7 +32,7 @@ export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, i) => (
-            <Reveal key={post.id} delay={i * 80}>
+            <Reveal key={post.id} delay={i * 80} className="h-full">
               <BlogCard post={post} />
             </Reveal>
           ))}

@@ -10,9 +10,9 @@ export default function BlogCard({ post }: { post: BlogPreview }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="glass glass-hover group flex flex-col overflow-hidden"
+      className="glass glass-hover group flex h-full flex-col overflow-hidden"
     >
-      <div className="relative aspect-[16/9] overflow-hidden">
+      <div className="relative aspect-[16/9] w-full shrink-0 overflow-hidden">
         {post.cover_image_url ? (
           <Image
             src={post.cover_image_url}
@@ -38,13 +38,13 @@ export default function BlogCard({ post }: { post: BlogPreview }) {
             </span>
           ))}
         </div>
-        <h3 className="font-display text-lg font-bold transition-colors group-hover:text-cyan">
+        <h3 className="line-clamp-2 min-h-[3.25rem] font-display text-lg font-bold leading-snug transition-colors group-hover:text-cyan">
           {post.title}
         </h3>
-        <p className="mt-2 line-clamp-3 flex-1 text-sm text-muted">
+        <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm text-muted">
           {post.excerpt}
         </p>
-        <span className="mt-4 font-mono text-xs uppercase tracking-wider text-cyan/70">
+        <span className="mt-auto pt-4 font-mono text-xs uppercase tracking-wider text-cyan/70">
           {t("blog.read")}
         </span>
       </div>
