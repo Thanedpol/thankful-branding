@@ -18,8 +18,6 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-space" />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
-        <p className="eyebrow animate-fade-up">{t("hero.status")}</p>
-
         <h1 className="text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl md:text-8xl">
           <GlitchText text={name} />
         </h1>

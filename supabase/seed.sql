@@ -20,8 +20,8 @@ insert into public.site_profile (id, name, headline, long_bio, avatar_url, socia
 values (
   1,
   'Thank Thanedpol',
-  'Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ',
-  'ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง',
+  'Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ · SCI & Technology',
+  'ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องวิทยาศาสตร์ เทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง',
   '/profile/thank.png',
   '{"github":"https://github.com/","linkedin":"https://linkedin.com/in/","x":"https://x.com/","email":"thank@example.com"}'::jsonb
 )

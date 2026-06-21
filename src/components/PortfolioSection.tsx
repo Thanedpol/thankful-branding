@@ -28,6 +28,27 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
   return (
     <section id="portfolio" className="section-pad scroll-mt-20">
       <Reveal>
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <span className="font-mono text-xs uppercase tracking-wider text-muted">
+            {t("nav.cv")}:
+          </span>
+          <a
+            href="/cv/cv-th.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-neon !px-4 !py-2 text-xs"
+          >
+            {t("cv.th")}
+          </a>
+          <a
+            href="/cv/cv-en.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost !px-4 !py-2 text-xs"
+          >
+            {t("cv.en")}
+          </a>
+        </div>
         <p className="eyebrow">{t("portfolio.eyebrow")}</p>
         <h2 className="mb-12 font-display text-3xl font-bold md:text-4xl text-gradient">
           {t("portfolio.heading")}

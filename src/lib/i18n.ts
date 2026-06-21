@@ -23,14 +23,14 @@ export const dict: Record<Locale, Dict> = {
     "nav.logout": "ออกจากระบบ",
 
     "hero.status": "◢ กำลังเชื่อมต่อโหนดส่วนตัว // สถานะ: ออนไลน์",
-    "hero.tagline": "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ",
+    "hero.tagline": "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ · SCI & Technology",
     "hero.viewWork": "ดูผลงาน →",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// เกี่ยวกับ",
     "about.heading": "เล่าเรื่อง AI & ธุรกิจ",
     "about.bio":
-      "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
+      "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องวิทยาศาสตร์ เทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
 
     "portfolio.eyebrow": "// ผลงานคัดสรร",
     "portfolio.heading": "ผลงานเด่น",
@@ -85,14 +85,14 @@ export const dict: Record<Locale, Dict> = {
     "nav.logout": "Logout",
 
     "hero.status": "◢ Initializing personal node // status: online",
-    "hero.tagline": "Content Creator — AI & Business news, Thailand & worldwide",
+    "hero.tagline": "Content Creator — AI & Business news, Thailand & worldwide · SCI & Technology",
     "hero.viewWork": "View Work →",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// About",
     "about.heading": "Telling the story of AI & Business",
     "about.bio":
-      "A content creator covering AI and business — turning technology and market moves in Thailand and around the world into clear, timely, useful stories.",
+      "A content creator covering AI and business — turning science, technology and market moves in Thailand and around the world into clear, timely, useful stories.",
 
     "portfolio.eyebrow": "// Selected Work",
     "portfolio.heading": "Featured Work",
@@ -147,14 +147,14 @@ export const dict: Record<Locale, Dict> = {
     "nav.logout": "退出",
 
     "hero.status": "◢ 正在初始化个人节点 // 状态：在线",
-    "hero.tagline": "内容创作者 — 报道泰国及全球的 AI 与商业新闻",
+    "hero.tagline": "内容创作者 — 报道泰国及全球的 AI 与商业新闻 · 科学与科技",
     "hero.viewWork": "查看作品 →",
     "hero.pressKit": "媒体资料",
 
     "about.eyebrow": "// 关于",
     "about.heading": "讲述 AI 与商业的故事",
     "about.bio":
-      "专注 AI 与商业领域的内容创作者，把泰国与全球的科技和商业动态，转化为清晰、及时、实用的内容。",
+      "专注 AI 与商业领域的内容创作者，把泰国与全球的科学、科技和商业动态，转化为清晰、及时、实用的内容。",
 
     "portfolio.eyebrow": "// 精选作品",
     "portfolio.heading": "精选作品",

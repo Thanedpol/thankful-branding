@@ -27,9 +27,9 @@ export function isSupabaseConfigured() {
 export const demoProfile: SiteProfile = {
   id: 1,
   name: "Thank Thanedpol",
-  headline: "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ",
+  headline: "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ · SCI & Technology",
   long_bio:
-    "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
+    "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องวิทยาศาสตร์ เทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
   avatar_url: "/profile/thank.png",
   background_reel_url: null,
   social_links: {
