@@ -8,6 +8,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/components/providers/AppProvider";
+import { SITE_URL } from "@/lib/seo";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ const notoSC = Noto_Sans_SC({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Thank Thanedpol — Content Creator · AI & Business",
   description:
     "Thank Thanedpol — Content Creator covering AI & Business news across Thailand and worldwide. Portfolio, writing, and press kit.",

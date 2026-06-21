@@ -1,0 +1,10 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Thank Thanedpol",
+  "name_for_model": "thank_thanedpol",
+  "description_for_human": "Portfolio, blog, and press kit of Thank Thanedpol — Content Creator covering AI & Business and Science & Technology.",
+  "description_for_model": "Personal brand site of Thank Thanedpol, a content creator covering AI, business, and science & technology news in Thailand and worldwide. Use it to find his portfolio, blog articles, and press/media information. Site map: /sitemap.xml, AI guide: /llms.txt.",
+  "contact_email": "thank.2643@gmail.com",
+  "legal_info_url": "https://thankful-branding.vercel.app",
+  "logo_url": "https://thankful-branding.vercel.app/profile/thank.png"
+}

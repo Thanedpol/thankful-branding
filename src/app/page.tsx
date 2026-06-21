@@ -4,6 +4,8 @@ import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
 import Footer from "@/components/Footer";
+import JsonLd from "@/components/JsonLd";
+import { personJsonLd, websiteJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 import {
   isSupabaseConfigured,
@@ -47,6 +49,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={[websiteJsonLd(), personJsonLd(profile)]} />
       <Navbar />
       <main>
         <Hero profile={profile} />

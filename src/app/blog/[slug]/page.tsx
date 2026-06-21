@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import T from "@/components/T";
+import JsonLd from "@/components/JsonLd";
+import { blogPostingJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 import {
   isSupabaseConfigured,
@@ -13,6 +16,41 @@ import {
 import type { BlogPost, BlogPreview } from "@/lib/types";
 
 export const revalidate = 0;
+
+async function getPreviewBySlug(slug: string): Promise<BlogPreview | null> {
+  if (!isSupabaseConfigured()) {
+    return demoBlogPreviews.find((p) => p.slug === slug) ?? null;
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("blog_previews")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  return (data as BlogPreview | null) ?? null;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const p = await getPreviewBySlug(slug);
+  if (!p) return { title: "Post not found — Thank Thanedpol" };
+  return {
+    title: `${p.title} — Thank Thanedpol`,
+    description: p.excerpt ?? undefined,
+    alternates: { canonical: `/blog/${slug}` },
+    openGraph: {
+      title: p.title,
+      description: p.excerpt ?? undefined,
+      type: "article",
+      url: `/blog/${slug}`,
+      images: p.cover_image_url ? [p.cover_image_url] : undefined,
+    },
+  };
+}
 
 export default async function BlogDetail({
   params,
@@ -63,6 +101,7 @@ export default async function BlogDetail({
 function PublishedPost({ post }: { post: BlogPost }) {
   return (
     <>
+      <JsonLd data={blogPostingJsonLd(post)} />
       <Navbar />
       <main className="min-h-screen pt-32">
         <article className="mx-auto max-w-3xl px-6 pb-24">
@@ -124,6 +163,7 @@ function PublishedPost({ post }: { post: BlogPost }) {
 function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
   return (
     <>
+      <JsonLd data={blogPostingJsonLd(preview)} />
       <Navbar />
       <main className="min-h-screen pt-32">
         <article className="mx-auto max-w-3xl px-6 pb-24">
