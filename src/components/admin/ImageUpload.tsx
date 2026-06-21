@@ -82,13 +82,18 @@ export default function ImageUpload({ name, defaultValue = "", bucket, label }: 
             onChange={onFile}
             className="hidden"
           />
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="…or paste an image URL"
-            className="w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-1.5 font-mono text-[11px] text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50"
-          />
+          <label className="block">
+            <span className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-muted">
+              หรือใส่/แก้ลิงก์รูป (URL)
+            </span>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 font-mono text-xs text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50"
+            />
+          </label>
           {err && <p className="font-mono text-[11px] text-red-400">⚠ {err}</p>}
         </div>
       </div>
