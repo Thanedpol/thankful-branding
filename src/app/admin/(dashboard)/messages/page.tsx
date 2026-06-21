@@ -1,11 +1,11 @@
 import { toggleMessageRead, deleteMessage } from "@/app/admin/actions";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { ContactMessage } from "@/lib/types";
 
 export const revalidate = 0;
 
 export default async function AdminMessagesPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("contact_messages")
     .select("*")

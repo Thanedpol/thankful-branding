@@ -2,23 +2,35 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured } from "@/lib/demo-data";
 
+// Inlined (not imported from admin-auth) so middleware stays edge-safe —
+// admin-auth imports next/headers, which isn't allowed in middleware.
+const ADMIN_COOKIE = "admin_session";
+
 /**
- * Refreshes the Supabase session on every request and guards /admin/*.
- *
- * Rules enforced here:
- *   • Any /admin/* path requires an authenticated session with role = 'admin'.
- *   • Unauthenticated (or non-admin) requests → redirect to /admin/login.
- *   • /admin/login itself is exempt (so people can actually log in).
+ * Two concerns:
+ *   1. Admin gate — /admin/* requires the admin passcode cookie (set by
+ *      /api/admin-login). Independent of Supabase. /admin/login is exempt.
+ *   2. Member sessions — refresh the Supabase auth session (members only),
+ *      when Supabase is configured.
  */
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const path = request.nextUrl.pathname;
 
-  // Without Supabase configured the app runs in demo mode — there are no
-  // sessions to refresh and /admin can't authenticate, so skip auth entirely
-  // and let the public (demo) site render instead of erroring.
-  if (!isSupabaseConfigured()) {
-    return supabaseResponse;
+  // 1. Admin passcode gate.
+  if (path.startsWith("/admin") && path !== "/admin/login") {
+    const expected = process.env.ADMIN_PASSCODE;
+    const cookie = request.cookies.get(ADMIN_COOKIE)?.value;
+    if (!expected || cookie !== expected) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      url.searchParams.set("redirect", path);
+      return NextResponse.redirect(url);
+    }
   }
+
+  // 2. Member session refresh (skip entirely if Supabase isn't configured).
+  let supabaseResponse = NextResponse.next({ request });
+  if (!isSupabaseConfigured()) return supabaseResponse;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,36 +53,6 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  const isAdminArea = path.startsWith("/admin");
-  const isAdminLogin = path === "/admin/login";
-
-  if (isAdminArea && !isAdminLogin) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/login";
-      url.searchParams.set("redirect", path);
-      return NextResponse.redirect(url);
-    }
-
-    // Verify the admin role — a logged-in member must NOT reach the dashboard.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/login";
-      url.searchParams.set("error", "not_admin");
-      return NextResponse.redirect(url);
-    }
-  }
-
+  await supabase.auth.getUser();
   return supabaseResponse;
 }

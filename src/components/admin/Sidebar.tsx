@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: "◇" },
@@ -13,13 +12,12 @@ const NAV = [
   { href: "/admin/messages", label: "Messages", icon: "✉" },
 ];
 
-export default function Sidebar({ email }: { email: string }) {
+export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await fetch("/api/admin-logout", { method: "POST" });
     router.push("/admin/login");
     router.refresh();
   }
@@ -66,7 +64,7 @@ export default function Sidebar({ email }: { email: string }) {
         >
           ↗ View live site
         </Link>
-        <p className="truncate font-mono text-[11px] text-ink/40">{email}</p>
+        <p className="truncate font-mono text-[11px] text-ink/40">passcode session</p>
         <button
           onClick={signOut}
           className="w-full rounded-lg border border-line/10 py-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:border-red-500/40 hover:text-red-400"

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 interface Props {
   /** Form field name — submits the resulting object PATH (not a public URL). */
@@ -25,7 +24,6 @@ export default function FileUpload({
   label,
   accept,
 }: Props) {
-  const supabase = createClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [path, setPath] = useState(defaultValue);
   const [busy, setBusy] = useState(false);
@@ -37,20 +35,18 @@ export default function FileUpload({
     setBusy(true);
     setErr(null);
 
-    const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const objectPath = `${crypto.randomUUID()}-${safe}`;
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("bucket", bucket);
 
-    const { error } = await supabase.storage
-      .from(bucket)
-      .upload(objectPath, file, { cacheControl: "3600", upsert: false });
-
-    if (error) {
-      setErr(error.message);
-      setBusy(false);
-      return;
+    try {
+      const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) setErr(data.error || "Upload failed");
+      else setPath(data.path || "");
+    } catch {
+      setErr("Upload failed");
     }
-
-    setPath(objectPath);
     setBusy(false);
   }
 

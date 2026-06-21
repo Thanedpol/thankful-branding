@@ -16,6 +16,9 @@ export const dict: Record<Locale, Dict> = {
     "nav.portfolio": "ผลงาน",
     "nav.blog": "บทความ",
     "nav.pressKit": "Press Kit",
+    "nav.cv": "ดู CV",
+    "cv.th": "CV (ภาษาไทย)",
+    "cv.en": "CV (English)",
     "nav.login": "เข้าสู่ระบบ",
     "nav.logout": "ออกจากระบบ",
 
@@ -75,6 +78,9 @@ export const dict: Record<Locale, Dict> = {
     "nav.portfolio": "Portfolio",
     "nav.blog": "Blog",
     "nav.pressKit": "Press Kit",
+    "nav.cv": "View CV",
+    "cv.th": "CV (Thai)",
+    "cv.en": "CV (English)",
     "nav.login": "Login",
     "nav.logout": "Logout",
 
@@ -134,6 +140,9 @@ export const dict: Record<Locale, Dict> = {
     "nav.portfolio": "作品",
     "nav.blog": "博客",
     "nav.pressKit": "媒体资料",
+    "nav.cv": "查看简历",
+    "cv.th": "简历（泰文）",
+    "cv.en": "简历（英文）",
     "nav.login": "登录",
     "nav.logout": "退出",
 

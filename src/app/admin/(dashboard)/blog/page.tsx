@@ -1,11 +1,11 @@
 import BlogManager from "@/components/admin/BlogManager";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { BlogPost } from "@/lib/types";
 
 export const revalidate = 0;
 
 export default async function AdminBlogPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("blog_posts")
     .select("*")

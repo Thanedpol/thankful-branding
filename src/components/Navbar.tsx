@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Fragment } from "react";
 import { useT } from "@/components/providers/AppProvider";
 import { ThemeToggle, LanguageSwitcher } from "@/components/Controls";
+import CvMenu, { CVS } from "@/components/CvMenu";
 
 const LINKS = [
   { href: "/#about", key: "nav.about" },
@@ -60,13 +62,15 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-8 md:flex">
           {LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-cyan"
-            >
-              {t(l.key)}
-            </Link>
+            <Fragment key={l.href}>
+              <Link
+                href={l.href}
+                className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-cyan"
+              >
+                {t(l.key)}
+              </Link>
+              {l.href === "/#portfolio" && <CvMenu />}
+            </Fragment>
           ))}
         </div>
 
@@ -101,14 +105,28 @@ export default function Navbar() {
         <div className="border-t border-line/[0.06] bg-space/95 px-6 py-4 backdrop-blur-md md:hidden">
           <div className="flex flex-col gap-4">
             {LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="font-mono text-sm uppercase tracking-wider text-muted hover:text-cyan"
-              >
-                {t(l.key)}
-              </Link>
+              <Fragment key={l.href}>
+                <Link
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="font-mono text-sm uppercase tracking-wider text-muted hover:text-cyan"
+                >
+                  {t(l.key)}
+                </Link>
+                {l.href === "/#portfolio" &&
+                  CVS.map((c) => (
+                    <a
+                      key={c.href}
+                      href={c.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setOpen(false)}
+                      className="pl-3 font-mono text-sm tracking-wider text-cyan/80 hover:text-cyan"
+                    >
+                      ↗ {t(c.key)}
+                    </a>
+                  ))}
+              </Fragment>
             ))}
             {email ? (
               <button onClick={signOut} className="btn-ghost mt-2 text-xs">

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const revalidate = 0;
 
 async function count(table: string, filter?: (q: any) => any) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   let q = supabase.from(table).select("*", { count: "exact", head: true });
   if (filter) q = filter(q);
   const { count } = await q;
@@ -12,7 +12,7 @@ async function count(table: string, filter?: (q: any) => any) {
 }
 
 export default async function DashboardOverview() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const [portfolioCount, blogCount, unread, recent] = await Promise.all([
     count("portfolio"),

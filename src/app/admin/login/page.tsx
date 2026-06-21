@@ -2,66 +2,39 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/demo-data";
 
 function AdminLoginForm() {
-  const supabase = createClient();
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") || "/admin";
-  const configured = isSupabaseConfigured();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(
-    params.get("error") === "not_admin" ? "This account is not an administrator." : null
-  );
+  const [error, setError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-
-    // Guard: without real Supabase env vars the auth fetch goes to a
-    // placeholder host and fails with an opaque "Failed to fetch".
-    if (!configured) {
-      setError(
-        "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (then redeploy) before logging in."
-      );
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !data.user) {
-      const msg = error?.message ?? "Login failed.";
-      setError(
-        /failed to fetch/i.test(msg)
-          ? "Can't reach Supabase. Check NEXT_PUBLIC_SUPABASE_URL is correct and the project isn't paused."
-          : msg
-      );
+    try {
+      const res = await fetch("/api/admin-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Login failed.");
+        setLoading(false);
+        return;
+      }
+      router.push(redirect);
+      router.refresh();
+    } catch {
+      setError("Network error. Try again.");
       setLoading(false);
-      return;
     }
-
-    // Verify admin role; a member must not get into the dashboard.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      await supabase.auth.signOut();
-      setError("Access denied. Administrators only.");
-      setLoading(false);
-      return;
-    }
-
-    router.push(redirect);
-    router.refresh();
   }
 
   const field =
@@ -83,39 +56,24 @@ function AdminLoginForm() {
           </div>
         </div>
 
-        {!configured && (
-          <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 font-mono text-[11px] leading-relaxed text-amber-300">
-            ⚠ Supabase ยังไม่ถูกตั้งค่า — ต้องใส่ env vars (NEXT_PUBLIC_SUPABASE_URL,
-            NEXT_PUBLIC_SUPABASE_ANON_KEY) แล้ว redeploy ก่อนจึงจะ login ได้
-          </div>
-        )}
-
         <form onSubmit={submit} className="space-y-4">
-          <input
-            type="email"
-            required
-            placeholder="admin@email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={field}
-          />
           <input
             type="password"
             required
-            placeholder="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            autoFocus
+            placeholder="passcode"
+            value={passcode}
+            onChange={(e) => setPasscode(e.target.value)}
             className={field}
           />
           {error && <p className="font-mono text-xs text-red-400">⚠ {error}</p>}
           <button type="submit" disabled={loading} className="btn-neon w-full">
-            {loading ? "Authenticating…" : "Authenticate →"}
+            {loading ? "Unlocking…" : "Unlock →"}
           </button>
         </form>
 
-        {/* No registration here by design — admin is seeded only. */}
         <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-widest text-ink/20">
-          Single-operator system · no public signup
+          Single-operator system · passcode access
         </p>
       </div>
     </div>

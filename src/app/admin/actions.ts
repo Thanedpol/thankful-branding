@@ -1,13 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient, getCurrentProfile } from "@/lib/supabase/server";
+import { isAdminAuthed } from "@/lib/admin-auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { PortfolioCategory } from "@/lib/types";
 
+/**
+ * Verify the admin passcode and return a service-role client. Writes go
+ * through service-role because there's no Supabase auth session under the
+ * passcode model (RLS would otherwise block them).
+ */
 async function assertAdmin() {
-  const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") throw new Error("Unauthorized");
-  return createClient();
+  if (!(await isAdminAuthed())) throw new Error("Unauthorized");
+  return createAdminClient();
 }
 
 function slugify(s: string) {

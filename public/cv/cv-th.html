@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV — ธเนศพล เดชาดวงสกุล</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#1F3A5F; --accent:#2E7D9E; --dark:#2B2B2B;
+    --light:#55626E; --rule:#C9D4DE;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Sarabun',sans-serif; color:var(--dark); line-height:1.5; background:#e9ecef;}
+
+  /* แหล่งวัดขนาด (ซ่อนนอกจอ) ความกว้างเท่ากับพื้นที่เนื้อหาในกระดาษ */
+  #source{ position:absolute; left:-10000px; top:0; width:174mm; visibility:hidden; }
+
+  #out{ display:none; padding:16px 0; }
+  .page{
+    position:relative; width:210mm; height:297mm; margin:0 auto 16px;
+    background:#fff; padding:18mm; box-shadow:0 2px 16px rgba(0,0,0,.18);
+    overflow:hidden;
+  }
+  .pn{ position:absolute; left:0; right:0; bottom:16mm; text-align:center; font-size:11px; color:var(--light); }
+
+  h1{font-size:30px; font-weight:600; color:var(--primary); line-height:1.15;}
+  .role{font-size:15px; color:var(--accent); margin-top:2px;}
+  .contact{font-size:12.5px; margin-top:6px; color:var(--dark);}
+  .hr-top{height:2px; background:var(--rule); margin:10px 0 4px;}
+  .u{ break-inside:avoid; }
+  .blk{margin-top:13px;}
+  h2{font-size:16px; font-weight:600; color:var(--primary);
+     border-bottom:1.5px solid var(--accent); padding-bottom:3px; margin-bottom:7px;}
+  .cat{font-weight:600; color:var(--accent); font-size:13.5px; margin-top:8px; margin-bottom:2px;}
+  .entry-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px;}
+  .entry-title{font-weight:600; font-size:14px;}
+  .entry-date{font-size:12.5px; color:var(--light); white-space:nowrap;}
+  .entry-sub{color:var(--accent); font-size:13px; margin-bottom:2px;}
+  .summary,.skill p{font-size:13.5px;}
+  .skill p{margin-bottom:5px;}
+  .skill b{color:var(--dark);}
+  .note{font-size:12.5px; color:var(--light); margin-bottom:2px;}
+  ul{margin:3px 0 2px 18px;}
+  li{font-size:13.5px; margin-bottom:3px;}
+  .row{font-size:13.5px; margin-bottom:3px; padding-left:16px; position:relative;}
+  .row::before{content:"•"; position:absolute; left:2px; color:var(--accent);}
+  .lnk{font-size:11.5px;}
+  .lnk a{color:var(--accent);}
+
+  #toolbar{ position:sticky; top:0; z-index:10; background:#e9ecef;
+    padding:10px 0; text-align:center; border-bottom:1px solid #d4dae0; }
+  #toolbar button{ font-family:'Sarabun',sans-serif; font-size:14px; font-weight:500;
+    padding:9px 20px; margin:0 6px; cursor:pointer; color:#fff;
+    background:var(--primary); border:none; border-radius:6px; }
+  #toolbar button:hover{ background:#16304f; }
+  #toolbar #btnPng{ background:var(--accent); }
+  #toolbar #btnPng:hover{ background:#256b89; }
+
+  @media print{
+    body{background:#fff;}
+    #toolbar{display:none;}
+    #out{padding:0;}
+    .page{box-shadow:none; margin:0;}
+    .page:not(:last-child){break-after:page;}
+    @page{size:A4; margin:0;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== แหล่งเนื้อหา (จะถูกแบ่งหน้าอัตโนมัติด้วยสคริปต์ด้านล่าง) ====== -->
+<div id="source">
+
+  <header class="u">
+    <div style="text-align:center;">
+      <h1>ธเนศพล เดชาดวงสกุล</h1>
+      <div class="role">Content Creator/AI News Writer</div>
+      <div class="contact">+66 95 953 5732 &nbsp;|&nbsp; thank.2643@gmail.com</div>
+      <div class="contact">211/92 (512) ซ.บางนา–ตราด 27 ถ.บางนา–ตราด แขวงบางนา เขตบางนา กรุงเทพฯ 10260</div>
+      <div class="hr-top"></div>
+    </div>
+  </header>
+
+  <div class="u blk">
+    <h2>สรุปโปรไฟล์</h2>
+    <p class="summary">นักสร้างสรรค์เนื้อหา (Content Creator) ด้านเทคโนโลยีและปัญญาประดิษฐ์ (AI)
+    ที่มีพื้นฐานด้านคณิตศาสตร์ประยุกต์ ถนัดการเขียน Copywriting การตั้ง Headline ที่ดึงดูด
+    และการตรวจสอบความถูกต้องของข้อมูล (Fact-Checking) มีประสบการณ์ลงพื้นที่เก็บข้อมูลและทำข่าว
+    จากงานสัมมนา/นิทรรศการด้านเทคโนโลยี การตลาด และธุรกิจชั้นนำของประเทศรวม 23 งาน
+    พร้อมออกแบบกระบวนการทำงานด้วย AI ตั้งแต่ดึงข้อมูล สรุปข่าว ไปจนถึงเผยแพร่บนหลายแพลตฟอร์ม</p>
+  </div>
+
+  <div class="u blk">
+    <h2>การศึกษา</h2>
+    <div class="entry-head"><span class="entry-title">มหาวิทยาลัยธรรมศาสตร์</span><span class="entry-date">2019 – 2023</span></div>
+    <div class="note">หลักสูตรวิทยาศาสตรบัณฑิต (วท.บ.) สาขาคณิตศาสตร์ประยุกต์</div>
+    <div class="entry-head"><span class="entry-title">โรงเรียนไตรมิตรวิทยาลัย</span><span class="entry-date">2016 – 2019</span></div>
+    <div class="note">แผนการเรียนวิทยาศาสตร์ – คณิตศาสตร์</div>
+  </div>
+
+  <div class="u blk">
+    <h2>ประสบการณ์ทำงาน</h2>
+    <div class="entry-head"><span class="entry-title">บริษัท โซลูชั่น อินไซท์ ทรานส์ฟอร์เมชั่น จำกัด</span><span class="entry-date">2025 – ปัจจุบัน</span></div>
+    <div class="entry-sub">Content Creator — สื่อ Insightist AI Transformation Thailand (ทีมข่าวเทคโนโลยีและ AI)</div>
+    <ul>
+      <li>ผลิตคอนเทนต์ข่าวเทคโนโลยีและ AI ครบวงจร ตั้งแต่ดึงข้อมูล สรุป ตั้ง Headline และเผยแพร่บน Facebook และเว็บไซต์</li>
+      <li>ลงพื้นที่ทำข่าวงานสัมมนา/นิทรรศการด้านเทคโนโลยีและธุรกิจกว่า 23 งาน (ดูรายการด้านล่าง)</li>
+      <li>ออกแบบและจัดทำ Skills.md เป็นมาตรฐานกระบวนการทำข่าวด้วย AI ให้ทีม</li>
+      <li>ทำ Fact-Checking ตรวจสอบความถูกต้องของข้อมูลก่อนเผยแพร่ทุกชิ้น</li>
+    </ul>
+  </div>
+
+  <div class="u blk" data-keep="1">
+    <h2>การร่วมงาน / ลงพื้นที่ทำข่าว <span style="font-size:12px;color:var(--light);font-weight:400;">(รวม 23 งาน, 2025–2026)</span></h2>
+  </div>
+
+  <div class="u cat" data-keep="1">AI &amp; เทคโนโลยี</div>
+  <div class="u row">AWS Summit Bangkok 2025<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/18wiq3YRGV/">https://www.facebook.com/share/p/18wiq3YRGV/</a></span></div>
+  <div class="u row">Microsoft SMEs AI Skill Summit 2025<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1FEnWQQdtE/">https://www.facebook.com/share/p/1FEnWQQdtE/</a></span></div>
+  <div class="u row">NVIDIA VST ECS x AI Ecosphere 2025<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/18sZUreCR1/">https://www.facebook.com/share/p/18sZUreCR1/</a></span></div>
+  <div class="u row">KBTG Techtopia 2025<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/17oXV6mWNf/">https://www.facebook.com/share/p/17oXV6mWNf/</a></span></div>
+  <div class="u row">AI Pavilion (จัดร่วมกับ Bitkub Summit 2025)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/16PX6LGVKr/">https://www.facebook.com/share/p/16PX6LGVKr/</a></span></div>
+  <div class="u row">DCT Seminar 2025<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1J9WVUGRTF/">https://www.facebook.com/share/p/1J9WVUGRTF/</a></span></div>
+  <div class="u row">งานเปิดตัว Siam Quantum Square<br><span class="lnk">Link: <a href="https://web.facebook.com/share/p/1FzyEi2J2Q/">https://web.facebook.com/share/p/1FzyEi2J2Q/</a></span></div>
+  <div class="u row">Techsauce HealthSpan Festival 2026<br><span class="lnk">Link: <a href="https://web.facebook.com/share/p/1Er4dQCt5A/">https://web.facebook.com/share/p/1Er4dQCt5A/</a></span></div>
+  <div class="u row">FutureSkill Next 2026<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1DPpDyC9vV/">https://www.facebook.com/share/p/1DPpDyC9vV/</a></span></div>
+  <div class="u row">AgentCon Bangkok (21 ก.พ. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/18tnub2zUL/">https://www.facebook.com/share/p/18tnub2zUL/</a></span></div>
+  <div class="u row">AI Revolution Shift 2026 (กรุงเทพธุรกิจ, 31 มี.ค. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1EMWs3TrLv/">https://www.facebook.com/share/p/1EMWs3TrLv/</a></span></div>
+  <div class="u row">AgentCamp Bangkok, Thailand — Global AI Community (16 พ.ค. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/195ejeRnFd/">https://www.facebook.com/share/p/195ejeRnFd/</a></span></div>
+  <div class="u row">Be the top 10% with Claude Code<br><span class="lnk">Link: <a href="https://web.facebook.com/share/p/1DffEmrVBS/">https://web.facebook.com/share/p/1DffEmrVBS/</a></span></div>
+
+  <div class="u cat" data-keep="1">การตลาด &amp; สื่อ</div>
+  <div class="u row">CTC2025 (5–6 ก.ค. 2568)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/192TcMK4Sn/">https://www.facebook.com/share/p/192TcMK4Sn/</a></span></div>
+  <div class="u row">Marketing Conference 2025<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1DmX3WTt27/">https://www.facebook.com/share/p/1DmX3WTt27/</a></span></div>
+  <div class="u row">The Secret Sauce Summit 2026<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/18oeKFz6ZR/">https://www.facebook.com/share/p/18oeKFz6ZR/</a></span></div>
+  <div class="u row">Future Trends Ahead Summit 2026 (10 ก.พ. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1927AyC9te/">https://www.facebook.com/share/p/1927AyC9te/</a></span></div>
+  <div class="u row">BT Awards 2026 — งานประกาศผลรางวัล Beartai ครั้งที่ 2 (13 มี.ค. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1DsZ8vRf8G/">https://www.facebook.com/share/p/1DsZ8vRf8G/</a></span></div>
+  <div class="u row">Ctrl Shift Create 2026<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/18piMff4xA/">https://www.facebook.com/share/p/18piMff4xA/</a></span></div>
+  <div class="u row">Marketing Oops Summit 2026 (11 มิ.ย. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1JzpZYL8g2/">https://www.facebook.com/share/p/1JzpZYL8g2/</a></span></div>
+
+  <div class="u cat" data-keep="1">ธุรกิจ &amp; เศรษฐกิจ</div>
+  <div class="u row">Smart Delivery Expo 2026 &amp; Thai Cargo Expo 2026 (28 ม.ค. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/1DM6EDhJqv/">https://www.facebook.com/share/p/1DM6EDhJqv/</a></span></div>
+
+  <div class="u cat" data-keep="1">HR &amp; People</div>
+  <div class="u row">People Performance Conference 2026 (1 เม.ย. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/18oBJAnhJy/">https://www.facebook.com/share/p/18oBJAnhJy/</a></span></div>
+  <div class="u row">Thailand HR Tech 2026 (16–17 มิ.ย. 2569)<br><span class="lnk">Link: <a href="https://www.facebook.com/share/p/18jtw1aQdA/">https://www.facebook.com/share/p/18jtw1aQdA/</a></span></div>
+
+  <div class="u blk skill">
+    <h2>ทักษะและความเชี่ยวชาญ</h2>
+    <p><b>Copywriting &amp; Hooking</b> : เขียนข้อความเชิงการตลาดและการตั้งประโยคเปิด (Hook) ที่ดึงดูดความสนใจ</p>
+    <p><b>Fact-Checking</b> : ตรวจสอบและยืนยันความถูกต้องของข้อมูลข่าวก่อนเผยแพร่</p>
+    <p><b>AI Workflow / Skills.md</b> : ออกแบบ Skills.md สำหรับกระบวนการทำข่าวด้วย AI ครบวงจร — ตั้งแต่ดึงข้อมูล สรุปข่าว ตั้งชื่อ Headline ไปจนถึงเขียน Content ลงเผยแพร่บน Facebook และเว็บไซต์</p>
+    <p><b>Creativity</b> : คิดคอนเทนต์ใหม่ ๆ ตั้งพาดหัวให้ดึงดูด และออกแบบ Artwork</p>
+    <p><b>Critical Thinking</b> : วิเคราะห์ข่าว แยกแยะข้อมูลจริง-ปลอม และสรุปประเด็นสำคัญ</p>
+    <p><b>Lifelong Learning</b> : ข่าว AI ออกใหม่ทุกวัน ต้องอัปเดตความรู้อยู่เสมอไม่หยุด</p>
+  </div>
+
+  <div class="u blk" data-keep="1">
+    <h2>Certificates / ประกาศนียบัตร</h2>
+  </div>
+  <div class="u row">Claude 101 — Anthropic</div>
+  <div class="u row">Claude Foundations — มหาวิทยาลัยรังสิต</div>
+  <div class="u row">OKMD Career Bootcamp — Creative Writing Prompt</div>
+  <div class="u row">OKMD Career Bootcamp — Art &amp; AI</div>
+  <div class="u row">OKMD Career Bootcamp — AI Ethics &amp; Copyright</div>
+  <div class="u row">SolutionsImpact — Generative AI &amp; ChatGPT for Business &amp; Marketing</div>
+  <div class="u row">SolutionsImpact — The Magic of AI Presentation</div>
+  <div class="u row">SolutionsImpact — AI Marketing Studio</div>
+  <div class="u row">SolutionsImpact — AI Automation Business</div>
+
+  <div class="u blk skill">
+    <h2>เครื่องมือ AI ที่ใช้ในงานข่าว</h2>
+    <p><b>Claude</b> : สร้างและใช้งาน Skills.md สำหรับบทบาท Content Creator</p>
+    <p><b>ChatGPT</b> : กรอง/วิเคราะห์ข้อมูล และสร้างภาพ Infographic</p>
+    <p><b>Freepik</b> : แปลง Artwork ของข่าวแต่ละคอนเทนต์จากแนวตั้ง (3:4, 4:5) เป็นแนวนอน (16:9)</p>
+    <p><b>Qwen</b> : รันงานหาข่าวสำรอง เมื่อ Tokens หรือโควต้าของ Claude และ ChatGPT หมด</p>
+  </div>
+
+  <div class="u blk skill">
+    <h2>ภาษา</h2>
+    <p><b>ภาษาไทย</b> : เจ้าของภาษา (Native)</p>
+    <p><b>ภาษาอังกฤษ</b> : สื่อสารได้เบื้องต้น</p>
+  </div>
+
+</div>
+
+<!-- ====== แถบปุ่มดาวน์โหลด ====== -->
+<div id="toolbar">
+  <button onclick="window.print()">⬇ ดาวน์โหลด PDF</button>
+  <button id="btnPng">⬇ ดาวน์โหลด PNG</button>
+</div>
+
+<!-- ====== ผลลัพธ์ที่แบ่งหน้าแล้ว ====== -->
+<div id="out"></div>
+
+<script>
+  function mm(v){ return v * 96 / 25.4; }
+  function uh(el){
+    var s = getComputedStyle(el);
+    return el.getBoundingClientRect().height + parseFloat(s.marginTop) + parseFloat(s.marginBottom);
+  }
+  function paginate(){
+    var source = document.getElementById('source');
+    var out = document.getElementById('out');
+    var units = Array.prototype.slice.call(source.children);
+    // พื้นที่เนื้อหาต่อหน้า = สูง A4 - ขอบบน/ล่าง - ช่องว่าง 40px - เลขหน้า - กันชน
+    var H = mm(297 - 18 - 27) - 8;
+    var page, body, used = 0, no = 0;
+    function newPage(){
+      no++;
+      page = document.createElement('div'); page.className = 'page';
+      body = document.createElement('div'); page.appendChild(body);
+      var pn = document.createElement('div'); pn.className = 'pn'; pn.textContent = no;
+      page.appendChild(pn);
+      out.appendChild(page); used = 0;
+    }
+    newPage();
+    for (var i = 0; i < units.length; i++){
+      var u = units[i];
+      var h = uh(u);
+      var need = h;
+      if (u.dataset.keep){            // หัวข้อ/หมวด: ต้องมีที่พอสำหรับหัวข้อ+เนื้อหาถัดไปในหน้าเดียวกัน
+        var j = i; need = 0;
+        while (j < units.length && units[j].dataset.keep){ need += uh(units[j]); j++; }
+        if (j < units.length) need += uh(units[j]);
+      }
+      if (used > 0 && used + need > H){ newPage(); }
+      body.appendChild(u.cloneNode(true));
+      used += h;
+    }
+    source.style.display = 'none';
+    out.style.display = 'block';
+  }
+  function run(){ requestAnimationFrame(paginate); }
+  if (document.fonts && document.fonts.ready){ document.fonts.ready.then(run); }
+  else { window.addEventListener('load', run); }
+</script>
+
+<!-- ดาวน์โหลด PNG (แยกรายหน้า) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+  document.getElementById('btnPng').addEventListener('click', function(){
+    if (typeof html2canvas !== 'function'){
+      alert('กำลังโหลดเครื่องมือสร้างรูปภาพ กรุณาลองใหม่อีกครั้งในอีกสักครู่ (ต้องต่ออินเทอร์เน็ตครั้งแรก)');
+      return;
+    }
+    var pages = document.querySelectorAll('#out .page');
+    if (!pages.length) return;
+    pages.forEach(function(pg, i){
+      html2canvas(pg, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
+        .then(function(canvas){
+          var a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = 'cv_thanespol_page-' + (i + 1) + '.png';
+          document.body.appendChild(a); a.click(); a.remove();
+        });
+    });
+  });
+</script>
+</body>
+</html>

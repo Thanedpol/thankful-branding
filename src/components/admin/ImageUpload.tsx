@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 interface Props {
   /** Form field name — submits the resulting public URL. */
@@ -13,12 +12,11 @@ interface Props {
 }
 
 /**
- * Admin image picker: upload a file to a public Supabase Storage bucket and
- * store its public URL in a hidden input (so the existing server actions keep
- * working unchanged). A manual URL field remains as a fallback.
+ * Admin image picker: uploads via /api/admin-upload (service-role, gated by
+ * the admin passcode) and stores the resulting public URL in a hidden input.
+ * A manual URL field remains as a fallback.
  */
 export default function ImageUpload({ name, defaultValue = "", bucket, label }: Props) {
-  const supabase = createClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState(defaultValue);
   const [busy, setBusy] = useState(false);
@@ -30,21 +28,21 @@ export default function ImageUpload({ name, defaultValue = "", bucket, label }: 
     setBusy(true);
     setErr(null);
 
-    const ext = file.name.split(".").pop() || "bin";
-    const path = `${crypto.randomUUID()}.${ext}`;
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("bucket", bucket);
 
-    const { error } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, { cacheControl: "3600", upsert: false });
-
-    if (error) {
-      setErr(error.message);
-      setBusy(false);
-      return;
+    try {
+      const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        setErr(data.error || "Upload failed");
+      } else {
+        setUrl(data.publicUrl || "");
+      }
+    } catch {
+      setErr("Upload failed");
     }
-
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    setUrl(data.publicUrl);
     setBusy(false);
   }
 
