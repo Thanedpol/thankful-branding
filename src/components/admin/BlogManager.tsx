@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { saveBlog, deleteBlog } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
+import RichTextEditor from "./RichTextEditor";
 import type { BlogPost } from "@/lib/types";
 
 const field =
@@ -116,8 +117,8 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
         <L l="Excerpt (shown publicly as preview)">
           <textarea name="excerpt" rows={2} defaultValue={item?.excerpt ?? ""} className={`${field} resize-none`} />
         </L>
-        <L l="Body (HTML / rich text)">
-          <textarea name="body" rows={10} defaultValue={item?.body ?? ""} className={`${field} resize-y font-mono text-xs`} />
+        <L l="Body (rich text)">
+          <RichTextEditor name="body" defaultValue={item?.body ?? ""} />
         </L>
         <L l="Tags (comma separated)">
           <input name="tags" defaultValue={item?.tags.join(", ")} className={field} />
