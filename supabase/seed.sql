@@ -16,17 +16,19 @@ update public.profiles
   where email = 'thank@example.com';
 
 -- ─── Singleton rows ────────────────────────────────────────────────────────
-insert into public.site_profile (id, name, headline, long_bio, social_links)
+insert into public.site_profile (id, name, headline, long_bio, avatar_url, social_links)
 values (
   1,
   'Thank Thanedpol',
   'Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ',
   'ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง',
+  '/profile/thank.jpg',
   '{"github":"https://github.com/","linkedin":"https://linkedin.com/in/","x":"https://x.com/","email":"thank@example.com"}'::jsonb
 )
 on conflict (id) do update set
   name = excluded.name, headline = excluded.headline,
-  long_bio = excluded.long_bio, social_links = excluded.social_links;
+  long_bio = excluded.long_bio, avatar_url = excluded.avatar_url,
+  social_links = excluded.social_links;
 
 insert into public.press_kit (id, short_bio, long_bio, awards, media_contact_email, logo_files)
 values (

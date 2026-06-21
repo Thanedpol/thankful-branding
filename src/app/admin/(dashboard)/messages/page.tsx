@@ -1,17 +1,19 @@
 import { toggleMessageRead, deleteMessage } from "@/app/admin/actions";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isSupabaseConfigured } from "@/lib/demo-data";
 import type { ContactMessage } from "@/lib/types";
 
 export const revalidate = 0;
 
 export default async function AdminMessagesPage() {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("contact_messages")
-    .select("*")
-    .order("received_at", { ascending: false });
-
-  const messages = (data as ContactMessage[]) ?? [];
+  let messages: ContactMessage[] = [];
+  if (isSupabaseConfigured()) {
+    const { data } = await createAdminClient()
+      .from("contact_messages")
+      .select("*")
+      .order("received_at", { ascending: false });
+    messages = (data as ContactMessage[]) ?? [];
+  }
   const unread = messages.filter((m) => !m.is_read).length;
 
   return (

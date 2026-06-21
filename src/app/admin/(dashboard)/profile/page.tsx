@@ -1,6 +1,7 @@
 import { saveProfile } from "@/app/admin/actions";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isSupabaseConfigured, demoProfile } from "@/lib/demo-data";
 import type { SiteProfile } from "@/lib/types";
 
 export const revalidate = 0;
@@ -9,9 +10,15 @@ const field =
   "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50";
 
 export default async function AdminProfilePage() {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("site_profile").select("*").eq("id", 1).single();
-  const p = data as SiteProfile | null;
+  let p: SiteProfile | null = demoProfile;
+  if (isSupabaseConfigured()) {
+    const { data } = await createAdminClient()
+      .from("site_profile")
+      .select("*")
+      .eq("id", 1)
+      .single();
+    p = data as SiteProfile | null;
+  }
 
   return (
     <div>

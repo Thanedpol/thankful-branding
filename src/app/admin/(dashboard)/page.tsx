@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isSupabaseConfigured } from "@/lib/demo-data";
 
 export const revalidate = 0;
 
@@ -12,18 +13,26 @@ async function count(table: string, filter?: (q: any) => any) {
 }
 
 export default async function DashboardOverview() {
-  const supabase = createAdminClient();
+  let portfolioCount = 0;
+  let blogCount = 0;
+  let unread = 0;
+  let recent: { data: any[] | null } = { data: [] };
 
-  const [portfolioCount, blogCount, unread, recent] = await Promise.all([
-    count("portfolio"),
-    count("blog_posts"),
-    count("contact_messages", (q) => q.eq("is_read", false)),
-    supabase
-      .from("contact_messages")
-      .select("id, sender_name, subject, received_at, is_read")
-      .order("received_at", { ascending: false })
-      .limit(5),
-  ]);
+  // Skip all DB calls in demo mode — otherwise every tab switch waits on a
+  // failing request to Supabase (placeholder key), which makes the admin lag.
+  if (isSupabaseConfigured()) {
+    const supabase = createAdminClient();
+    [portfolioCount, blogCount, unread, recent] = await Promise.all([
+      count("portfolio"),
+      count("blog_posts"),
+      count("contact_messages", (q) => q.eq("is_read", false)),
+      supabase
+        .from("contact_messages")
+        .select("id, sender_name, subject, received_at, is_read")
+        .order("received_at", { ascending: false })
+        .limit(5),
+    ]);
+  }
 
   const stats = [
     { label: "Portfolio items", value: portfolioCount, href: "/admin/portfolio", icon: "▦" },

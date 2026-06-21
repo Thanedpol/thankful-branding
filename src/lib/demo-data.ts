@@ -30,7 +30,7 @@ export const demoProfile: SiteProfile = {
   headline: "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ",
   long_bio:
     "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
-  avatar_url: null,
+  avatar_url: "/profile/thank.jpg",
   background_reel_url: null,
   social_links: {
     github: "https://github.com/",

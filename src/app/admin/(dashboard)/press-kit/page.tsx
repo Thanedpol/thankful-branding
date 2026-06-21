@@ -2,6 +2,7 @@ import { savePressKit } from "@/app/admin/actions";
 import ImageUpload from "@/components/admin/ImageUpload";
 import FileUpload from "@/components/admin/FileUpload";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isSupabaseConfigured, demoPressKit } from "@/lib/demo-data";
 import type { PressKit, LogoFile } from "@/lib/types";
 
 export const revalidate = 0;
@@ -10,9 +11,15 @@ const field =
   "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50";
 
 export default async function AdminPressKitPage() {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("press_kit").select("*").eq("id", 1).single();
-  const k = data as PressKit | null;
+  let k: PressKit | null = demoPressKit;
+  if (isSupabaseConfigured()) {
+    const { data } = await createAdminClient()
+      .from("press_kit")
+      .select("*")
+      .eq("id", 1)
+      .single();
+    k = data as PressKit | null;
+  }
 
   // Existing logo rows + 3 empty rows for new entries.
   const logos: LogoFile[] = [

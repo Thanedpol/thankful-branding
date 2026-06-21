@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
@@ -7,6 +8,8 @@ import type { SiteProfile } from "@/lib/types";
 
 export default function About({ profile }: { profile: SiteProfile | null }) {
   const t = useT();
+  const [imgOk, setImgOk] = useState(true);
+  const showPhoto = !!profile?.avatar_url && imgOk;
 
   return (
     <section id="about" className="section-pad scroll-mt-20">
@@ -15,13 +18,15 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
           <div className="relative mx-auto aspect-square w-full max-w-sm">
             <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-cyan/40 to-purple/40 opacity-40 blur-xl" />
             <div className="glass relative h-full w-full overflow-hidden">
-              {profile?.avatar_url ? (
+              {showPhoto ? (
                 <Image
-                  src={profile.avatar_url}
-                  alt={profile.name}
+                  src={profile!.avatar_url!}
+                  alt={profile?.name ?? "Thank Thanedpol"}
                   fill
+                  unoptimized={profile!.avatar_url!.endsWith(".svg")}
                   className="object-cover"
                   sizes="(max-width: 768px) 80vw, 400px"
+                  onError={() => setImgOk(false)}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-grid-faint bg-grid">
