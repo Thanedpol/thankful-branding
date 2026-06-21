@@ -22,7 +22,7 @@ values (
   'Thank Thanedpol',
   'Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ',
   'ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องเทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง',
-  '/profile/thank.jpg',
+  '/profile/thank.png',
   '{"github":"https://github.com/","linkedin":"https://linkedin.com/in/","x":"https://x.com/","email":"thank@example.com"}'::jsonb
 )
 on conflict (id) do update set

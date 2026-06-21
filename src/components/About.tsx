@@ -23,7 +23,7 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
                   src={profile!.avatar_url!}
                   alt={profile?.name ?? "Thank Thanedpol"}
                   fill
-                  unoptimized={profile!.avatar_url!.endsWith(".svg")}
+                  unoptimized
                   className="object-cover"
                   sizes="(max-width: 768px) 80vw, 400px"
                   onError={() => setImgOk(false)}
