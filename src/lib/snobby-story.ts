@@ -15,7 +15,7 @@ export const snobbyStory = {
   slug: "snobby-story",
   title: "Snobby Story",
   category: "Video",
-  thumbnail: "/portfolio/snobby-story.svg",
+  thumbnail: "/portfolio/snobby-story.jpg",
   tagline: "นิทานสอนใจ ดีๆ ที่จะช่วยให้เด็กเติบโตไปอย่างมั่นคง",
   intro:
     "ใช้ AI สร้างการ์ตูนนิทานสอนใจสำหรับเด็ก — ปลูกฝังคุณธรรม ความเมตตา ความซื่อสัตย์ และความเห็นอกเห็นใจ ผ่านเรื่องเล่าที่สนุกและเข้าใจง่าย",
@@ -23,29 +23,16 @@ export const snobbyStory = {
   /** Each item becomes a flashcard with its detail + a "watch on YouTube" button. */
   stories: [
     {
+      title: "นิทานสอนใจ เมล็ดพืช 2 พี่น้อง (พากย์ไทย)",
       detail:
-        "Nurture your child's moral compass with heartwarming stories that teach valuable life lessons.",
-      youtubeUrl: "",
+        "เรื่องราวของสองพี่น้องกับเมล็ดพืช — บทเรียนเรื่องความขยัน ความซื่อสัตย์ และผลของการกระทำ",
+      youtubeUrl: "https://youtu.be/_dmKzAlLXBY",
     },
     {
+      title: "นิทานสอนใจ เมล็ดพืช 2 พี่น้อง (Eng Sub)",
       detail:
-        "Join us on a journey of kindness, honesty, and compassion through engaging tales for young minds.",
-      youtubeUrl: "",
-    },
-    {
-      detail:
-        "Instill a strong sense of ethics and empathy in your children with our collection of moral stories.",
-      youtubeUrl: "",
-    },
-    {
-      detail:
-        "Let our enchanting tales guide your child's development into a responsible and caring individual.",
-      youtubeUrl: "",
-    },
-    {
-      detail:
-        "Embark on an adventure of moral values with our captivating stories that inspire and educate.",
-      youtubeUrl: "",
+        "The Two Brothers and the Seeds — a moral tale about diligence, honesty, and the consequences of our actions. (English subtitles)",
+      youtubeUrl: "https://youtu.be/uHwrq2aC46s",
     },
   ] as SnobbyStoryItem[],
 };
