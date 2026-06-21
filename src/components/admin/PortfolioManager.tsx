@@ -33,7 +33,7 @@ export default function PortfolioManager({ items }: { items: Portfolio[] }) {
             <div key={p.id} className="flex items-center gap-4 p-4">
               <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-surface/5">
                 {p.thumbnail_url && (
-                  <Image src={p.thumbnail_url} alt="" fill className="object-cover" sizes="64px" />
+                  <Image src={p.thumbnail_url} alt="" fill unoptimized={p.thumbnail_url.endsWith(".svg")} className="object-cover" sizes="64px" />
                 )}
               </div>
               <div className="min-w-0 flex-1">

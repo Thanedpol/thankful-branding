@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" fill="none">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0a14"/>
+      <stop offset="1" stop-color="#101a26"/>
+    </linearGradient>
+    <linearGradient id="ac2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00F5FF"/>
+      <stop offset="1" stop-color="#7B2FFF"/>
+    </linearGradient>
+    <pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#00F5FF" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg2)"/>
+  <rect width="800" height="600" fill="url(#grid2)"/>
+  <circle cx="160" cy="120" r="190" fill="#00F5FF" opacity="0.10"/>
+  <circle cx="660" cy="500" r="200" fill="#7B2FFF" opacity="0.12"/>
+  <text x="60" y="280" font-family="'Space Grotesk',Arial,sans-serif" font-size="120" font-weight="700" fill="url(#ac2)">SUMO</text>
+  <text x="64" y="335" font-family="monospace" font-size="24" fill="#8892A4" letter-spacing="3">VIDEO PRODUCTION · PRE→POST</text>
+  <g transform="translate(60,400)" fill="none" stroke="#00F5FF" stroke-width="3">
+    <rect x="0" y="0" width="70" height="48" rx="6"/>
+    <polygon points="78,8 110,24 78,40" fill="#7B2FFF" stroke="none"/>
+  </g>
+  <text x="190" y="432" font-family="'Space Grotesk',Arial,sans-serif" font-size="28" font-weight="600" fill="#ffffff">CapCut · TikTok</text>
+</svg>

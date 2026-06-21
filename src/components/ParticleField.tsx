@@ -24,7 +24,11 @@ export default function ParticleField() {
     let width = (canvas.width = canvas.offsetWidth);
     let height = (canvas.height = canvas.offsetHeight);
 
-    const COUNT = Math.min(90, Math.floor((width * height) / 16000));
+    // Lighter on phones; the O(n²) link pass is the expensive part.
+    const isSmall = width < 768;
+    const COUNT = isSmall
+      ? Math.min(28, Math.floor((width * height) / 26000))
+      : Math.min(48, Math.floor((width * height) / 24000));
     const particles = Array.from({ length: COUNT }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -34,9 +38,12 @@ export default function ParticleField() {
     }));
 
     let raf = 0;
+    let frame = 0;
     const LINK_DIST = 130;
+    const LINK_DIST_SQ = LINK_DIST * LINK_DIST;
 
     function draw() {
+      frame++;
       g.clearRect(0, 0, width, height);
 
       for (const p of particles) {
@@ -51,20 +58,26 @@ export default function ParticleField() {
         g.fill();
       }
 
-      // Link nearby particles
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
+      // Link nearby particles — skip on phones, and only every other frame
+      // (uses squared distance to avoid sqrt). Lines are slow-moving, so 30fps
+      // for the link layer is visually identical and much cheaper.
+      if (!isSmall && frame % 2 === 0) {
+        g.lineWidth = 0.6;
+        for (let i = 0; i < particles.length; i++) {
           const a = particles[i];
-          const b = particles[j];
-          const dist = Math.hypot(a.x - b.x, a.y - b.y);
-          if (dist < LINK_DIST) {
-            const alpha = (1 - dist / LINK_DIST) * 0.18;
-            g.beginPath();
-            g.strokeStyle = `rgba(123, 47, 255, ${alpha})`;
-            g.lineWidth = 0.6;
-            g.moveTo(a.x, a.y);
-            g.lineTo(b.x, b.y);
-            g.stroke();
+          for (let j = i + 1; j < particles.length; j++) {
+            const b = particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < LINK_DIST_SQ) {
+              const alpha = (1 - Math.sqrt(d2) / LINK_DIST) * 0.18;
+              g.beginPath();
+              g.strokeStyle = `rgba(123, 47, 255, ${alpha})`;
+              g.moveTo(a.x, a.y);
+              g.lineTo(b.x, b.y);
+              g.stroke();
+            }
           }
         }
       }

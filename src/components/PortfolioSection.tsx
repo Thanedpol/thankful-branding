@@ -39,17 +39,18 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((p, i) => (
-            <Reveal key={p.id} delay={i * 80}>
+            <Reveal key={p.id} delay={i * 80} className="h-full">
               <button
                 onClick={() => setActive(p)}
-                className="glass glass-hover group block w-full overflow-hidden text-left"
+                className="glass glass-hover group flex h-full w-full flex-col overflow-hidden text-left"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden">
                   {p.thumbnail_url ? (
                     <Image
                       src={p.thumbnail_url}
                       alt={p.title}
                       fill
+                      unoptimized={p.thumbnail_url.endsWith(".svg")}
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
@@ -60,17 +61,17 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
                       </span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-space/80 to-transparent" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-space/70 to-transparent" />
                   <span className="absolute left-3 top-3 tag">{p.category}</span>
                 </div>
-                <div className="p-5">
-                  <h3 className="font-display text-lg font-bold transition-colors group-hover:text-cyan">
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="line-clamp-2 min-h-[3.25rem] font-display text-lg font-bold leading-snug transition-colors group-hover:text-cyan">
                     {p.title}
                   </h3>
                   <p className="mt-1 line-clamp-2 text-sm text-muted">
                     {p.description}
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
+                  <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
                     {p.tech_tags.slice(0, 3).map((t) => (
                       <span key={t} className="tag">
                         {t}
@@ -109,6 +110,7 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
                   src={active.thumbnail_url}
                   alt={active.title}
                   fill
+                  unoptimized={active.thumbnail_url.endsWith(".svg")}
                   className="object-cover"
                   sizes="100vw"
                 />

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0a14"/>
+      <stop offset="1" stop-color="#0d1226"/>
+    </linearGradient>
+    <linearGradient id="ac" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00F5FF"/>
+      <stop offset="1" stop-color="#7B2FFF"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#00F5FF" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <circle cx="640" cy="120" r="200" fill="#7B2FFF" opacity="0.12"/>
+  <circle cx="140" cy="500" r="180" fill="#00F5FF" opacity="0.10"/>
+  <text x="60" y="300" font-family="'Space Grotesk',Arial,sans-serif" font-size="150" font-weight="700" fill="url(#ac)">Y.E.M</text>
+  <text x="64" y="360" font-family="monospace" font-size="26" fill="#8892A4" letter-spacing="4">VIDEO EDITOR</text>
+  <g transform="translate(60,420)">
+    <polygon points="0,0 34,20 0,40" fill="#00F5FF"/>
+    <text x="52" y="30" font-family="'Space Grotesk',Arial,sans-serif" font-size="30" font-weight="600" fill="#ffffff">Internship · Allianz Ayudhya</text>
+  </g>
+</svg>
