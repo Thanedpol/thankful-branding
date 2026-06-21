@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
@@ -59,12 +60,12 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
         <p className="font-mono text-sm text-muted">{t("portfolio.empty")}</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((p, i) => (
-            <Reveal key={p.id} delay={i * 80} className="h-full">
-              <button
-                onClick={() => setActive(p)}
-                className="glass glass-hover group flex h-full w-full flex-col overflow-hidden text-left"
-              >
+          {items.map((p, i) => {
+            const internal = p.project_url?.startsWith("/");
+            const cardClass =
+              "glass glass-hover group flex h-full w-full flex-col overflow-hidden text-left";
+            const inner = (
+              <>
                 <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden">
                   {p.thumbnail_url ? (
                     <Image
@@ -100,9 +101,22 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
                     ))}
                   </div>
                 </div>
-              </button>
-            </Reveal>
-          ))}
+              </>
+            );
+            return (
+              <Reveal key={p.id} delay={i * 80} className="h-full">
+                {internal ? (
+                  <Link href={p.project_url!} className={cardClass}>
+                    {inner}
+                  </Link>
+                ) : (
+                  <button onClick={() => setActive(p)} className={cardClass}>
+                    {inner}
+                  </button>
+                )}
+              </Reveal>
+            );
+          })}
         </div>
       )}
 

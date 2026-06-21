@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" fill="none">
+  <defs>
+    <linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0a14"/>
+      <stop offset="1" stop-color="#15102a"/>
+    </linearGradient>
+    <linearGradient id="sac" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00F5FF"/>
+      <stop offset="1" stop-color="#7B2FFF"/>
+    </linearGradient>
+    <pattern id="sgrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#00F5FF" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="600" fill="url(#sbg)"/>
+  <rect width="800" height="600" fill="url(#sgrid)"/>
+  <circle cx="650" cy="140" r="190" fill="#7B2FFF" opacity="0.13"/>
+  <circle cx="150" cy="470" r="170" fill="#00F5FF" opacity="0.10"/>
+  <!-- open book -->
+  <g transform="translate(60,400)" stroke="url(#sac)" stroke-width="4" fill="none" stroke-linejoin="round">
+    <path d="M0 30 C40 8 90 8 120 28 C150 8 200 8 240 30 L240 90 C200 68 150 68 120 88 C90 68 40 68 0 90 Z"/>
+    <line x1="120" y1="28" x2="120" y2="88"/>
+  </g>
+  <!-- sparkle -->
+  <g transform="translate(330,420)" fill="#00F5FF"><path d="M20 0 L26 14 L40 20 L26 26 L20 40 L14 26 L0 20 L14 14 Z"/></g>
+  <text x="60" y="250" font-family="'Space Grotesk',Arial,sans-serif" font-size="92" font-weight="700" fill="url(#sac)">Snobby Story</text>
+  <text x="64" y="305" font-family="monospace" font-size="24" fill="#8892A4" letter-spacing="3">AI CARTOON · นิทานสอนใจ</text>
+</svg>
