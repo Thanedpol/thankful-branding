@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" fill="none">
+  <defs>
+    <linearGradient id="ibg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0a14"/>
+      <stop offset="1" stop-color="#0d1626"/>
+    </linearGradient>
+    <linearGradient id="iac" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00F5FF"/>
+      <stop offset="1" stop-color="#7B2FFF"/>
+    </linearGradient>
+    <pattern id="igrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#00F5FF" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="600" fill="url(#ibg)"/>
+  <rect width="800" height="600" fill="url(#igrid)"/>
+  <circle cx="640" cy="150" r="190" fill="#00F5FF" opacity="0.10"/>
+  <circle cx="160" cy="470" r="170" fill="#7B2FFF" opacity="0.12"/>
+  <text x="60" y="250" font-family="'Space Grotesk',Arial,sans-serif" font-size="96" font-weight="700" fill="url(#iac)">Insightist</text>
+  <text x="64" y="305" font-family="monospace" font-size="23" fill="#8892A4" letter-spacing="2">AI &amp; TECH NEWS · 23 EVENTS COVERED</text>
+  <g transform="translate(60,395)" fill="none" stroke="url(#iac)" stroke-width="4" stroke-linecap="round">
+    <rect x="0" y="0" width="150" height="100" rx="8"/>
+    <line x1="20" y1="28" x2="95" y2="28"/>
+    <line x1="20" y1="50" x2="130" y2="50"/>
+    <line x1="20" y1="72" x2="110" y2="72"/>
+    <circle cx="118" cy="30" r="14" stroke="#7B2FFF"/>
+  </g>
+</svg>

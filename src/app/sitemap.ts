@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/press-kit`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/portfolio/snobby-story`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE_URL}/portfolio/insightist`, changeFrequency: "monthly", priority: 0.6 },
   ];
 
   const posts = await getPosts();
