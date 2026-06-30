@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -63,14 +64,27 @@ export default function InsightistPage() {
                       href={e.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="glass glass-hover group flex h-full flex-col justify-between gap-4 p-5"
+                      className="glass glass-hover group flex h-full flex-col overflow-hidden"
                     >
-                      <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
-                        {e.title}
-                      </p>
-                      <span className="font-mono text-xs uppercase tracking-wider text-cyan/70 group-hover:text-cyan">
-                        ดูโพสต์ Facebook →
-                      </span>
+                      {e.image && (
+                        <div className="relative aspect-video w-full shrink-0 overflow-hidden">
+                          <Image
+                            src={e.image}
+                            alt={e.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-1 flex-col justify-between gap-4 p-5">
+                        <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
+                          {e.title}
+                        </p>
+                        <span className="font-mono text-xs uppercase tracking-wider text-cyan/70 group-hover:text-cyan">
+                          ดูโพสต์ Facebook →
+                        </span>
+                      </div>
                     </a>
                   ))}
                 </div>

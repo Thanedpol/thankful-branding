@@ -8,6 +8,8 @@ export interface InsightistEvent {
   title: string;
   /** Facebook post URL. */
   url: string;
+  /** Optional cover image (e.g. /portfolio/popular-gpt5.jpg). */
+  image?: string;
 }
 
 export interface InsightistGroup {
@@ -32,8 +34,8 @@ export const insightist = {
       name: "โพสต์ที่มีคนสนใจมากที่สุด",
       popular: true,
       events: [
-        { title: "คู่มือการ Prompt GPT-5 ใช้ครั้งเดียว ให้ AI ฉลาด ตอบตรง 100% ทำงานครบวงจร", url: "https://www.facebook.com/share/p/1Cpr2trCrf/" },
-        { title: "สรุปคลิป Youtube: Ex-Google Exec — How to Position Yourself Now Before the Next AI Phase (2026–2027) | Mo Gawdat × Silicon Valley Girl (Marina Mogilko)", url: "https://www.facebook.com/share/p/1JJKhreFcz/" },
+        { title: "คู่มือการ Prompt GPT-5 ใช้ครั้งเดียว ให้ AI ฉลาด ตอบตรง 100% ทำงานครบวงจร", url: "https://www.facebook.com/share/p/1Cpr2trCrf/", image: "/portfolio/popular-gpt5.png" },
+        { title: "สรุปคลิป Youtube: Ex-Google Exec — How to Position Yourself Now Before the Next AI Phase (2026–2027) | Mo Gawdat × Silicon Valley Girl (Marina Mogilko)", url: "https://www.facebook.com/share/p/1JJKhreFcz/", image: "/portfolio/popular-mogawdat.png" },
       ],
     },
     {
