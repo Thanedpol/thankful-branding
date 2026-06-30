@@ -5,7 +5,9 @@ import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import { insightist } from "@/lib/insightist";
 
-const total = insightist.groups.reduce((n, g) => n + g.events.length, 0);
+const total = insightist.groups
+  .filter((g) => !g.popular)
+  .reduce((n, g) => n + g.events.length, 0);
 
 export const metadata: Metadata = {
   title: `${insightist.title} — AI & Tech News Coverage | Thank Thanedpol`,
@@ -48,6 +50,7 @@ export default function InsightistPage() {
             {groups.map((group, gi) => (
               <Reveal key={group.name} delay={gi * 60}>
                 <h2 className="mb-5 font-display text-xl font-bold text-cyan">
+                  {group.popular && <span className="text-purple">★ </span>}
                   {group.name}
                   <span className="ml-2 font-mono text-xs text-muted">
                     ({group.events.length})

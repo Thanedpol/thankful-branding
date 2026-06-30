@@ -13,6 +13,8 @@ export interface InsightistEvent {
 export interface InsightistGroup {
   name: string;
   events: InsightistEvent[];
+  /** Highlighted group (e.g. most popular) — excluded from the on-site count. */
+  popular?: boolean;
 }
 
 export const insightist = {
@@ -26,6 +28,14 @@ export const insightist = {
     "ผลิตคอนเทนต์ข่าวเทคโนโลยีและ AI ครบวงจร ตั้งแต่ดึงข้อมูล สรุป ตั้ง Headline จนถึงเผยแพร่ และลงพื้นที่ทำข่าวงานสัมมนา/นิทรรศการชั้นนำของไทยกว่า 23 งาน (2025–2026)",
   tags: ["AI News", "Journalism", "On-site Reporting", "Facebook"],
   groups: [
+    {
+      name: "โพสต์ที่มีคนสนใจมากที่สุด",
+      popular: true,
+      events: [
+        { title: "คู่มือการ Prompt GPT-5 ใช้ครั้งเดียว ให้ AI ฉลาด ตอบตรง 100% ทำงานครบวงจร", url: "https://www.facebook.com/share/p/1Cpr2trCrf/" },
+        { title: "สรุปคลิป Youtube: Ex-Google Exec — How to Position Yourself Now Before the Next AI Phase (2026–2027) | Mo Gawdat × Silicon Valley Girl (Marina Mogilko)", url: "https://www.facebook.com/share/p/1JJKhreFcz/" },
+      ],
+    },
     {
       name: "AI & เทคโนโลยี",
       events: [
