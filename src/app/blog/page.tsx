@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BlogCard from "@/components/BlogCard";
+import BlogList from "@/components/BlogList";
 import Reveal from "@/components/Reveal";
 import T from "@/components/T";
 import { createClient } from "@/lib/supabase/server";
@@ -50,17 +50,7 @@ export default async function BlogIndex() {
             </p>
           </Reveal>
 
-          <div className="mt-12 grid gap-6 pb-24 sm:grid-cols-2 lg:grid-cols-3">
-            {list.length === 0 ? (
-              <p className="font-mono text-sm text-muted"><T k="blog.empty" /></p>
-            ) : (
-              list.map((post, i) => (
-                <Reveal key={post.id} delay={i * 60} className="h-full">
-                  <BlogCard post={post} />
-                </Reveal>
-              ))
-            )}
-          </div>
+          <BlogList posts={list} />
         </div>
       </main>
       <Footer social={profile?.social_links} />
