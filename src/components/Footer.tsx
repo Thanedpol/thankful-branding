@@ -7,9 +7,11 @@ import type { SocialLinks } from "@/lib/types";
 export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
   const t = useT();
   const links = [
-    { label: "GitHub", href: social?.github },
-    { label: "LinkedIn", href: social?.linkedin },
+    { label: "TikTok", href: social?.tiktok },
+    { label: "Facebook", href: social?.facebook },
     { label: "X", href: social?.x },
+    { label: "LinkedIn", href: social?.linkedin },
+    { label: "GitHub", href: social?.github },
     { label: "Email", href: social?.email ? `mailto:${social.email}` : undefined },
   ].filter((l) => l.href);
 
@@ -36,7 +38,7 @@ export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
           ))}
         </div>
 
-        <p className="font-mono text-xs text-ink/30">
+        <p className="font-mono text-xs text-muted">
           © {new Date().getFullYear()} · v1.0
         </p>
       </div>

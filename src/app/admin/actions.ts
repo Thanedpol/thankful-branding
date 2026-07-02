@@ -118,6 +118,8 @@ export async function saveProfile(formData: FormData) {
         github: String(formData.get("github") ?? ""),
         linkedin: String(formData.get("linkedin") ?? ""),
         x: String(formData.get("x") ?? ""),
+        tiktok: String(formData.get("tiktok") ?? ""),
+        facebook: String(formData.get("facebook") ?? ""),
         email: String(formData.get("email") ?? ""),
       },
       updated_at: new Date().toISOString(),

@@ -36,6 +36,8 @@ export const demoProfile: SiteProfile = {
     github: "https://github.com/",
     linkedin: "https://linkedin.com/in/",
     x: "https://x.com/",
+    tiktok: "https://tiktok.com/@",
+    facebook: "https://facebook.com/",
     email: "thank@example.com",
   },
 };

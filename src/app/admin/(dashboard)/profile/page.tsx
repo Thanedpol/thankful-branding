@@ -49,9 +49,11 @@ export default async function AdminProfilePage() {
           Social links
         </p>
         <div className="grid grid-cols-2 gap-4">
-          <L l="GitHub"><input name="github" defaultValue={p?.social_links?.github ?? ""} className={field} /></L>
-          <L l="LinkedIn"><input name="linkedin" defaultValue={p?.social_links?.linkedin ?? ""} className={field} /></L>
+          <L l="TikTok"><input name="tiktok" defaultValue={p?.social_links?.tiktok ?? ""} placeholder="https://tiktok.com/@handle" className={field} /></L>
+          <L l="Facebook"><input name="facebook" defaultValue={p?.social_links?.facebook ?? ""} placeholder="https://facebook.com/page" className={field} /></L>
           <L l="X"><input name="x" defaultValue={p?.social_links?.x ?? ""} className={field} /></L>
+          <L l="LinkedIn"><input name="linkedin" defaultValue={p?.social_links?.linkedin ?? ""} className={field} /></L>
+          <L l="GitHub"><input name="github" defaultValue={p?.social_links?.github ?? ""} className={field} /></L>
           <L l="Email"><input name="email" defaultValue={p?.social_links?.email ?? ""} className={field} /></L>
         </div>
 

@@ -51,6 +51,8 @@ export function personJsonLd(profile: SiteProfile | null) {
     social?.github,
     social?.linkedin,
     social?.x,
+    social?.tiktok,
+    social?.facebook,
     "https://github.com/Thanedpol",
     // Add a Wikidata entity URL here once it exists, e.g.
     // "https://www.wikidata.org/wiki/Qxxxxxxx",
