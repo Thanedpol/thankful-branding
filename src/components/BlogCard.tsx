@@ -44,7 +44,7 @@ export default function BlogCard({ post }: { post: BlogPreview }) {
         <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm text-muted">
           {post.excerpt}
         </p>
-        <span className="mt-auto pt-4 font-mono text-xs uppercase tracking-wider text-cyan/70">
+        <span className="mt-auto pt-4 font-mono text-xs uppercase tracking-wider text-cyan">
           {t("blog.read")}
         </span>
       </div>

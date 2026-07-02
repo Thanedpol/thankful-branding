@@ -6,7 +6,7 @@ export default function NotFound() {
       <div className="absolute inset-0 bg-grid-faint bg-grid opacity-50" />
       <div className="absolute inset-0 bg-radial-fade" />
       <div className="relative">
-        <p className="font-mono text-sm uppercase tracking-[0.3em] text-cyan/70">
+        <p className="font-mono text-sm uppercase tracking-[0.3em] text-cyan">
           signal lost
         </p>
         <h1

@@ -107,7 +107,7 @@ function PublishedPost({ post }: { post: BlogPost }) {
         <article className="mx-auto max-w-3xl px-6 pb-24">
           <Link
             href="/blog"
-            className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
+            className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
           >
             <T k="blog.back" />
           </Link>
@@ -169,7 +169,7 @@ function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
         <article className="mx-auto max-w-3xl px-6 pb-24">
           <Link
             href="/blog"
-            className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
+            className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
           >
             <T k="blog.back" />
           </Link>

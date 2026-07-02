@@ -32,7 +32,7 @@
   --muted: 82 92 110;
   --surface: 13 18 28;
   --line: 15 23 42;
-  --accent: 8 145 178; /* readable teal (cyan is too low-contrast on light) */
+  --accent: 14 116 144; /* cyan-700 — AA-readable teal for small text on light */
   --accent-2: 109 40 217; /* readable violet */
 
   --glass-bg: rgba(255, 255, 255, 0.72);
@@ -128,6 +128,13 @@ body {
   .btn-neon:hover {
     background: rgb(var(--accent) / 0.18);
     box-shadow: 0 0 24px rgb(var(--accent) / 0.3);
+  }
+  /* Light mode: deepen accent text sitting on pale accent fills (buttons,
+     tag chips, active category chip) so small text clears WCAG AA. */
+  [data-theme="light"] .btn-neon,
+  [data-theme="light"] .tag,
+  [data-theme="light"] .blog-chip[aria-pressed="true"] {
+    color: rgb(21 94 117); /* cyan-800 */
   }
 
   .btn-ghost {
@@ -241,6 +248,26 @@ body {
 .prose-cyber :where(code) {
   color: rgb(var(--accent));
   font-family: var(--font-share-tech-mono);
+}
+/* Comfortable WordPress-like paragraph rhythm */
+.prose-cyber :where(p) {
+  margin-top: 1.15em;
+  margin-bottom: 1.15em;
+  line-height: 1.8;
+}
+/* Inline images placed between paragraphs */
+.prose-cyber :where(img) {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.75rem auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(var(--line) / 0.6);
+}
+/* Highlight the image when selected inside the editor */
+.prose-cyber img.ProseMirror-selectednode {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

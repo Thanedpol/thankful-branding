@@ -20,7 +20,7 @@ export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
           </div>
           <Link
             href="/blog"
-            className="hidden font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan sm:block"
+            className="hidden font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink sm:block"
           >
             {t("blog.all")}
           </Link>

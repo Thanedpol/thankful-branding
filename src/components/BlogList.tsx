@@ -73,7 +73,7 @@ export default function BlogList({ posts }: { posts: BlogPreview[] }) {
   }
 
   const chipCls = (isActive: boolean) =>
-    `rounded-full border px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
+    `blog-chip rounded-full border px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
       isActive
         ? "border-cyan/60 bg-cyan/15 text-cyan"
         : "border-line/10 text-muted hover:border-cyan/40 hover:text-cyan"
