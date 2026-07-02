@@ -59,6 +59,10 @@ export const dict: Record<Locale, Dict> = {
     "blog.locked.body": "เข้าสู่ระบบหรือสมัครสมาชิก (ฟรี) เพื่ออ่านบทความเต็ม",
     "blog.locked.login": "เข้าสู่ระบบเพื่ออ่าน →",
     "blog.locked.register": "สมัครสมาชิก",
+    "blog.member.badge": "เฉพาะสมาชิก",
+    "blog.member.heading": "เนื้อหาเฉพาะสมาชิก",
+    "blog.member.gate.title": "อ่านต่อเฉพาะสมาชิก",
+    "blog.member.gate.body": "ล็อกอินหรือสมัครสมาชิก (ฟรี) เพื่ออ่านเนื้อหาส่วนนี้",
     "blog.back": "← บทความทั้งหมด",
 
     "press.eyebrow": "// สำหรับสื่อและพาร์ตเนอร์",
@@ -130,6 +134,10 @@ export const dict: Record<Locale, Dict> = {
     "blog.locked.body": "Sign in or create a free member account to read the full article.",
     "blog.locked.login": "Login to read →",
     "blog.locked.register": "Become a member",
+    "blog.member.badge": "Members only",
+    "blog.member.heading": "Members-only content",
+    "blog.member.gate.title": "The rest is for members",
+    "blog.member.gate.body": "Log in or create a free account to read this section.",
     "blog.back": "← All posts",
 
     "press.eyebrow": "// For media & collaborators",
@@ -200,6 +208,10 @@ export const dict: Record<Locale, Dict> = {
     "blog.locked.body": "登录或免费注册会员即可阅读全文。",
     "blog.locked.login": "登录阅读 →",
     "blog.locked.register": "成为会员",
+    "blog.member.badge": "会员专享",
+    "blog.member.heading": "会员专享内容",
+    "blog.member.gate.title": "余下内容仅限会员",
+    "blog.member.gate.body": "登录或免费注册会员即可阅读此部分。",
     "blog.back": "← 全部文章",
 
     "press.eyebrow": "// 供媒体与合作伙伴",

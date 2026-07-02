@@ -72,10 +72,20 @@ create table public.blog_posts (
   excerpt         text,
   cover_image_url text,
   tags            text[] not null default '{}',
-  is_public       boolean not null default true,   -- false = member-only body
+  is_public       boolean not null default true,   -- false = whole body is member-only
+  has_member_content boolean not null default false, -- true = a members-only section exists
   status          public.blog_status not null default 'draft',
   published_at    timestamptz,
   created_at      timestamptz not null default now()
+);
+
+-- ─── blog_member_content ──────────────────────────────────────────────────────
+-- Members-only continuation of a post ("freemium"). Kept in its own table so
+-- RLS can protect it at row level: blog_posts.body is the public teaser that
+-- everyone reads, this is the extra section only logged-in members receive.
+create table public.blog_member_content (
+  post_id     uuid primary key references public.blog_posts (id) on delete cascade,
+  member_body text
 );
 
 -- ─── site_profile (singleton — the public "About" identity) ───────────────────
@@ -120,6 +130,7 @@ create table public.contact_messages (
 alter table public.profiles         enable row level security;
 alter table public.portfolio        enable row level security;
 alter table public.blog_posts       enable row level security;
+alter table public.blog_member_content enable row level security;
 alter table public.site_profile     enable row level security;
 alter table public.press_kit        enable row level security;
 alter table public.contact_messages enable row level security;
@@ -146,6 +157,20 @@ create policy "blog admin all"     on public.blog_posts for select using (public
 create policy "blog admin write"   on public.blog_posts for all
   using (public.is_admin()) with check (public.is_admin());
 
+-- blog_member_content: logged-in members read the exclusive body of published
+-- posts; anonymous visitors match nothing and see the gate instead.
+create policy "member content authed read" on public.blog_member_content for select
+  using (
+    auth.uid() is not null
+    and exists (
+      select 1 from public.blog_posts p
+      where p.id = post_id and p.status = 'published'
+    )
+  );
+create policy "member content admin all" on public.blog_member_content for all
+  using (public.is_admin()) with check (public.is_admin());
+grant select on public.blog_member_content to anon, authenticated;
+
 -- site_profile + press_kit: world-readable, admin-writable.
 create policy "site_profile read"  on public.site_profile for select using (true);
 create policy "site_profile write" on public.site_profile for all
@@ -167,7 +192,8 @@ create policy "contact admin upd"  on public.contact_messages for update
 -- published posts. This lets anonymous visitors see the excerpt/teaser of a
 -- locked (member-only) post without ever receiving its body.
 create view public.blog_previews as
-  select id, slug, title, excerpt, cover_image_url, tags, is_public, published_at, created_at
+  select id, slug, title, excerpt, cover_image_url, tags, is_public,
+         published_at, created_at, has_member_content
   from public.blog_posts
   where status = 'published';
 

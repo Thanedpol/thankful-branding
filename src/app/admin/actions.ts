@@ -74,6 +74,8 @@ export async function saveBlog(formData: FormData) {
   const title = String(formData.get("title"));
   const status = String(formData.get("status")) === "published" ? "published" : "draft";
 
+  const memberBody = String(formData.get("member_body") ?? "") || null;
+
   const row = {
     title,
     slug: String(formData.get("slug") || "") || slugify(title),
@@ -89,8 +91,33 @@ export async function saveBlog(formData: FormData) {
         : null,
   };
 
-  if (id) await supabase.from("blog_posts").update(row).eq("id", id);
-  else await supabase.from("blog_posts").insert(row);
+  let postId = id;
+  if (id) {
+    await supabase.from("blog_posts").update(row).eq("id", id);
+  } else {
+    const { data } = await supabase
+      .from("blog_posts")
+      .insert(row)
+      .select("id")
+      .single();
+    postId = (data as { id: string } | null)?.id ?? null;
+  }
+
+  // Members-only content lives in its own table + a world-readable flag. Kept
+  // separate and error-tolerant so a pre-migration DB still saves the core post.
+  if (postId) {
+    await supabase
+      .from("blog_posts")
+      .update({ has_member_content: !!memberBody })
+      .eq("id", postId);
+    if (memberBody) {
+      await supabase
+        .from("blog_member_content")
+        .upsert({ post_id: postId, member_body: memberBody });
+    } else {
+      await supabase.from("blog_member_content").delete().eq("post_id", postId);
+    }
+  }
 
   refreshPublic();
   revalidatePath("/admin/blog");

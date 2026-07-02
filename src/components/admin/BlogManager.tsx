@@ -117,9 +117,17 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
         <L l="Excerpt (shown publicly as preview)">
           <textarea name="excerpt" rows={2} defaultValue={item?.excerpt ?? ""} className={`${field} resize-none`} />
         </L>
-        <L l="Body (rich text)">
+        <L l="Body (rich text) — public teaser, everyone can read">
           <RichTextEditor name="body" defaultValue={item?.body ?? ""} />
         </L>
+        <div className="rounded-lg border border-purple/25 bg-purple/[0.04] p-3">
+          <L l="⬡ Member-only content (เฉพาะสมาชิก) — optional">
+            <RichTextEditor name="member_body" defaultValue={item?.member_body ?? ""} />
+          </L>
+          <p className="mt-1 font-mono text-[10px] text-muted">
+            แสดงต่อจากเนื้อหาสาธารณะ เฉพาะสมาชิกที่ล็อกอินเท่านั้น · คนทั่วไปจะเห็นกล่องชวนสมัคร
+          </p>
+        </div>
         <L l="Tags (comma separated)">
           <input name="tags" defaultValue={item?.tags.join(", ")} className={field} />
         </L>

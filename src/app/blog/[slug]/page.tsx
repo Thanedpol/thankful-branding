@@ -63,7 +63,8 @@ export default async function BlogDetail({
   // the member-only post shows the locked gate.
   if (!isSupabaseConfigured()) {
     const demoPost = demoBlogPosts[slug];
-    if (demoPost) return <PublishedPost post={demoPost} />;
+    if (demoPost)
+      return <PublishedPost post={demoPost} memberBody={demoPost.member_body ?? null} />;
     const demoPrev = demoBlogPreviews.find((p) => p.slug === slug);
     if (demoPrev) return <LockedPost preview={demoPrev} slug={slug} />;
     notFound();
@@ -95,10 +96,28 @@ export default async function BlogDetail({
     return <LockedPost preview={preview as BlogPreview} slug={slug} />;
   }
 
-  return <PublishedPost post={post} />;
+  // Members-only continuation (RLS returns it only for logged-in members;
+  // anonymous visitors get null and see the gate). Tolerant pre-migration.
+  let memberBody: string | null = null;
+  if (post.has_member_content) {
+    const { data: mc } = await supabase
+      .from("blog_member_content")
+      .select("member_body")
+      .eq("post_id", post.id)
+      .maybeSingle();
+    memberBody = (mc as { member_body: string | null } | null)?.member_body ?? null;
+  }
+
+  return <PublishedPost post={post} memberBody={memberBody} />;
 }
 
-function PublishedPost({ post }: { post: BlogPost }) {
+function PublishedPost({
+  post,
+  memberBody = null,
+}: {
+  post: BlogPost;
+  memberBody?: string | null;
+}) {
   return (
     <>
       <JsonLd data={blogPostingJsonLd(post)} />
@@ -153,10 +172,56 @@ function PublishedPost({ post }: { post: BlogPost }) {
             className="prose-cyber mt-10"
             dangerouslySetInnerHTML={{ __html: post.body ?? "" }}
           />
+
+          {post.has_member_content &&
+            (memberBody ? (
+              <section className="mt-12">
+                <div className="mb-6 flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-purple px-2.5 py-1 font-mono text-xs uppercase tracking-wider text-white">
+                    ⬡ <T k="blog.member.heading" />
+                  </span>
+                  <span className="h-px flex-1 bg-purple/25" />
+                </div>
+                <div
+                  className="prose-cyber"
+                  dangerouslySetInnerHTML={{ __html: memberBody }}
+                />
+              </section>
+            ) : (
+              <MemberGate slug={post.slug} />
+            ))}
         </article>
       </main>
       <Footer />
     </>
+  );
+}
+
+/** Compact gate shown to non-members when a post has a members-only section. */
+function MemberGate({ slug }: { slug: string }) {
+  return (
+    <div className="glass relative mt-12 overflow-hidden p-8 text-center">
+      <div className="absolute inset-0 bg-radial-fade" />
+      <div className="relative">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-purple/40 bg-purple/10 text-xl text-purple">
+          ⬡
+        </div>
+        <h2 className="font-display text-lg font-bold">
+          <T k="blog.member.gate.title" />
+        </h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+          <T k="blog.member.gate.body" />
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href={`/login?redirect=/blog/${slug}`} className="btn-neon">
+            <T k="blog.locked.login" />
+          </Link>
+          <Link href={`/register?redirect=/blog/${slug}`} className="btn-ghost">
+            <T k="blog.locked.register" />
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 

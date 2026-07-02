@@ -26,17 +26,21 @@ export interface BlogPost {
   title: string;
   slug: string;
   body: string | null;
+  /** Members-only continuation, stored separately (RLS-protected). */
+  member_body?: string | null;
   excerpt: string | null;
   cover_image_url: string | null;
   tags: string[];
   is_public: boolean;
+  /** World-readable flag: a members-only section exists for this post. */
+  has_member_content?: boolean;
   status: BlogStatus;
   published_at: string | null;
   created_at: string;
 }
 
-/** Subset returned by the public `blog_previews` view (no body). */
-export type BlogPreview = Omit<BlogPost, "body" | "status">;
+/** Subset returned by the public `blog_previews` view (no body/member_body). */
+export type BlogPreview = Omit<BlogPost, "body" | "member_body" | "status">;
 
 export interface SocialLinks {
   github: string;
