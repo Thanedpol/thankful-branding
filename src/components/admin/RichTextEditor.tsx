@@ -277,7 +277,7 @@ function Toolbar({
   const inTable = editor.isActive("table");
 
   return (
-    <div className="border-b border-line/10 bg-surface/[0.03]">
+    <div className="relative border-b border-line/10 bg-surface/[0.03]">
       <div className="flex flex-wrap items-center gap-1 p-2">
         <select
           title="รูปแบบข้อความ"
@@ -323,7 +323,7 @@ function Toolbar({
       </div>
 
       {inTable && (
-        <div className="flex flex-wrap items-center gap-1 border-t border-line/10 bg-cyan/[0.04] px-2 py-1.5">
+        <div className="absolute inset-x-0 top-full z-20 flex flex-wrap items-center gap-1 border-b border-line/10 bg-space-light px-2 py-1.5 shadow-lg shadow-black/40">
           <span className="mr-1 font-mono text-[10px] uppercase tracking-wider text-cyan/80">
             ▦ ตาราง
           </span>
