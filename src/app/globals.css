@@ -327,6 +327,79 @@ body {
   color: rgb(var(--muted) / 0.7);
   pointer-events: none;
 }
+/* ── Tables ────────────────────────────────────────────────────────────────*/
+.prose-cyber table {
+  width: 100%;
+  margin: 1.75rem 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid rgb(var(--line) / 0.15);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  font-size: 0.9em;
+}
+.prose-cyber :where(th, td) {
+  padding: 0.7rem 0.95rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgb(var(--line) / 0.1);
+  border-right: 1px solid rgb(var(--line) / 0.1);
+}
+.prose-cyber tr :where(th, td):last-child {
+  border-right: none;
+}
+.prose-cyber tr:last-child :where(th, td) {
+  border-bottom: none;
+}
+.prose-cyber th {
+  background: rgb(var(--surface) / 0.06);
+  color: rgb(var(--text));
+  font-weight: 700;
+  font-family: var(--font-space-grotesk);
+}
+.prose-cyber td {
+  color: rgb(var(--text) / 0.82);
+}
+.prose-cyber tbody tr:hover td {
+  background: rgb(var(--accent) / 0.04);
+}
+.prose-cyber :where(th, td) > :where(p):first-child {
+  margin-top: 0;
+}
+.prose-cyber :where(th, td) > :where(p):last-child {
+  margin-bottom: 0;
+}
+/* Editor-only: horizontal scroll, cell selection + column resize handle */
+.ProseMirror .tableWrapper {
+  overflow-x: auto;
+  margin: 1.75rem 0;
+}
+.ProseMirror table {
+  margin: 0;
+}
+.ProseMirror table :where(th, td) {
+  position: relative;
+}
+.ProseMirror .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--accent) / 0.12);
+  pointer-events: none;
+}
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -1px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: rgb(var(--accent));
+  cursor: col-resize;
+}
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
 /* ── Embeds (video / social) ───────────────────────────────────────────────*/
 .prose-cyber .blog-embed {
   margin: 1.75rem auto;

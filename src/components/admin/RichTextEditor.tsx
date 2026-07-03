@@ -5,6 +5,7 @@ import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
+import { TableKit } from "@tiptap/extension-table";
 import { Figure } from "./figure-extension";
 import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
@@ -102,6 +103,9 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
       }),
       Figure,
       Embed,
+      TableKit.configure({
+        table: { resizable: true, HTMLAttributes: { class: "blog-table" } },
+      }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
     content: initialHtml,
@@ -173,7 +177,7 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
       />
       {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        เลือกข้อความแล้วกด 🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 แทรกรูป+คำอธิบาย · ▶ ฝังวิดีโอ/โซเชียล (วางลิงก์ได้เลย)
+        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย · ▶ ฝังวิดีโอ/โซเชียล · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
       </p>
     </div>
   );
@@ -270,41 +274,71 @@ function Toolbar({
       .run();
   };
 
+  const inTable = editor.isActive("table");
+
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-line/10 bg-surface/[0.03] p-2">
-      <select
-        title="รูปแบบข้อความ"
-        value={block}
-        onChange={(e) => setBlock(e.target.value)}
-        className="rounded bg-surface/[0.06] px-2 py-1 font-mono text-xs text-ink outline-none"
-      >
-        <option value="p" className="bg-space">ย่อหน้า</option>
-        <option value="h1" className="bg-space">H1</option>
-        <option value="h2" className="bg-space">H2</option>
-        <option value="h3" className="bg-space">H3</option>
-        <option value="h4" className="bg-space">H4</option>
-        <option value="h5" className="bg-space">H5</option>
-        <option value="h6" className="bg-space">H6</option>
-      </select>
-      <span className="mx-1 h-4 w-px bg-line/15" />
+    <div className="border-b border-line/10 bg-surface/[0.03]">
+      <div className="flex flex-wrap items-center gap-1 p-2">
+        <select
+          title="รูปแบบข้อความ"
+          value={block}
+          onChange={(e) => setBlock(e.target.value)}
+          className="rounded bg-surface/[0.06] px-2 py-1 font-mono text-xs text-ink outline-none"
+        >
+          <option value="p" className="bg-space">ย่อหน้า</option>
+          <option value="h1" className="bg-space">H1</option>
+          <option value="h2" className="bg-space">H2</option>
+          <option value="h3" className="bg-space">H3</option>
+          <option value="h4" className="bg-space">H4</option>
+          <option value="h5" className="bg-space">H5</option>
+          <option value="h6" className="bg-space">H6</option>
+        </select>
+        <span className="mx-1 h-4 w-px bg-line/15" />
 
-      <Btn title="ตัวหนา (Ctrl+B)" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} label={<b>B</b>} />
-      <Btn title="ตัวเอียง (Ctrl+I)" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} label={<i>I</i>} />
-      <Btn title="แนบลิงก์ / ยกเลิกลิงก์" active={editor.isActive("link")} onClick={setLink} label="🔗" />
-      <span className="mx-1 h-4 w-px bg-line/15" />
+        <Btn title="ตัวหนา (Ctrl+B)" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} label={<b>B</b>} />
+        <Btn title="ตัวเอียง (Ctrl+I)" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} label={<i>I</i>} />
+        <Btn title="แนบลิงก์ / ยกเลิกลิงก์" active={editor.isActive("link")} onClick={setLink} label="🔗" />
+        <span className="mx-1 h-4 w-px bg-line/15" />
 
-      <Btn title="ชิดซ้าย" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} label={<AlignIcon dir="left" />} />
-      <Btn title="กึ่งกลาง" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} label={<AlignIcon dir="center" />} />
-      <Btn title="ชิดขวา" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} label={<AlignIcon dir="right" />} />
-      <span className="mx-1 h-4 w-px bg-line/15" />
+        <Btn title="ชิดซ้าย" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} label={<AlignIcon dir="left" />} />
+        <Btn title="กึ่งกลาง" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} label={<AlignIcon dir="center" />} />
+        <Btn title="ชิดขวา" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} label={<AlignIcon dir="right" />} />
+        <span className="mx-1 h-4 w-px bg-line/15" />
 
-      <Btn title="รายการจุด" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} label="• List" />
-      <Btn title="รายการเลข" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} label="1. List" />
-      <Btn title="ข้อความอ้างอิง" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} label="❝" />
-      <span className="mx-1 h-4 w-px bg-line/15" />
+        <Btn title="รายการจุด" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} label="• List" />
+        <Btn title="รายการเลข" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} label="1. List" />
+        <Btn title="ข้อความอ้างอิง" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} label="❝" />
+        <span className="mx-1 h-4 w-px bg-line/15" />
 
-      <Btn title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
-      <Btn title="ฝังวิดีโอ/โซเชียล (YouTube, Vimeo, Spotify, X, TikTok)" onClick={insertEmbed} label="▶ ฝัง" />
+        <Btn title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
+        <Btn title="ฝังวิดีโอ/โซเชียล (YouTube, Vimeo, Spotify, X, TikTok)" onClick={insertEmbed} label="▶ ฝัง" />
+        <Btn
+          title="แทรกตาราง 3×3"
+          active={inTable}
+          onClick={() =>
+            editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+          }
+          label="▦ ตาราง"
+        />
+      </div>
+
+      {inTable && (
+        <div className="flex flex-wrap items-center gap-1 border-t border-line/10 bg-cyan/[0.04] px-2 py-1.5">
+          <span className="mr-1 font-mono text-[10px] uppercase tracking-wider text-cyan/80">
+            ▦ ตาราง
+          </span>
+          <Btn title="เพิ่มคอลัมน์" onClick={() => editor.chain().focus().addColumnAfter().run()} label="+ คอลัมน์" />
+          <Btn title="ลบคอลัมน์" onClick={() => editor.chain().focus().deleteColumn().run()} label="− คอลัมน์" />
+          <span className="mx-1 h-4 w-px bg-line/15" />
+          <Btn title="เพิ่มแถว" onClick={() => editor.chain().focus().addRowAfter().run()} label="+ แถว" />
+          <Btn title="ลบแถว" onClick={() => editor.chain().focus().deleteRow().run()} label="− แถว" />
+          <span className="mx-1 h-4 w-px bg-line/15" />
+          <Btn title="สลับหัวตาราง (แถว)" onClick={() => editor.chain().focus().toggleHeaderRow().run()} label="หัวแถว" />
+          <Btn title="รวม/แยกช่อง" onClick={() => editor.chain().focus().mergeOrSplit().run()} label="รวม/แยก" />
+          <span className="mx-1 h-4 w-px bg-line/15" />
+          <Btn title="ลบตารางทั้งหมด" onClick={() => editor.chain().focus().deleteTable().run()} label="🗑 ลบตาราง" />
+        </div>
+      )}
     </div>
   );
 }
