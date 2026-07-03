@@ -232,15 +232,28 @@ body {
   @apply prose max-w-none;
   color: rgb(var(--text) / 0.85);
 }
-.prose-cyber :where(h1, h2, h3, h4) {
+.prose-cyber :where(h1, h2, h3, h4, h5, h6) {
   color: rgb(var(--text));
   font-family: var(--font-space-grotesk);
+}
+.prose-cyber :where(h5) {
+  font-size: 1.05em;
+  font-weight: 600;
+}
+.prose-cyber :where(h6) {
+  font-size: 0.95em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
 }
 .prose-cyber :where(p, li) {
   color: rgb(var(--text) / 0.8);
 }
+/* Links: accent + always underlined so they read as clickable */
 .prose-cyber :where(a) {
   color: rgb(var(--accent));
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .prose-cyber :where(strong) {
   color: rgb(var(--text));
@@ -268,6 +281,32 @@ body {
 .prose-cyber img.ProseMirror-selectednode {
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
+}
+/* Figure = image + caption */
+.prose-cyber :where(figure) {
+  margin: 1.75rem 0;
+}
+.prose-cyber :where(figure) img {
+  margin: 0 auto 0.5rem;
+}
+.prose-cyber :where(figcaption) {
+  text-align: center;
+  font-size: 0.85em;
+  color: rgb(var(--muted));
+  line-height: 1.5;
+}
+/* Empty captions vanish on the published page, but stay in the editor to show
+   a placeholder (later rule wins at equal specificity inside .ProseMirror). */
+.prose-cyber figcaption:empty {
+  display: none;
+}
+.ProseMirror figcaption:empty {
+  display: block;
+}
+.ProseMirror figcaption:empty::before {
+  content: "เพิ่มคำอธิบายภาพ… (ไม่บังคับ)";
+  color: rgb(var(--muted) / 0.7);
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

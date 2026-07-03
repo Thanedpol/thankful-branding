@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
+import TextAlign from "@tiptap/extension-text-align";
+import { Figure } from "./figure-extension";
 
 interface Props {
   /** Form field name — submits the resulting HTML. */
@@ -12,12 +14,10 @@ interface Props {
 }
 
 /**
- * WYSIWYG body editor (TipTap). Enter creates a new paragraph automatically,
- * with Bold / Italic / headings / lists / quote via the toolbar (and Ctrl+B /
- * Ctrl+I). Images upload to Supabase Storage and drop in as a block at the
- * cursor, so you can place them between paragraphs WordPress-style. Outputs
- * clean HTML into a hidden input so the existing saveBlog server action keeps
- * reading `body` from FormData unchanged.
+ * WYSIWYG body editor (TipTap). Paragraphs, H1–H6, bold/italic, lists, quote,
+ * left/center/right alignment, links (wrap selected text), and images with an
+ * optional caption — placed as blocks between paragraphs. Outputs clean HTML
+ * into a hidden input so the saveBlog server action keeps reading `body`.
  */
 export default function RichTextEditor({ name, defaultValue = "" }: Props) {
   const [html, setHtml] = useState(defaultValue);
@@ -28,11 +28,19 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: {
+          openOnClick: false, // don't navigate while editing
+          autolink: true,
+          HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
+        },
+      }),
       Image.configure({
-        inline: false, // images are their own block, between paragraphs
+        inline: false,
         HTMLAttributes: { class: "blog-img" },
       }),
+      Figure,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
     content: defaultValue || "<p></p>",
     immediatelyRender: false, // required for Next.js SSR
@@ -64,11 +72,14 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
       if (!res.ok || !data.publicUrl) {
         setErr(data.error || "Upload failed");
       } else {
+        // Insert a captioned figure, then a paragraph to keep typing.
         editor
           .chain()
           .focus()
-          .setImage({ src: data.publicUrl, alt: file.name })
-          .createParagraphNear() // leave an empty paragraph after the image to keep typing
+          .insertContent([
+            { type: "figure", attrs: { src: data.publicUrl, alt: file.name } },
+            { type: "paragraph" },
+          ])
           .run();
       }
     } catch {
@@ -97,7 +108,7 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
       />
       {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        กด Enter = ขึ้นย่อหน้าใหม่ · เลือกข้อความแล้วกดปุ่ม B / I (หรือ Ctrl+B / Ctrl+I) · กด 🖼 เพื่อแทรกรูประหว่างย่อหน้า
+        เลือกข้อความแล้วกด 🔗 เพื่อแนบลิงก์ · จัดวางซ้าย/กลาง/ขวาได้ · กด 🖼 แทรกรูป แล้วพิมพ์คำอธิบายใต้รูป
       </p>
     </div>
   );
@@ -132,7 +143,7 @@ function Toolbar({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`min-w-8 rounded px-2 py-1 font-mono text-xs transition-colors disabled:opacity-50 ${
+      className={`flex min-w-8 items-center justify-center rounded px-2 py-1 font-mono text-xs transition-colors disabled:opacity-50 ${
         active
           ? "bg-cyan/20 text-cyan"
           : "text-muted hover:bg-surface/[0.06] hover:text-ink"
@@ -142,19 +153,97 @@ function Toolbar({
     </button>
   );
 
+  // Current block type for the format dropdown.
+  let block = "p";
+  for (let l = 1; l <= 6; l++) {
+    if (editor.isActive("heading", { level: l })) block = `h${l}`;
+  }
+  const setBlock = (v: string) => {
+    const chain = editor.chain().focus();
+    if (v === "p") chain.setParagraph().run();
+    else chain.setHeading({ level: Number(v[1]) as 1 | 2 | 3 | 4 | 5 | 6 }).run();
+  };
+
+  const setLink = () => {
+    if (editor.isActive("link")) {
+      editor.chain().focus().unsetLink().run();
+      return;
+    }
+    if (editor.state.selection.empty) {
+      window.alert("เลือกข้อความที่จะแนบลิงก์ก่อน");
+      return;
+    }
+    const url = window.prompt("วางลิงก์ (URL):", "https://");
+    if (url === null) return; // cancelled
+    if (url.trim() === "") {
+      editor.chain().focus().unsetLink().run();
+      return;
+    }
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-line/10 bg-surface/[0.03] p-2">
+      <select
+        title="รูปแบบข้อความ"
+        value={block}
+        onChange={(e) => setBlock(e.target.value)}
+        className="rounded bg-surface/[0.06] px-2 py-1 font-mono text-xs text-ink outline-none"
+      >
+        <option value="p" className="bg-space">ย่อหน้า</option>
+        <option value="h1" className="bg-space">H1</option>
+        <option value="h2" className="bg-space">H2</option>
+        <option value="h3" className="bg-space">H3</option>
+        <option value="h4" className="bg-space">H4</option>
+        <option value="h5" className="bg-space">H5</option>
+        <option value="h6" className="bg-space">H6</option>
+      </select>
+      <span className="mx-1 h-4 w-px bg-line/15" />
+
       <Btn title="ตัวหนา (Ctrl+B)" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} label={<b>B</b>} />
       <Btn title="ตัวเอียง (Ctrl+I)" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} label={<i>I</i>} />
+      <Btn title="แนบลิงก์ / ยกเลิกลิงก์" active={editor.isActive("link")} onClick={setLink} label="🔗" />
       <span className="mx-1 h-4 w-px bg-line/15" />
-      <Btn title="หัวข้อใหญ่" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} label="H2" />
-      <Btn title="หัวข้อย่อย" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} label="H3" />
+
+      <Btn title="ชิดซ้าย" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} label={<AlignIcon dir="left" />} />
+      <Btn title="กึ่งกลาง" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} label={<AlignIcon dir="center" />} />
+      <Btn title="ชิดขวา" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} label={<AlignIcon dir="right" />} />
       <span className="mx-1 h-4 w-px bg-line/15" />
+
       <Btn title="รายการจุด" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} label="• List" />
       <Btn title="รายการเลข" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} label="1. List" />
       <Btn title="ข้อความอ้างอิง" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} label="❝" />
       <span className="mx-1 h-4 w-px bg-line/15" />
-      <Btn title="แทรกรูปภาพ (อัปโหลด)" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
+
+      <Btn title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
     </div>
+  );
+}
+
+function AlignIcon({ dir }: { dir: "left" | "center" | "right" }) {
+  const lines: Record<typeof dir, [number, number][]> = {
+    left: [
+      [3, 21],
+      [3, 15],
+      [3, 18],
+    ],
+    center: [
+      [3, 21],
+      [6, 18],
+      [5, 19],
+    ],
+    right: [
+      [3, 21],
+      [9, 21],
+      [6, 21],
+    ],
+  };
+  const rows = [6, 12, 18];
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      {lines[dir].map(([x1, x2], i) => (
+        <line key={i} x1={x1} y1={rows[i]} x2={x2} y2={rows[i]} />
+      ))}
+    </svg>
   );
 }
