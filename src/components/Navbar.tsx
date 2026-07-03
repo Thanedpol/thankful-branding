@@ -44,10 +44,10 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 border-b bg-space-light transition-shadow duration-300 ${
         scrolled
-          ? "border-b border-line/[0.06] bg-space/80 backdrop-blur-md"
-          : "border-b border-transparent"
+          ? "border-line/10 shadow-lg shadow-black/30"
+          : "border-line/[0.06]"
       }`}
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -98,7 +98,7 @@ export default function Navbar() {
       </nav>
 
       {open && (
-        <div className="border-t border-line/[0.06] bg-space/95 px-6 py-4 backdrop-blur-md md:hidden">
+        <div className="border-t border-line/[0.06] bg-space-light px-6 py-4 md:hidden">
           <div className="flex flex-col gap-4">
             {LINKS.map((l) => (
               <Link

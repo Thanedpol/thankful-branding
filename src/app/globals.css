@@ -161,6 +161,25 @@ body {
   .eyebrow {
     @apply mb-3 font-mono text-xs uppercase tracking-[0.3em] text-cyan;
   }
+
+  /* Footer navigation / social link with a bar that grows on hover */
+  .footer-link {
+    @apply inline-flex items-center gap-2 text-sm transition-colors;
+    color: rgb(var(--text) / 0.8);
+  }
+  .footer-link:hover {
+    color: rgb(var(--accent));
+  }
+  .footer-link-bar {
+    display: inline-block;
+    height: 1px;
+    width: 0;
+    background: rgb(var(--accent));
+    transition: width 0.3s ease;
+  }
+  .footer-link:hover .footer-link-bar {
+    width: 1rem;
+  }
 }
 
 /* ── Glitch text animation ─────────────────────────────────────────────────*/
