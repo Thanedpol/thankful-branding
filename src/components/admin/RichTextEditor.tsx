@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -16,6 +16,58 @@ interface Props {
 }
 
 /**
+ * Split blocks on runs of 2+ consecutive <br> (paragraph-intent breaks) into
+ * separate blocks of the same tag. Older content sometimes stored two visual
+ * paragraphs inside a single node (e.g. <h4>a<br><br>b</h4>), which made a
+ * heading change affect both at once. Single <br> soft breaks are preserved.
+ */
+function splitDoubleBreaks(html: string): string {
+  if (typeof window === "undefined" || !html) return html;
+  const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
+  doc.body.querySelectorAll("p, h1, h2, h3, h4, h5, h6").forEach((block) => {
+    if (block.querySelectorAll("br").length < 2) return;
+
+    const groups: Node[][] = [[]];
+    let run: Node[] = [];
+    const flush = () => {
+      if (run.length >= 2) {
+        if (groups[groups.length - 1].length) groups.push([]);
+      } else {
+        run.forEach((br) => groups[groups.length - 1].push(br));
+      }
+      run = [];
+    };
+    block.childNodes.forEach((node) => {
+      if (node.nodeName === "BR") run.push(node);
+      else {
+        flush();
+        groups[groups.length - 1].push(node);
+      }
+    });
+    flush();
+
+    const built = groups
+      .filter((g) =>
+        g.some((n) => (n.textContent && n.textContent.trim()) || n.nodeName === "IMG")
+      )
+      .map((g) => {
+        const el = doc.createElement(block.tagName);
+        const style = block.getAttribute("style");
+        if (style) el.setAttribute("style", style);
+        g.forEach((n) => el.appendChild(n.cloneNode(true)));
+        return el;
+      });
+
+    if (built.length > 1) {
+      const frag = doc.createDocumentFragment();
+      built.forEach((el) => frag.appendChild(el));
+      block.replaceWith(frag);
+    }
+  });
+  return doc.body.innerHTML;
+}
+
+/**
  * WYSIWYG body editor (TipTap). Paragraphs, H1–H6, bold/italic, lists, quote,
  * left/center/right alignment, links (wrap selected text), and images with an
  * optional caption — placed as blocks between paragraphs. Outputs clean HTML
@@ -27,6 +79,13 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Heal legacy "two paragraphs merged into one node via <br><br>" content so
+  // each paragraph is an independent block (client-only; SSR passes it through).
+  const initialHtml = useMemo(
+    () => splitDoubleBreaks(defaultValue) || "<p></p>",
+    [defaultValue]
+  );
 
   const editor = useEditor({
     extensions: [
@@ -45,8 +104,11 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
       Embed,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
-    content: defaultValue || "<p></p>",
+    content: initialHtml,
     immediatelyRender: false, // required for Next.js SSR
+    // Sync the hidden input to the normalised HTML on load, so re-saving an
+    // untouched post persists the split-paragraph fix.
+    onCreate: ({ editor }) => setHtml(editor.getHTML()),
     onUpdate: ({ editor }) => setHtml(editor.getHTML()),
     onSelectionUpdate: () => setTick((n) => n + 1),
     editorProps: {
