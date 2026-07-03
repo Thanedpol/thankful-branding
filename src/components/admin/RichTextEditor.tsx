@@ -6,6 +6,8 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import { Figure } from "./figure-extension";
+import { Embed } from "./embed-extension";
+import { parseEmbed } from "@/lib/embed";
 
 interface Props {
   /** Form field name — submits the resulting HTML. */
@@ -40,6 +42,7 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
         HTMLAttributes: { class: "blog-img" },
       }),
       Figure,
+      Embed,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
     content: defaultValue || "<p></p>",
@@ -108,7 +111,7 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
       />
       {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        เลือกข้อความแล้วกด 🔗 เพื่อแนบลิงก์ · จัดวางซ้าย/กลาง/ขวาได้ · กด 🖼 แทรกรูป แล้วพิมพ์คำอธิบายใต้รูป
+        เลือกข้อความแล้วกด 🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 แทรกรูป+คำอธิบาย · ▶ ฝังวิดีโอ/โซเชียล (วางลิงก์ได้เลย)
       </p>
     </div>
   );
@@ -182,6 +185,29 @@ function Toolbar({
     editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
   };
 
+  const insertEmbed = () => {
+    const raw = window.prompt(
+      "วางลิงก์ YouTube / Vimeo / Spotify / X / TikTok:",
+      "https://"
+    );
+    if (raw === null) return;
+    const parsed = parseEmbed(raw);
+    if (!parsed) {
+      window.alert(
+        "ลิงก์นี้ยังไม่รองรับ\nรองรับ: YouTube, Vimeo, Spotify, X (Twitter), TikTok"
+      );
+      return;
+    }
+    editor
+      .chain()
+      .focus()
+      .insertContent([
+        { type: "embed", attrs: { provider: parsed.provider, src: parsed.src, url: parsed.url } },
+        { type: "paragraph" },
+      ])
+      .run();
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-line/10 bg-surface/[0.03] p-2">
       <select
@@ -216,6 +242,7 @@ function Toolbar({
       <span className="mx-1 h-4 w-px bg-line/15" />
 
       <Btn title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
+      <Btn title="ฝังวิดีโอ/โซเชียล (YouTube, Vimeo, Spotify, X, TikTok)" onClick={insertEmbed} label="▶ ฝัง" />
     </div>
   );
 }

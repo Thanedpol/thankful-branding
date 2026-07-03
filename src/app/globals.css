@@ -308,6 +308,54 @@ body {
   color: rgb(var(--muted) / 0.7);
   pointer-events: none;
 }
+/* ── Embeds (video / social) ───────────────────────────────────────────────*/
+.prose-cyber .blog-embed {
+  margin: 1.75rem auto;
+  max-width: 100%;
+}
+.prose-cyber .blog-embed iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 0.75rem;
+  background: rgb(var(--surface) / 0.05);
+}
+/* 16:9 video players */
+.prose-cyber .blog-embed-youtube,
+.prose-cyber .blog-embed-vimeo {
+  aspect-ratio: 16 / 9;
+}
+.prose-cyber .blog-embed-youtube iframe,
+.prose-cyber .blog-embed-vimeo iframe {
+  height: 100%;
+}
+/* Spotify: fixed-height player */
+.prose-cyber .blog-embed-spotify iframe {
+  height: 352px;
+}
+/* TikTok: portrait card (auto-resized taller by EmbedFrames when it posts height) */
+.prose-cyber .blog-embed-tiktok {
+  max-width: 325px;
+}
+.prose-cyber .blog-embed-tiktok iframe {
+  height: 740px;
+}
+/* X / Twitter: centered card (auto-resized by EmbedFrames) */
+.prose-cyber .blog-embed-twitter {
+  max-width: 550px;
+}
+.prose-cyber .blog-embed-twitter iframe {
+  height: 550px;
+}
+/* Editor: keep embeds non-interactive so the block stays selectable/deletable */
+.ProseMirror .blog-embed iframe {
+  pointer-events: none;
+}
+.ProseMirror .blog-embed.ProseMirror-selectednode {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 3px;
+  border-radius: 0.75rem;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .glitch::before,

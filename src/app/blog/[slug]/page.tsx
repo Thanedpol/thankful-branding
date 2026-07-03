@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import EmbedFrames from "@/components/EmbedFrames";
 import T from "@/components/T";
 import JsonLd from "@/components/JsonLd";
 import { blogPostingJsonLd } from "@/lib/seo";
@@ -192,6 +193,7 @@ function PublishedPost({
             ))}
         </article>
       </main>
+      <EmbedFrames />
       <Footer />
     </>
   );
