@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -120,8 +120,53 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
         class:
           "prose-cyber max-w-none min-h-[240px] px-4 py-3 focus:outline-none",
       },
+      // Inside a table, clicking/editing a cell made ProseMirror scroll the
+      // selection into view and jump the modal to the top. Suppress that
+      // programmatic scroll for table selections (the caret is already where
+      // the user clicked; the browser still keeps it visible while typing).
+      handleScrollToSelection: (view) => {
+        const { $head } = view.state.selection;
+        for (let d = $head.depth; d > 0; d--) {
+          if ($head.node(d).type.spec.tableRole) return true;
+        }
+        return false;
+      },
     },
   });
+
+  // Clicking into the editor (notably a table cell) makes the browser scroll
+  // the freshly-focused editable to the top of its scroll container, jumping
+  // the modal up to the toolbar. Record the scroll position on mousedown and
+  // snap it back on the next frame (before paint) so there is no visible jump.
+  useEffect(() => {
+    if (!editor) return;
+    const dom = editor.view.dom as HTMLElement;
+    const scrollParent = (node: HTMLElement | null): HTMLElement | null => {
+      let p = node?.parentElement ?? null;
+      while (p) {
+        const oy = getComputedStyle(p).overflowY;
+        if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight) return p;
+        p = p.parentElement;
+      }
+      return (document.scrollingElement as HTMLElement) ?? null;
+    };
+    // Record the scroll position on mousedown (before the browser focuses and
+    // scrolls) and snap it back over the next couple of frames. Only touches
+    // scrollTop — never focus or selection — so the caret still lands where the
+    // user clicked.
+    const onDown = () => {
+      const sp = scrollParent(dom);
+      if (!sp) return;
+      const top = sp.scrollTop;
+      const restore = () => {
+        if (Math.abs(sp.scrollTop - top) > 1) sp.scrollTop = top;
+      };
+      requestAnimationFrame(restore);
+      requestAnimationFrame(() => requestAnimationFrame(restore));
+    };
+    dom.addEventListener("mousedown", onDown, true);
+    return () => dom.removeEventListener("mousedown", onDown, true);
+  }, [editor]);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
