@@ -127,6 +127,11 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   // The editor instance, held in a ref so the paste/drop handlers (created
   // inside useEditor, before `editor` below is assigned) can reach it.
   const editorRef = useRef<Editor | null>(null);
+  // Caret position captured when the image button is pressed. The file dialog
+  // blurs the editor, so by the time the upload finishes the selection has been
+  // lost; without this the image would land at the top of the doc instead of
+  // where the caret was.
+  const pendingPosRef = useRef<number | undefined>(undefined);
 
   // Shared upload → insert, used by the toolbar button, paste, and drag-drop.
   // Uploads the image to Supabase then inserts a captioned figure block at the
@@ -283,7 +288,8 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = ""; // allow picking the same file again later
-    if (file) await uploadImage(file);
+    if (file) await uploadImage(file, pendingPosRef.current);
+    pendingPosRef.current = undefined;
   }
 
   return (
@@ -293,7 +299,10 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         <Toolbar
           editor={editor}
           uploading={uploading}
-          onImage={() => fileRef.current?.click()}
+          onImage={() => {
+            pendingPosRef.current = editorRef.current?.state.selection.from;
+            fileRef.current?.click();
+          }}
         />
         <EditorContent editor={editor} />
       </div>
