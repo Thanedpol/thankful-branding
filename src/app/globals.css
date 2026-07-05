@@ -449,11 +449,19 @@ body {
   border-radius: 0.75rem;
 }
 
+/* ── Session carousel slide-in ─────────────────────────────────────────────*/
+@keyframes carouselSlide {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: none; }
+}
+.carousel-slide { animation: carouselSlide 0.28s ease; }
+
 @media (prefers-reduced-motion: reduce) {
   .glitch::before,
   .glitch::after,
   .glitch-load,
-  .reveal {
+  .reveal,
+  .carousel-slide {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;
