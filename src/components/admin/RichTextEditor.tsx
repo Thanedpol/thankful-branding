@@ -101,6 +101,13 @@ function transformPastedHTML(html: string): string {
   return doc.body.innerHTML;
 }
 
+/** First image file in a clipboard/drag payload, or null if there isn't one. */
+function imageFromDataTransfer(dt: DataTransfer | null): File | null {
+  const files = dt?.files;
+  if (!files || !files.length) return null;
+  return Array.from(files).find((f) => f.type.startsWith("image/")) ?? null;
+}
+
 /**
  * WYSIWYG body editor (TipTap). Paragraphs, H1–H6, bold/italic, lists, quote,
  * left/center/right alignment, links (wrap selected text), and images with an
@@ -117,6 +124,44 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   // once) always call the current prop.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  // The editor instance, held in a ref so the paste/drop handlers (created
+  // inside useEditor, before `editor` below is assigned) can reach it.
+  const editorRef = useRef<Editor | null>(null);
+
+  // Shared upload → insert, used by the toolbar button, paste, and drag-drop.
+  // Uploads the image to Supabase then inserts a captioned figure block at the
+  // given position (or the current selection).
+  async function uploadImage(file: File, pos?: number) {
+    const ed = editorRef.current;
+    if (!ed) return;
+    setUploading(true);
+    setErr(null);
+
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("bucket", "blog-images");
+
+    try {
+      const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.publicUrl) {
+        setErr(data.error || "Upload failed");
+      } else {
+        const chain = ed.chain().focus();
+        if (typeof pos === "number") chain.setTextSelection(pos);
+        // Insert a captioned figure, then a paragraph to keep typing.
+        chain
+          .insertContent([
+            { type: "figure", attrs: { src: data.publicUrl, alt: file.name } },
+            { type: "paragraph" },
+          ])
+          .run();
+      }
+    } catch {
+      setErr("Upload failed");
+    }
+    setUploading(false);
+  }
 
   // Heal legacy "two paragraphs merged into one node via <br><br>" content so
   // each paragraph is an independent block (client-only; SSR passes it through).
@@ -150,6 +195,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     // Sync the hidden input to the normalised HTML on load, so re-saving an
     // untouched post persists the split-paragraph fix.
     onCreate: ({ editor }) => {
+      editorRef.current = editor;
       const h = editor.getHTML();
       setHtml(h);
       onChangeRef.current?.(h);
@@ -164,6 +210,24 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       // Turn pasted emoji-images (👍 from Facebook etc.) back into text so they
       // render inline at normal size instead of full-width block pictures.
       transformPastedHTML,
+      // Paste (Ctrl+V) or drag-drop an image file → upload it and insert, just
+      // like the toolbar button. Covers screenshots and copy-image from the web,
+      // which otherwise paste as nothing. Non-image pastes fall through.
+      handlePaste: (_view, event) => {
+        const img = imageFromDataTransfer(event.clipboardData);
+        if (!img) return false;
+        event.preventDefault();
+        uploadImage(img);
+        return true;
+      },
+      handleDrop: (view, event) => {
+        const img = imageFromDataTransfer(event.dataTransfer);
+        if (!img) return false;
+        event.preventDefault();
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
+        uploadImage(img, pos);
+        return true;
+      },
       attributes: {
         class:
           "prose-cyber max-w-none min-h-[240px] px-4 py-3 focus:outline-none",
@@ -219,35 +283,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = ""; // allow picking the same file again later
-    if (!file || !editor) return;
-
-    setUploading(true);
-    setErr(null);
-
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("bucket", "blog-images");
-
-    try {
-      const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok || !data.publicUrl) {
-        setErr(data.error || "Upload failed");
-      } else {
-        // Insert a captioned figure, then a paragraph to keep typing.
-        editor
-          .chain()
-          .focus()
-          .insertContent([
-            { type: "figure", attrs: { src: data.publicUrl, alt: file.name } },
-            { type: "paragraph" },
-          ])
-          .run();
-      }
-    } catch {
-      setErr("Upload failed");
-    }
-    setUploading(false);
+    if (file) await uploadImage(file);
   }
 
   return (
@@ -270,7 +306,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       />
       {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย · ▶ ฝังวิดีโอ/โซเชียล · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
+        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▶ ฝังวิดีโอ/โซเชียล · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
       </p>
     </div>
   );
