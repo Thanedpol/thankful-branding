@@ -7,6 +7,7 @@ import {
 } from "@/app/admin/actions";
 import RichTextEditor from "./RichTextEditor";
 import { slugify } from "@/lib/slugify";
+import { hasContent } from "@/lib/portfolio-sessions";
 import type { PortfolioCollection } from "@/lib/types";
 
 type PortfolioLink = { id: string; title: string; project_url: string | null };
@@ -32,7 +33,8 @@ let uid = 0;
 const key = () => `k${++uid}`;
 
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
-type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string };
+type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string };
+type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; sessions: Sess[] };
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 export default function CollectionsManager({
@@ -142,7 +144,18 @@ function Editor({
     (collection.data.groups ?? []).map((g) => ({
       ...g,
       _k: key(),
-      events: g.events.map((e) => ({ ...e, _k: key() })),
+      events: g.events.map((e) => ({
+        ...e,
+        _k: key(),
+        // Migrate a legacy single body into one sub-session so old events keep
+        // their content and can gain more sessions.
+        sessions: (e.sessions?.length
+          ? e.sessions
+          : hasContent(e.body)
+          ? [{ title: "", body: e.body }]
+          : []
+        ).map((s) => ({ ...s, _k: key() })),
+      })),
     }))
   );
 
@@ -159,7 +172,18 @@ function Editor({
         : {
             groups: groups.map(({ _k, events, ...g }) => ({
               ...g,
-              events: events.map(({ _k: _ek, ...e }) => e),
+              events: events.map(({ _k: _ek, sessions, body: _body, ...e }) => {
+                const cleaned = sessions
+                  .map(({ _k: _sk, ...s }) => s)
+                  .filter(
+                    (s) =>
+                      hasContent(s.body) ||
+                      !!s.image ||
+                      !!(s.title && s.title.trim()) ||
+                      !!s.url
+                  );
+                return cleaned.length ? { ...e, sessions: cleaned } : e;
+              }),
             })),
           },
   };
@@ -413,7 +437,8 @@ function EventsEditor({
 
   const patch = (k: string, p: Partial<Ev>) =>
     setEvents(events.map((x) => (x._k === k ? { ...x, ...p } : x)));
-  const add = () => setEvents([...events, { _k: key(), title: "", url: "", image: "" }]);
+  const add = () =>
+    setEvents([...events, { _k: key(), title: "", url: "", image: "", sessions: [] }]);
   const remove = (k: string) => setEvents(events.filter((x) => x._k !== k));
   const move = (k: string, d: number) => {
     const i = events.findIndex((x) => x._k === k);
@@ -447,30 +472,7 @@ function EventsEditor({
           <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
           <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
           <input placeholder="ลิงก์รูป (ไม่บังคับ)" value={e.image ?? ""} onChange={(ev) => patch(e._k, { image: ev.target.value })} className={`${field} mt-1.5`} />
-          {typeof e.body === "string" ? (
-            <div className="mt-2">
-              <div className="mb-1 flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-muted">เนื้อหา (rich text) — คลิกการ์ดเพื่อเปิดหน้าเนื้อหา</span>
-                <button type="button" onClick={() => patch(e._k, { body: undefined, slug: undefined })} className="font-mono text-[10px] text-red-400/70 hover:text-red-400">− ลบเนื้อหา</button>
-              </div>
-              <input placeholder="slug (ลิงก์หน้าเนื้อหา)" value={e.slug ?? ""} onChange={(ev) => patch(e._k, { slug: ev.target.value })} className={field} />
-              <p className="mb-1.5 mt-1 font-mono text-[10px] text-muted">/portfolio/insightist/{e.slug || "…"}</p>
-              <RichTextEditor defaultValue={e.body} onChange={(html) => patch(e._k, { body: html })} />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() =>
-                patch(e._k, {
-                  body: "",
-                  slug: e.slug || slugify(e.title) || `event-${Date.now().toString(36)}`,
-                })
-              }
-              className="mt-2 rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10"
-            >
-              ＋ เพิ่มเนื้อหา (เขียนแบบ Blog + ลิงก์)
-            </button>
-          )}
+          <SubSessionsEditor event={e} patch={patch} />
           </div>
           )}
         </div>
@@ -478,6 +480,86 @@ function EventsEditor({
       })}
       <button type="button" onClick={add} className="rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10">
         ＋ เพิ่มงาน
+      </button>
+    </div>
+  );
+}
+
+/* ── Sub-sessions (sub-blogs) inside one event → carousel on its page ────────*/
+function SubSessionsEditor({
+  event,
+  patch,
+}: {
+  event: Ev;
+  patch: (k: string, p: Partial<Ev>) => void;
+}) {
+  const sessions = event.sessions;
+  const setSessions = (s: Sess[]) => patch(event._k, { sessions: s });
+  const patchS = (sk: string, p: Partial<Sess>) =>
+    setSessions(sessions.map((x) => (x._k === sk ? { ...x, ...p } : x)));
+  const addS = () =>
+    patch(event._k, {
+      sessions: [...sessions, { _k: key(), title: "", body: "", image: "", url: "" }],
+      // Ensure the event has a slug so its carousel page is reachable.
+      slug: event.slug || slugify(event.title) || `event-${Date.now().toString(36)}`,
+    });
+  const rmS = (sk: string) => setSessions(sessions.filter((x) => x._k !== sk));
+  const moveS = (sk: string, d: number) => {
+    const i = sessions.findIndex((x) => x._k === sk);
+    const j = i + d;
+    if (i < 0 || j < 0 || j >= sessions.length) return;
+    const a = [...sessions];
+    [a[i], a[j]] = [a[j], a[i]];
+    setSessions(a);
+  };
+
+  return (
+    <div className="mt-2 rounded-md border border-cyan/15 bg-cyan/[0.03] p-2.5">
+      <span className="font-mono text-[10px] uppercase tracking-wider text-cyan/80">
+        Session ย่อย (Blog) — เลื่อนดูแบบ Carousel ในหน้างาน
+      </span>
+
+      {sessions.length > 0 && (
+        <>
+          <input
+            placeholder="slug (ลิงก์หน้างาน)"
+            value={event.slug ?? ""}
+            onChange={(ev) => patch(event._k, { slug: ev.target.value })}
+            className={`${field} mt-2`}
+          />
+          <p className="mb-1 mt-1 font-mono text-[10px] text-muted">
+            /portfolio/insightist/{event.slug || "…"}
+          </p>
+        </>
+      )}
+
+      <div className="mt-1 space-y-2">
+        {sessions.map((s, si) => (
+          <div key={s._k} className="rounded border border-line/10 bg-surface/[0.03] p-2">
+            <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-muted">
+              <span>Session ย่อยที่ {si + 1}</span>
+              <span className="flex gap-1.5">
+                <button type="button" onClick={() => moveS(s._k, -1)} className="hover:text-cyan">↑</button>
+                <button type="button" onClick={() => moveS(s._k, 1)} className="hover:text-cyan">↓</button>
+                <button type="button" onClick={() => rmS(s._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>
+              </span>
+            </div>
+            <input placeholder="ชื่อ session ย่อย" value={s.title ?? ""} onChange={(ev) => patchS(s._k, { title: ev.target.value })} className={field} />
+            <input placeholder="ลิงก์รูป (ไม่บังคับ)" value={s.image ?? ""} onChange={(ev) => patchS(s._k, { image: ev.target.value })} className={`${field} mt-1.5`} />
+            <input placeholder="ลิงก์ Facebook (ไม่บังคับ)" value={s.url ?? ""} onChange={(ev) => patchS(s._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
+            <div className="mt-1.5">
+              <RichTextEditor defaultValue={s.body} onChange={(html) => patchS(s._k, { body: html })} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={addS}
+        className="mt-2 rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10"
+      >
+        ＋ เพิ่ม session ย่อย (Blog)
       </button>
     </div>
   );

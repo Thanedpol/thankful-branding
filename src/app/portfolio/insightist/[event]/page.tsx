@@ -4,19 +4,16 @@ import EventDetailView, {
   type EventItem,
 } from "@/components/portfolio/EventDetailView";
 import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
+import { eventHasContent } from "@/lib/portfolio-sessions";
 
 export const revalidate = 0;
-
-function hasContent(html?: string) {
-  return !!html && html.replace(/<[^>]*>/g, "").trim().length > 0;
-}
 
 async function findEvent(slug: string): Promise<EventItem | null> {
   const c =
     (await fetchCollection("insightist")) ?? collectionDefault("insightist");
   for (const group of c?.data.groups ?? []) {
     for (const e of group.events as EventItem[]) {
-      if (e.slug === slug && hasContent(e.body)) return e;
+      if (e.slug === slug && eventHasContent(e)) return e;
     }
   }
   return null;

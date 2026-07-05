@@ -79,8 +79,16 @@ export interface PortfolioCollection {
         title: string;
         url: string;
         image?: string;
+        /** Legacy single body — superseded by `sessions` (kept for old rows). */
         body?: string;
         slug?: string;
+        /** Sub-sessions (sub-blogs) shown as a carousel on the event's page. */
+        sessions?: {
+          title?: string;
+          image?: string;
+          body?: string;
+          url?: string;
+        }[];
       }[];
     }[];
   };

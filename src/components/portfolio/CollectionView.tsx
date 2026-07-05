@@ -4,10 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import type { PortfolioCollection } from "@/lib/types";
-
-function hasContent(html?: string) {
-  return !!html && html.replace(/<[^>]*>/g, "").trim().length > 0;
-}
+import { eventHasContent } from "@/lib/portfolio-sessions";
 
 /** Full portfolio collection page — renders a stories layout (Snobby-style) or
  *  a grouped-events layout (Insightist-style) from the same data shape. Shared
@@ -97,21 +94,13 @@ export default function CollectionView({ c }: { c: PortfolioCollection }) {
             <div className="mt-12 space-y-12 pb-24">
               {groups.map((group, gi) => (
                 <Reveal key={group.name + gi} delay={gi * 60}>
-                  <div className="mb-5 flex items-end justify-between gap-3">
-                    <h2 className="font-display text-xl font-bold text-cyan">
-                      {group.popular && <span className="text-purple">★ </span>}
-                      {group.name}
-                      <span className="ml-2 font-mono text-xs text-muted">
-                        ({group.events.length})
-                      </span>
-                    </h2>
-                    <Link
-                      href={`/portfolio/${c.slug}/group/${gi}`}
-                      className="shrink-0 whitespace-nowrap font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
-                    >
-                      ▶ ดูแบบสไลด์
-                    </Link>
-                  </div>
+                  <h2 className="mb-5 font-display text-xl font-bold text-cyan">
+                    {group.popular && <span className="text-purple">★ </span>}
+                    {group.name}
+                    <span className="ml-2 font-mono text-xs text-muted">
+                      ({group.events.length})
+                    </span>
+                  </h2>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {group.events.map((e, ei) => {
                       const cover = e.image && (
@@ -139,7 +128,7 @@ export default function CollectionView({ c }: { c: PortfolioCollection }) {
                         </>
                       );
 
-                      if (hasContent(e.body) && e.slug) {
+                      if (eventHasContent(e) && e.slug) {
                         return (
                           <Link
                             key={e.slug + ei}

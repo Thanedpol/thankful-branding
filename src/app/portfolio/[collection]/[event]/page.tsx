@@ -4,13 +4,10 @@ import EventDetailView, {
   type EventItem,
 } from "@/components/portfolio/EventDetailView";
 import { fetchCollection } from "@/lib/portfolio-collections";
+import { eventHasContent } from "@/lib/portfolio-sessions";
 import type { PortfolioCollection } from "@/lib/types";
 
 export const revalidate = 0;
-
-function hasContent(html?: string) {
-  return !!html && html.replace(/<[^>]*>/g, "").trim().length > 0;
-}
 
 async function find(
   collectionSlug: string,
@@ -20,7 +17,7 @@ async function find(
   if (!c) return null;
   for (const group of c.data.groups ?? []) {
     for (const e of group.events as EventItem[]) {
-      if (e.slug === eventSlug && hasContent(e.body)) return { c, e };
+      if (e.slug === eventSlug && eventHasContent(e)) return { c, e };
     }
   }
   return null;

@@ -2,16 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SessionCarousel from "./SessionCarousel";
+import { eventSessions, type EventItem } from "@/lib/portfolio-sessions";
 
-export type EventItem = {
-  title: string;
-  url: string;
-  image?: string;
-  body?: string;
-  slug?: string;
-};
+export type { EventItem };
 
-/** Detail page for a collection event's rich content (blog-post style). */
+/** Detail page for an event: its title + cover, then a carousel of its
+ *  sub-sessions (sub-blogs), then the main Facebook post link. */
 export default function EventDetailView({
   event,
   backHref,
@@ -21,6 +18,8 @@ export default function EventDetailView({
   backHref: string;
   backLabel: string;
 }) {
+  const sessions = eventSessions(event);
+
   return (
     <>
       <Navbar />
@@ -50,10 +49,11 @@ export default function EventDetailView({
             </div>
           )}
 
-          <div
-            className="prose-cyber mt-10"
-            dangerouslySetInnerHTML={{ __html: event.body ?? "" }}
-          />
+          {sessions.length > 0 && (
+            <div className="mt-10">
+              <SessionCarousel items={sessions} />
+            </div>
+          )}
 
           {event.url && (
             <a
