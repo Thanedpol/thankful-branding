@@ -85,37 +85,34 @@ export default async function InsightistPage() {
                         />
                       </div>
                     );
-
-                    // Content event: rich body (may hold its own links) + a
-                    // separate footer link — so the card can't be one big <a>.
-                    if (hasBody) {
-                      return (
-                        <div
-                          key={e.url + ei}
-                          className="glass group flex h-full flex-col overflow-hidden"
-                        >
-                          {cover}
-                          <div className="flex flex-1 flex-col gap-3 p-5">
-                            <p className="font-body font-medium leading-snug">
-                              {e.title}
-                            </p>
-                            <div
-                              className="prose-cyber text-sm"
-                              dangerouslySetInnerHTML={{ __html: e.body! }}
-                            />
-                            <a
-                              href={e.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-auto font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
-                            >
-                              ดูโพสต์ Facebook →
-                            </a>
-                          </div>
+                    const inner = (label: string) => (
+                      <>
+                        {cover}
+                        <div className="flex flex-1 flex-col justify-between gap-4 p-5">
+                          <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
+                            {e.title}
+                          </p>
+                          <span className="font-mono text-xs uppercase tracking-wider text-cyan group-hover:text-ink">
+                            {label}
+                          </span>
                         </div>
+                      </>
+                    );
+
+                    // Content event → open its own page (like a blog post).
+                    if (hasBody && e.slug) {
+                      return (
+                        <Link
+                          key={e.slug + ei}
+                          href={`/portfolio/insightist/${e.slug}`}
+                          className="glass glass-hover group flex h-full flex-col overflow-hidden"
+                        >
+                          {inner("อ่านเนื้อหา →")}
+                        </Link>
                       );
                     }
 
+                    // Plain event → link straight to the Facebook post.
                     return (
                       <a
                         key={e.url + ei}
@@ -124,15 +121,7 @@ export default async function InsightistPage() {
                         rel="noopener noreferrer"
                         className="glass glass-hover group flex h-full flex-col overflow-hidden"
                       >
-                        {cover}
-                        <div className="flex flex-1 flex-col justify-between gap-4 p-5">
-                          <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
-                            {e.title}
-                          </p>
-                          <span className="font-mono text-xs uppercase tracking-wider text-cyan group-hover:text-ink">
-                            ดูโพสต์ Facebook →
-                          </span>
-                        </div>
+                        {inner("ดูโพสต์ Facebook →")}
                       </a>
                     );
                   })}

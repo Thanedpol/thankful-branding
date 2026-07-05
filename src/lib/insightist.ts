@@ -12,6 +12,8 @@ export interface InsightistEvent {
   image?: string;
   /** Optional rich-text content (HTML) — turns the card into a content card. */
   body?: string;
+  /** URL slug for the content detail page (/portfolio/insightist/<slug>). */
+  slug?: string;
 }
 
 export interface InsightistGroup {

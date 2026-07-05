@@ -75,7 +75,13 @@ export interface PortfolioCollection {
     groups?: {
       name: string;
       popular?: boolean;
-      events: { title: string; url: string; image?: string; body?: string }[];
+      events: {
+        title: string;
+        url: string;
+        image?: string;
+        body?: string;
+        slug?: string;
+      }[];
     }[];
   };
 }

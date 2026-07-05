@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { savePortfolioCollection } from "@/app/admin/actions";
 import RichTextEditor from "./RichTextEditor";
+import { slugify } from "@/lib/slugify";
 import type { PortfolioCollection } from "@/lib/types";
 
 const field =
@@ -13,7 +14,7 @@ let uid = 0;
 const key = () => `k${++uid}`;
 
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
-type Ev = { _k: string; title: string; url: string; image?: string; body?: string };
+type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string };
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 export default function CollectionsManager({
@@ -280,13 +281,24 @@ function EventsEditor({
           {typeof e.body === "string" ? (
             <div className="mt-2">
               <div className="mb-1 flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-muted">เนื้อหา (rich text)</span>
-                <button type="button" onClick={() => patch(e._k, { body: undefined })} className="font-mono text-[10px] text-red-400/70 hover:text-red-400">− ลบเนื้อหา</button>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted">เนื้อหา (rich text) — คลิกการ์ดเพื่อเปิดหน้าเนื้อหา</span>
+                <button type="button" onClick={() => patch(e._k, { body: undefined, slug: undefined })} className="font-mono text-[10px] text-red-400/70 hover:text-red-400">− ลบเนื้อหา</button>
               </div>
+              <input placeholder="slug (ลิงก์หน้าเนื้อหา)" value={e.slug ?? ""} onChange={(ev) => patch(e._k, { slug: ev.target.value })} className={field} />
+              <p className="mb-1.5 mt-1 font-mono text-[10px] text-muted">/portfolio/insightist/{e.slug || "…"}</p>
               <RichTextEditor defaultValue={e.body} onChange={(html) => patch(e._k, { body: html })} />
             </div>
           ) : (
-            <button type="button" onClick={() => patch(e._k, { body: "" })} className="mt-2 rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10">
+            <button
+              type="button"
+              onClick={() =>
+                patch(e._k, {
+                  body: "",
+                  slug: e.slug || slugify(e.title) || `event-${Date.now().toString(36)}`,
+                })
+              }
+              className="mt-2 rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10"
+            >
               ＋ เพิ่มเนื้อหา (เขียนแบบ Blog + ลิงก์)
             </button>
           )}
