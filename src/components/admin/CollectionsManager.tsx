@@ -1,10 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { savePortfolioCollection } from "@/app/admin/actions";
+import {
+  savePortfolioCollection,
+  deletePortfolioCollection,
+} from "@/app/admin/actions";
 import RichTextEditor from "./RichTextEditor";
 import { slugify } from "@/lib/slugify";
 import type { PortfolioCollection } from "@/lib/types";
+
+type PortfolioLink = { id: string; title: string; project_url: string | null };
+const DEFAULT_SLUGS = ["snobby-story", "insightist"];
+
+function emptyCollection(): PortfolioCollection {
+  return {
+    slug: "",
+    title: "",
+    tagline: null,
+    intro: null,
+    category: null,
+    tags: [],
+    data: { stories: [] },
+  };
+}
 
 const field =
   "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50";
@@ -19,19 +37,32 @@ type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 export default function CollectionsManager({
   collections,
+  portfolios,
 }: {
   collections: PortfolioCollection[];
+  portfolios: PortfolioLink[];
 }) {
-  const [editing, setEditing] = useState<PortfolioCollection | null>(null);
+  const [editing, setEditing] = useState<{
+    collection: PortfolioCollection;
+    isNew: boolean;
+  } | null>(null);
 
   return (
     <div>
-      <div className="mb-6">
-        <p className="eyebrow">// Content</p>
-        <h1 className="font-display text-3xl font-bold">Portfolio Collections</h1>
-        <p className="mt-1 text-sm text-muted">
-          แก้ไขหน้าผลงานรวม — Snobby Story และ Insightist
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">// Content</p>
+          <h1 className="font-display text-3xl font-bold">Portfolio Collections</h1>
+          <p className="mt-1 text-sm text-muted">
+            หน้าผลงานรวม — แก้ไขหรือสร้างใหม่ แล้วลิงก์กับการ์ด Portfolio ได้
+          </p>
+        </div>
+        <button
+          onClick={() => setEditing({ collection: emptyCollection(), isNew: true })}
+          className="btn-neon shrink-0"
+        >
+          + New Collection
+        </button>
       </div>
 
       <div className="glass divide-y divide-line/[0.06]">
@@ -56,7 +87,7 @@ export default function CollectionsManager({
                 View
               </a>
               <button
-                onClick={() => setEditing(c)}
+                onClick={() => setEditing({ collection: c, isNew: false })}
                 className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
               >
                 Edit
@@ -66,21 +97,38 @@ export default function CollectionsManager({
         })}
       </div>
 
-      {editing && <Editor collection={editing} onClose={() => setEditing(null)} />}
+      {editing && (
+        <Editor
+          collection={editing.collection}
+          isNew={editing.isNew}
+          portfolios={portfolios}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </div>
   );
 }
 
 function Editor({
   collection,
+  isNew,
+  portfolios,
   onClose,
 }: {
   collection: PortfolioCollection;
+  isNew: boolean;
+  portfolios: PortfolioLink[];
   onClose: () => void;
 }) {
-  const kind: "stories" | "groups" =
-    collection.slug === "insightist" ? "groups" : "stories";
-
+  const [slug, setSlug] = useState(collection.slug);
+  const [kind, setKind] = useState<"stories" | "groups">(
+    collection.data.groups ? "groups" : "stories"
+  );
+  const [linkId, setLinkId] = useState(
+    () =>
+      portfolios.find((p) => p.project_url === `/portfolio/${collection.slug}`)
+        ?.id ?? ""
+  );
   const [title, setTitle] = useState(collection.title);
   const [tagline, setTagline] = useState(collection.tagline ?? "");
   const [intro, setIntro] = useState(collection.intro ?? "");
@@ -130,9 +178,31 @@ function Editor({
         }}
         className="glass relative z-10 my-4 w-full max-w-2xl space-y-4 p-6"
       >
-        <h2 className="font-display text-xl font-bold">แก้ไข: {collection.title}</h2>
-        <input type="hidden" name="slug" value={collection.slug} />
+        <h2 className="font-display text-xl font-bold">
+          {isNew ? "สร้าง Collection ใหม่" : `แก้ไข: ${collection.title}`}
+        </h2>
+        <input type="hidden" name="slug" value={slug} />
         <input type="hidden" name="payload" value={JSON.stringify(payload)} />
+        <input type="hidden" name="link_portfolio_id" value={linkId} />
+
+        {isNew && (
+          <div className="grid grid-cols-2 gap-4">
+            <L l="Slug (URL, อังกฤษ/ตัวเลข)">
+              <input
+                value={slug}
+                onChange={(e) => setSlug(slugify(e.target.value))}
+                placeholder="my-collection"
+                className={field}
+              />
+            </L>
+            <L l="ประเภท">
+              <select value={kind} onChange={(e) => setKind(e.target.value as "stories" | "groups")} className={field}>
+                <option value="stories" className="bg-space">รายการ (เหมือน Snobby)</option>
+                <option value="groups" className="bg-space">กลุ่ม+งาน (เหมือน Insightist)</option>
+              </select>
+            </L>
+          </div>
+        )}
 
         <L l="Title">
           <input value={title} onChange={(e) => setTitle(e.target.value)} className={field} />
@@ -152,6 +222,22 @@ function Editor({
           </L>
         </div>
 
+        <div className="rounded-lg border border-cyan/25 bg-cyan/[0.04] p-3">
+          <L l="🔗 ลิงก์กับการ์ด Portfolio (หน้าแรก)">
+            <select value={linkId} onChange={(e) => setLinkId(e.target.value)} className={field}>
+              <option value="" className="bg-space">— ไม่ลิงก์ —</option>
+              {portfolios.map((p) => (
+                <option key={p.id} value={p.id} className="bg-space">
+                  {p.title}
+                </option>
+              ))}
+            </select>
+          </L>
+          <p className="mt-1.5 font-mono text-[10px] text-muted">
+            การ์ดที่เลือกจะเปิดหน้านี้ · URL: /portfolio/{slug || "…"}
+          </p>
+        </div>
+
         {kind === "stories" ? (
           <StoriesEditor stories={stories} setStories={setStories} />
         ) : (
@@ -164,13 +250,28 @@ function Editor({
           </p>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-2">
           <button type="submit" className="btn-neon flex-1">
             Save
           </button>
           <button type="button" onClick={onClose} className="btn-ghost">
             Cancel
           </button>
+          {!isNew && !DEFAULT_SLUGS.includes(slug) && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (!window.confirm(`ลบ collection "${collection.title}" ?`)) return;
+                const fd = new FormData();
+                fd.set("slug", collection.slug);
+                await deletePortfolioCollection(fd);
+                onClose();
+              }}
+              className="font-mono text-xs uppercase tracking-wider text-red-400/70 hover:text-red-400"
+            >
+              ลบ
+            </button>
+          )}
         </div>
       </form>
     </div>

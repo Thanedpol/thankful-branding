@@ -173,10 +173,29 @@ export async function savePortfolioCollection(
     };
   }
 
+  // Optionally point a Portfolio card's "view" link at this collection.
+  const linkId = String(formData.get("link_portfolio_id") ?? "");
+  if (linkId) {
+    await supabase
+      .from("portfolio")
+      .update({ project_url: `/portfolio/${slug}` })
+      .eq("id", linkId);
+  }
+
   refreshPublic();
   revalidatePath(`/portfolio/${slug}`);
   revalidatePath("/admin/collections");
+  revalidatePath("/admin/portfolio");
   return {};
+}
+
+export async function deletePortfolioCollection(formData: FormData) {
+  const supabase = await assertAdmin();
+  const slug = String(formData.get("slug"));
+  if (!slug) return;
+  await supabase.from("portfolio_collections").delete().eq("slug", slug);
+  refreshPublic();
+  revalidatePath("/admin/collections");
 }
 
 // ─── Site profile ───────────────────────────────────────────────────────────

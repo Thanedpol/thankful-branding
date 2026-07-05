@@ -33,6 +33,27 @@ export function collectionDefault(slug: string): PortfolioCollection | null {
   return DEFAULTS[slug] ?? null;
 }
 
+/** All collections for the admin: the built-in ones (merged with their stored
+ *  row) followed by any extra collections created in the admin. */
+export function mergeAdminCollections(
+  rows: Partial<PortfolioCollection>[]
+): PortfolioCollection[] {
+  const bySlug = new Map<string, Partial<PortfolioCollection>>();
+  for (const r of rows) if (r.slug) bySlug.set(r.slug, r);
+
+  const out: PortfolioCollection[] = [];
+  for (const slug of COLLECTION_SLUGS) {
+    const m = mergeCollection(slug, bySlug.get(slug) ?? null);
+    if (m) out.push(m);
+    bySlug.delete(slug);
+  }
+  for (const [slug, r] of bySlug) {
+    const m = mergeCollection(slug, r);
+    if (m) out.push(m);
+  }
+  return out;
+}
+
 /** Merge a stored row over its default so blank fields fall back gracefully. */
 export function mergeCollection(
   slug: string,
