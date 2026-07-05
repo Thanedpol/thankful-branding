@@ -131,10 +131,12 @@ export async function deleteBlog(formData: FormData) {
 }
 
 // ─── Portfolio collections (Snobby Story, Insightist) ────────────────────────
-export async function savePortfolioCollection(formData: FormData) {
+export async function savePortfolioCollection(
+  formData: FormData
+): Promise<{ error?: string }> {
   const supabase = await assertAdmin();
   const slug = String(formData.get("slug"));
-  if (!slug) throw new Error("Missing slug");
+  if (!slug) return { error: "Missing slug" };
 
   let p: {
     title?: string;
@@ -147,7 +149,7 @@ export async function savePortfolioCollection(formData: FormData) {
   try {
     p = JSON.parse(String(formData.get("payload") ?? "{}"));
   } catch {
-    throw new Error("Invalid payload");
+    return { error: "Invalid payload" };
   }
 
   const { error } = await supabase.from("portfolio_collections").upsert({
@@ -161,14 +163,20 @@ export async function savePortfolioCollection(formData: FormData) {
     updated_at: new Date().toISOString(),
   });
   if (error) {
-    throw new Error(
-      `บันทึกไม่สำเร็จ: ${error.message} — โปรดรัน migration add-portfolio-collections.sql ก่อน`
+    const missing = /schema cache|does not exist|find the table|relation/i.test(
+      error.message
     );
+    return {
+      error: missing
+        ? "ยังไม่ได้สร้างตาราง portfolio_collections — โปรดรัน migration add-portfolio-collections.sql ใน Supabase SQL Editor ก่อน แล้วลองอีกครั้ง"
+        : `บันทึกไม่สำเร็จ: ${error.message}`,
+    };
   }
 
   refreshPublic();
   revalidatePath(`/portfolio/${slug}`);
   revalidatePath("/admin/collections");
+  return {};
 }
 
 // ─── Site profile ───────────────────────────────────────────────────────────

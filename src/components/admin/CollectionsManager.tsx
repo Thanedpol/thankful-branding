@@ -86,6 +86,7 @@ function Editor({
   const [intro, setIntro] = useState(collection.intro ?? "");
   const [category, setCategory] = useState(collection.category ?? "");
   const [tags, setTags] = useState((collection.tags ?? []).join(", "));
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [stories, setStories] = useState<Story[]>(() =>
     (collection.data.stories ?? []).map((s) => ({ ...s, _k: key() }))
   );
@@ -120,7 +121,11 @@ function Editor({
       <div className="absolute inset-0 bg-space/80 backdrop-blur-sm" onClick={onClose} />
       <form
         action={async (fd) => {
-          await savePortfolioCollection(fd);
+          const res = await savePortfolioCollection(fd);
+          if (res?.error) {
+            setSaveError(res.error);
+            return;
+          }
           onClose();
         }}
         className="glass relative z-10 my-4 w-full max-w-2xl space-y-4 p-6"
@@ -151,6 +156,12 @@ function Editor({
           <StoriesEditor stories={stories} setStories={setStories} />
         ) : (
           <GroupsEditor groups={groups} setGroups={setGroups} />
+        )}
+
+        {saveError && (
+          <p className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+            ⚠ {saveError}
+          </p>
         )}
 
         <div className="flex gap-3 pt-2">
