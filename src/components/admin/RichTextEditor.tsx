@@ -10,6 +10,7 @@ import { Figure } from "./figure-extension";
 import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
 import { compressImage } from "@/lib/compress-image";
+import { inlineEmojiImages } from "@/lib/portfolio-sessions";
 
 interface Props {
   /** Form field name — if set, submits the resulting HTML via a hidden input. */
@@ -78,11 +79,13 @@ function splitDoubleBreaks(html: string): string {
  * to its Unicode character on paste, so it renders inline at text size — the way
  * it looks on Facebook. Real images (with descriptive alt text) are untouched.
  */
-// Pictographic glyphs plus the joiners/modifiers that build compound emoji:
-// Emoji_Component already covers ZWJ, variation selectors, keycaps and skin tones.
+// Emoji_Component covers ZWJ, variation selectors, keycaps, skin tones and the
+// regional indicators that build flags.
 const EMOJI_ONLY =
   /^[\p{Extended_Pictographic}\p{Emoji_Component}\s]+$/u;
-const HAS_PICTOGRAPH = /\p{Extended_Pictographic}/u;
+// At least one real emoji: a pictograph, or a flag (regional indicators) —
+// flags carry no pictographic glyph, which is why 🇹🇭 slipped through before.
+const HAS_EMOJI = /[\p{Extended_Pictographic}\p{Regional_Indicator}]/u;
 
 function transformPastedHTML(html: string): string {
   if (typeof window === "undefined" || !html) return html;
@@ -95,7 +98,7 @@ function transformPastedHTML(html: string): string {
     ).trim();
     // Only convert when the label is purely emoji (a pictographic glyph and
     // nothing else) — that's an emoji, not a captioned photo.
-    if (label && HAS_PICTOGRAPH.test(label) && EMOJI_ONLY.test(label)) {
+    if (label && HAS_EMOJI.test(label) && EMOJI_ONLY.test(label)) {
       img.replaceWith(doc.createTextNode(label));
     }
   });
@@ -176,7 +179,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   // Heal legacy "two paragraphs merged into one node via <br><br>" content so
   // each paragraph is an independent block (client-only; SSR passes it through).
   const initialHtml = useMemo(
-    () => splitDoubleBreaks(defaultValue) || "<p></p>",
+    () => splitDoubleBreaks(inlineEmojiImages(defaultValue)) || "<p></p>",
     [defaultValue]
   );
 

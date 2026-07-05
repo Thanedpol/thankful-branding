@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { EventSession } from "@/lib/portfolio-sessions";
-import { hasContent } from "@/lib/portfolio-sessions";
+import { hasContent, inlineEmojiImages } from "@/lib/portfolio-sessions";
 
 /**
  * Carousel of an event's sub-sessions (sub-blogs): each slide is one session
@@ -95,7 +95,7 @@ export default function SessionCarousel({ items }: { items: EventSession[] }) {
           {hasContent(s.body) && (
             <div
               className={`prose-cyber ${s.image ? "mt-6" : ""}`}
-              dangerouslySetInnerHTML={{ __html: s.body ?? "" }}
+              dangerouslySetInnerHTML={{ __html: inlineEmojiImages(s.body) }}
             />
           )}
           {s.url && (

@@ -16,6 +16,28 @@ export function hasContent(html?: string): boolean {
   return /<(img|figure|iframe|video)\b/i.test(html);
 }
 
+// An <img alt> made entirely of emoji (glyphs + component chars + whitespace).
+const EMOJI_ALT = /^[\p{Extended_Pictographic}\p{Emoji_Component}\s]+$/u;
+// ...that contains at least one real emoji: a pictograph, a flag (regional
+// indicator), or a keycap. (A bare digit like "5" alone must NOT qualify.)
+const HAS_EMOJI = /[\p{Extended_Pictographic}\p{Regional_Indicator}\u20E3]/u;
+
+/**
+ * Replace emoji-only <img> tags with their emoji text. Emoji copied from
+ * Facebook (👍, and especially flags like 🇹🇭 built from regional indicators)
+ * arrive as tiny images that the prose CSS blows up to full width. Swapping them
+ * for the alt's emoji character makes them render inline at text size. Real
+ * images (descriptive alt) are left alone.
+ */
+export function inlineEmojiImages(html?: string): string {
+  if (!html) return "";
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const alt = /\balt="([^"]*)"/i.exec(tag)?.[1];
+    if (alt && HAS_EMOJI.test(alt) && EMOJI_ALT.test(alt)) return alt;
+    return tag;
+  });
+}
+
 /**
  * An event's sub-sessions for display: its `sessions` if present, else the
  * legacy single `body` treated as one session, else an empty list.

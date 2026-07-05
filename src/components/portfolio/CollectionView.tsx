@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import type { PortfolioCollection } from "@/lib/types";
-import { eventHasContent } from "@/lib/portfolio-sessions";
+import { eventHasContent, inlineEmojiImages } from "@/lib/portfolio-sessions";
 
 /** Full portfolio collection page — renders a stories layout (Snobby-style) or
  *  a grouped-events layout (Insightist-style) from the same data shape. Shared
@@ -36,7 +36,7 @@ export default function CollectionView({ c }: { c: PortfolioCollection }) {
             {c.intro && (
               <div
                 className="prose-cyber mt-3 max-w-2xl"
-                dangerouslySetInnerHTML={{ __html: c.intro }}
+                dangerouslySetInnerHTML={{ __html: inlineEmojiImages(c.intro) }}
               />
             )}
             <div className="mt-5 flex flex-wrap gap-2">
@@ -65,7 +65,7 @@ export default function CollectionView({ c }: { c: PortfolioCollection }) {
                     )}
                     <div
                       className="prose-cyber flex-1"
-                      dangerouslySetInnerHTML={{ __html: s.detail }}
+                      dangerouslySetInnerHTML={{ __html: inlineEmojiImages(s.detail) }}
                     />
                     <div className="mt-5">
                       {s.youtubeUrl ? (
