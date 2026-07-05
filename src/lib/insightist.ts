@@ -10,6 +10,8 @@ export interface InsightistEvent {
   url: string;
   /** Optional cover image (e.g. /portfolio/popular-gpt5.jpg). */
   image?: string;
+  /** Optional rich-text content (HTML) — turns the card into a content card. */
+  body?: string;
 }
 
 export interface InsightistGroup {

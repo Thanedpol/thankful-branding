@@ -13,7 +13,7 @@ let uid = 0;
 const key = () => `k${++uid}`;
 
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
-type Ev = { _k: string; title: string; url: string; image?: string };
+type Ev = { _k: string; title: string; url: string; image?: string; body?: string };
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 export default function CollectionsManager({
@@ -277,6 +277,19 @@ function EventsEditor({
           <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
           <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
           <input placeholder="ลิงก์รูป (ไม่บังคับ)" value={e.image ?? ""} onChange={(ev) => patch(e._k, { image: ev.target.value })} className={`${field} mt-1.5`} />
+          {typeof e.body === "string" ? (
+            <div className="mt-2">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted">เนื้อหา (rich text)</span>
+                <button type="button" onClick={() => patch(e._k, { body: undefined })} className="font-mono text-[10px] text-red-400/70 hover:text-red-400">− ลบเนื้อหา</button>
+              </div>
+              <RichTextEditor defaultValue={e.body} onChange={(html) => patch(e._k, { body: html })} />
+            </div>
+          ) : (
+            <button type="button" onClick={() => patch(e._k, { body: "" })} className="mt-2 rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10">
+              ＋ เพิ่มเนื้อหา (เขียนแบบ Blog + ลิงก์)
+            </button>
+          )}
         </div>
       ))}
       <button type="button" onClick={add} className="rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10">

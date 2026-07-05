@@ -71,35 +71,71 @@ export default async function InsightistPage() {
                   </span>
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {group.events.map((e, ei) => (
-                    <a
-                      key={e.url + ei}
-                      href={e.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="glass glass-hover group flex h-full flex-col overflow-hidden"
-                    >
-                      {e.image && (
-                        <div className="relative aspect-video w-full shrink-0 overflow-hidden">
-                          <Image
-                            src={e.image}
-                            alt={e.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                          />
-                        </div>
-                      )}
-                      <div className="flex flex-1 flex-col justify-between gap-4 p-5">
-                        <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
-                          {e.title}
-                        </p>
-                        <span className="font-mono text-xs uppercase tracking-wider text-cyan group-hover:text-ink">
-                          ดูโพสต์ Facebook →
-                        </span>
+                  {group.events.map((e, ei) => {
+                    const hasBody =
+                      !!e.body && e.body.replace(/<[^>]*>/g, "").trim().length > 0;
+                    const cover = e.image && (
+                      <div className="relative aspect-video w-full shrink-0 overflow-hidden">
+                        <Image
+                          src={e.image}
+                          alt={e.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                        />
                       </div>
-                    </a>
-                  ))}
+                    );
+
+                    // Content event: rich body (may hold its own links) + a
+                    // separate footer link — so the card can't be one big <a>.
+                    if (hasBody) {
+                      return (
+                        <div
+                          key={e.url + ei}
+                          className="glass group flex h-full flex-col overflow-hidden"
+                        >
+                          {cover}
+                          <div className="flex flex-1 flex-col gap-3 p-5">
+                            <p className="font-body font-medium leading-snug">
+                              {e.title}
+                            </p>
+                            <div
+                              className="prose-cyber text-sm"
+                              dangerouslySetInnerHTML={{ __html: e.body! }}
+                            />
+                            <a
+                              href={e.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-auto font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
+                            >
+                              ดูโพสต์ Facebook →
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <a
+                        key={e.url + ei}
+                        href={e.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="glass glass-hover group flex h-full flex-col overflow-hidden"
+                      >
+                        {cover}
+                        <div className="flex flex-1 flex-col justify-between gap-4 p-5">
+                          <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
+                            {e.title}
+                          </p>
+                          <span className="font-mono text-xs uppercase tracking-wider text-cyan group-hover:text-ink">
+                            ดูโพสต์ Facebook →
+                          </span>
+                        </div>
+                      </a>
+                    );
+                  })}
                 </div>
               </Reveal>
             ))}
