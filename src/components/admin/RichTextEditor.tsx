@@ -9,6 +9,7 @@ import { TableKit } from "@tiptap/extension-table";
 import { Figure } from "./figure-extension";
 import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
+import { compressImage } from "@/lib/compress-image";
 
 interface Props {
   /** Form field name — if set, submits the resulting HTML via a hidden input. */
@@ -142,8 +143,12 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     setUploading(true);
     setErr(null);
 
+    // Downscale/compress in the browser so big photos stay under the upload
+    // limit (and load faster) without going soft.
+    const upload = await compressImage(file).catch(() => file);
+
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("file", upload);
     fd.append("bucket", "blog-images");
 
     try {
