@@ -71,6 +71,37 @@ function splitDoubleBreaks(html: string): string {
 }
 
 /**
+ * Emoji copied from Facebook (and many sites/editors) arrive as <img> tags, not
+ * text. The Image extension then inserts them as full-width block images, so a
+ * single 👍 balloons into a giant blurry picture. Convert any emoji-image back
+ * to its Unicode character on paste, so it renders inline at text size — the way
+ * it looks on Facebook. Real images (with descriptive alt text) are untouched.
+ */
+// Pictographic glyphs plus the joiners/modifiers that build compound emoji:
+// Emoji_Component already covers ZWJ, variation selectors, keycaps and skin tones.
+const EMOJI_ONLY =
+  /^[\p{Extended_Pictographic}\p{Emoji_Component}\s]+$/u;
+const HAS_PICTOGRAPH = /\p{Extended_Pictographic}/u;
+
+function transformPastedHTML(html: string): string {
+  if (typeof window === "undefined" || !html) return html;
+  const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
+  doc.body.querySelectorAll("img").forEach((img) => {
+    const label = (
+      img.getAttribute("alt") ||
+      img.getAttribute("aria-label") ||
+      ""
+    ).trim();
+    // Only convert when the label is purely emoji (a pictographic glyph and
+    // nothing else) — that's an emoji, not a captioned photo.
+    if (label && HAS_PICTOGRAPH.test(label) && EMOJI_ONLY.test(label)) {
+      img.replaceWith(doc.createTextNode(label));
+    }
+  });
+  return doc.body.innerHTML;
+}
+
+/**
  * WYSIWYG body editor (TipTap). Paragraphs, H1–H6, bold/italic, lists, quote,
  * left/center/right alignment, links (wrap selected text), and images with an
  * optional caption — placed as blocks between paragraphs. Outputs clean HTML
@@ -130,6 +161,9 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     },
     onSelectionUpdate: () => setTick((n) => n + 1),
     editorProps: {
+      // Turn pasted emoji-images (👍 from Facebook etc.) back into text so they
+      // render inline at normal size instead of full-width block pictures.
+      transformPastedHTML,
       attributes: {
         class:
           "prose-cyber max-w-none min-h-[240px] px-4 py-3 focus:outline-none",
