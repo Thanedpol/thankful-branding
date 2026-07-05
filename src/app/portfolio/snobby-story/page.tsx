@@ -3,16 +3,25 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
-import { snobbyStory } from "@/lib/snobby-story";
+import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
 
-export const metadata: Metadata = {
-  title: `${snobbyStory.title} — AI Cartoon Moral Stories | Thank Thanedpol`,
-  description: snobbyStory.intro,
-  alternates: { canonical: "/portfolio/snobby-story" },
-};
+export const revalidate = 0;
 
-export default function SnobbyStoryPage() {
-  const { title, tagline, intro, tags, stories } = snobbyStory;
+export async function generateMetadata(): Promise<Metadata> {
+  const c =
+    (await fetchCollection("snobby-story")) ?? collectionDefault("snobby-story")!;
+  return {
+    title: `${c.title} — AI Cartoon Moral Stories | Thank Thanedpol`,
+    description: c.intro ?? undefined,
+    alternates: { canonical: "/portfolio/snobby-story" },
+  };
+}
+
+export default async function SnobbyStoryPage() {
+  const c =
+    (await fetchCollection("snobby-story")) ?? collectionDefault("snobby-story")!;
+  const { title, tagline, intro, tags, category } = c;
+  const stories = c.data.stories ?? [];
 
   return (
     <>
@@ -22,16 +31,18 @@ export default function SnobbyStoryPage() {
           <Reveal>
             <Link
               href="/#portfolio"
-              className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
+              className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
             >
               ← ผลงานทั้งหมด
             </Link>
-            <span className="mt-4 inline-block tag">{snobbyStory.category}</span>
+            {category && <span className="mt-4 inline-block tag">{category}</span>}
             <h1 className="mt-3 font-display text-4xl font-bold md:text-5xl">
               <span className="text-gradient">{title}</span>
             </h1>
-            <p className="mt-4 max-w-2xl text-lg text-muted">{tagline}</p>
-            <p className="mt-3 max-w-2xl leading-relaxed text-muted">{intro}</p>
+            {tagline && <p className="mt-4 max-w-2xl text-lg text-muted">{tagline}</p>}
+            {intro && (
+              <p className="mt-3 max-w-2xl leading-relaxed text-muted">{intro}</p>
+            )}
             <div className="mt-5 flex flex-wrap gap-2">
               {tags.map((t) => (
                 <span key={t} className="tag">
@@ -49,9 +60,7 @@ export default function SnobbyStoryPage() {
                     {i + 1}
                   </div>
                   {s.title && (
-                    <h3 className="mb-2 font-display text-lg font-bold">
-                      {s.title}
-                    </h3>
+                    <h3 className="mb-2 font-display text-lg font-bold">{s.title}</h3>
                   )}
                   <p className="flex-1 leading-relaxed text-muted">{s.detail}</p>
                   <div className="mt-5">

@@ -130,6 +130,47 @@ export async function deleteBlog(formData: FormData) {
   revalidatePath("/admin/blog");
 }
 
+// ─── Portfolio collections (Snobby Story, Insightist) ────────────────────────
+export async function savePortfolioCollection(formData: FormData) {
+  const supabase = await assertAdmin();
+  const slug = String(formData.get("slug"));
+  if (!slug) throw new Error("Missing slug");
+
+  let p: {
+    title?: string;
+    tagline?: string | null;
+    intro?: string | null;
+    category?: string | null;
+    tags?: string[];
+    data?: Record<string, unknown>;
+  };
+  try {
+    p = JSON.parse(String(formData.get("payload") ?? "{}"));
+  } catch {
+    throw new Error("Invalid payload");
+  }
+
+  const { error } = await supabase.from("portfolio_collections").upsert({
+    slug,
+    title: p.title || slug,
+    tagline: p.tagline || null,
+    intro: p.intro || null,
+    category: p.category || null,
+    tags: p.tags ?? [],
+    data: p.data ?? {},
+    updated_at: new Date().toISOString(),
+  });
+  if (error) {
+    throw new Error(
+      `บันทึกไม่สำเร็จ: ${error.message} — โปรดรัน migration add-portfolio-collections.sql ก่อน`
+    );
+  }
+
+  refreshPublic();
+  revalidatePath(`/portfolio/${slug}`);
+  revalidatePath("/admin/collections");
+}
+
 // ─── Site profile ───────────────────────────────────────────────────────────
 export async function saveProfile(formData: FormData) {
   const supabase = await assertAdmin();

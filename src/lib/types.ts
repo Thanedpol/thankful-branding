@@ -61,6 +61,25 @@ export interface SiteProfile {
   social_links: SocialLinks;
 }
 
+/** An editable portfolio case-study page (Snobby Story, Insightist). Header
+ *  fields plus shape-specific items in `data`. */
+export interface PortfolioCollection {
+  slug: string;
+  title: string;
+  tagline: string | null;
+  intro: string | null;
+  category: string | null;
+  tags: string[];
+  data: {
+    stories?: { title?: string; detail: string; youtubeUrl: string }[];
+    groups?: {
+      name: string;
+      popular?: boolean;
+      events: { title: string; url: string; image?: string }[];
+    }[];
+  };
+}
+
 export interface LogoFile {
   label: string;
   file_url: string;

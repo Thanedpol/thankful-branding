@@ -88,6 +88,19 @@ create table public.blog_member_content (
   member_body text
 );
 
+-- ─── portfolio_collections (editable case-study pages: Snobby, Insightist) ────
+-- Header fields as columns + shape-specific items in `data` (JSONB).
+create table public.portfolio_collections (
+  slug        text primary key,
+  title       text not null,
+  tagline     text,
+  intro       text,
+  category    text,
+  tags        text[] not null default '{}',
+  data        jsonb  not null default '{}'::jsonb,
+  updated_at  timestamptz not null default now()
+);
+
 -- ─── site_profile (singleton — the public "About" identity) ───────────────────
 create table public.site_profile (
   id                 int primary key default 1 check (id = 1),
@@ -131,6 +144,7 @@ alter table public.profiles         enable row level security;
 alter table public.portfolio        enable row level security;
 alter table public.blog_posts       enable row level security;
 alter table public.blog_member_content enable row level security;
+alter table public.portfolio_collections enable row level security;
 alter table public.site_profile     enable row level security;
 alter table public.press_kit        enable row level security;
 alter table public.contact_messages enable row level security;
@@ -170,6 +184,13 @@ create policy "member content authed read" on public.blog_member_content for sel
 create policy "member content admin all" on public.blog_member_content for all
   using (public.is_admin()) with check (public.is_admin());
 grant select on public.blog_member_content to anon, authenticated;
+
+-- portfolio_collections: world-readable, admin-writable.
+create policy "collections public read" on public.portfolio_collections
+  for select using (true);
+create policy "collections admin write" on public.portfolio_collections
+  for all using (public.is_admin()) with check (public.is_admin());
+grant select on public.portfolio_collections to anon, authenticated;
 
 -- site_profile + press_kit: world-readable, admin-writable.
 create policy "site_profile read"  on public.site_profile for select using (true);

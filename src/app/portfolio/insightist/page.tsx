@@ -4,20 +4,28 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
-import { insightist } from "@/lib/insightist";
+import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
 
-const total = insightist.groups
-  .filter((g) => !g.popular)
-  .reduce((n, g) => n + g.events.length, 0);
+export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: `${insightist.title} — AI & Tech News Coverage | Thank Thanedpol`,
-  description: insightist.intro,
-  alternates: { canonical: "/portfolio/insightist" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const c =
+    (await fetchCollection("insightist")) ?? collectionDefault("insightist")!;
+  return {
+    title: `${c.title} — AI & Tech News Coverage | Thank Thanedpol`,
+    description: c.intro ?? undefined,
+    alternates: { canonical: "/portfolio/insightist" },
+  };
+}
 
-export default function InsightistPage() {
-  const { title, tagline, intro, tags, groups } = insightist;
+export default async function InsightistPage() {
+  const c =
+    (await fetchCollection("insightist")) ?? collectionDefault("insightist")!;
+  const { title, tagline, intro, tags, category } = c;
+  const groups = c.data.groups ?? [];
+  const total = groups
+    .filter((g) => !g.popular)
+    .reduce((n, g) => n + g.events.length, 0);
 
   return (
     <>
@@ -27,16 +35,18 @@ export default function InsightistPage() {
           <Reveal>
             <Link
               href="/#portfolio"
-              className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
+              className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
             >
               ← ผลงานทั้งหมด
             </Link>
-            <span className="mt-4 inline-block tag">{insightist.category}</span>
+            {category && <span className="mt-4 inline-block tag">{category}</span>}
             <h1 className="mt-3 font-display text-4xl font-bold md:text-5xl">
               <span className="text-gradient">{title}</span>
             </h1>
-            <p className="mt-4 max-w-2xl text-lg text-muted">{tagline}</p>
-            <p className="mt-3 max-w-2xl leading-relaxed text-muted">{intro}</p>
+            {tagline && <p className="mt-4 max-w-2xl text-lg text-muted">{tagline}</p>}
+            {intro && (
+              <p className="mt-3 max-w-2xl leading-relaxed text-muted">{intro}</p>
+            )}
             <div className="mt-5 flex flex-wrap gap-2">
               {tags.map((t) => (
                 <span key={t} className="tag">
@@ -49,7 +59,7 @@ export default function InsightistPage() {
 
           <div className="mt-12 space-y-12 pb-24">
             {groups.map((group, gi) => (
-              <Reveal key={group.name} delay={gi * 60}>
+              <Reveal key={group.name + gi} delay={gi * 60}>
                 <h2 className="mb-5 font-display text-xl font-bold text-cyan">
                   {group.popular && <span className="text-purple">★ </span>}
                   {group.name}
@@ -58,9 +68,9 @@ export default function InsightistPage() {
                   </span>
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {group.events.map((e) => (
+                  {group.events.map((e, ei) => (
                     <a
-                      key={e.url}
+                      key={e.url + ei}
                       href={e.url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -81,7 +91,7 @@ export default function InsightistPage() {
                         <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
                           {e.title}
                         </p>
-                        <span className="font-mono text-xs uppercase tracking-wider text-cyan/70 group-hover:text-cyan">
+                        <span className="font-mono text-xs uppercase tracking-wider text-cyan group-hover:text-ink">
                           ดูโพสต์ Facebook →
                         </span>
                       </div>
