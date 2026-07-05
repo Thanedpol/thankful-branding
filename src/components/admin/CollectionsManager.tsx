@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   savePortfolioCollection,
   deletePortfolioCollection,
@@ -8,6 +8,7 @@ import {
 import RichTextEditor from "./RichTextEditor";
 import { slugify } from "@/lib/slugify";
 import { hasContent } from "@/lib/portfolio-sessions";
+import { compressImage } from "@/lib/compress-image";
 import type { PortfolioCollection } from "@/lib/types";
 
 type PortfolioLink = { id: string; title: string; project_url: string | null };
@@ -471,7 +472,7 @@ function EventsEditor({
           <div className="mt-2">
           <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
           <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
-          <input placeholder="ลิงก์รูป (ไม่บังคับ)" value={e.image ?? ""} onChange={(ev) => patch(e._k, { image: ev.target.value })} className={`${field} mt-1.5`} />
+          <UploadImageField className="mt-1.5" value={e.image ?? ""} onChange={(url) => patch(e._k, { image: url })} />
           <SubSessionsEditor event={e} patch={patch} />
           </div>
           )}
@@ -545,7 +546,7 @@ function SubSessionsEditor({
               </span>
             </div>
             <input placeholder="ชื่อ session ย่อย" value={s.title ?? ""} onChange={(ev) => patchS(s._k, { title: ev.target.value })} className={field} />
-            <input placeholder="ลิงก์รูป (ไม่บังคับ)" value={s.image ?? ""} onChange={(ev) => patchS(s._k, { image: ev.target.value })} className={`${field} mt-1.5`} />
+            <UploadImageField className="mt-1.5" value={s.image ?? ""} onChange={(url) => patchS(s._k, { image: url })} />
             <input placeholder="ลิงก์ Facebook (ไม่บังคับ)" value={s.url ?? ""} onChange={(ev) => patchS(s._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
             <div className="mt-1.5">
               <RichTextEditor defaultValue={s.body} onChange={(html) => patchS(s._k, { body: html })} />
@@ -643,5 +644,71 @@ function L({ l, children }: { l: string; children: React.ReactNode }) {
       <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-muted">{l}</span>
       {children}
     </label>
+  );
+}
+
+/* ── Controlled image field: paste a URL or upload (compressed) a file ───────*/
+function UploadImageField({
+  value,
+  onChange,
+  className = "",
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  className?: string;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setBusy(true);
+    setErr(null);
+    // Compress in the browser first so big photos stay under the upload limit.
+    const upload = await compressImage(file).catch(() => file);
+    const fd = new FormData();
+    fd.append("file", upload);
+    fd.append("bucket", "portfolio-images");
+    try {
+      const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.publicUrl) setErr(data.error || "อัปโหลดไม่สำเร็จ");
+      else onChange(data.publicUrl);
+    } catch {
+      setErr("อัปโหลดไม่สำเร็จ");
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className={className}>
+      <div className="flex gap-1.5">
+        <input
+          placeholder="ลิงก์รูป (ไม่บังคับ)"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={field}
+        />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={busy}
+          className="shrink-0 rounded-lg border border-cyan/40 bg-cyan/10 px-2.5 font-mono text-[11px] uppercase tracking-wider text-cyan transition-colors hover:bg-cyan/20 disabled:opacity-50"
+        >
+          {busy ? "…" : "⬆ อัป"}
+        </button>
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+      {value && (
+        <div className="mt-1.5 h-16 w-24 overflow-hidden rounded border border-line/10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value} alt="" className="h-full w-full object-cover" />
+        </div>
+      )}
+      {err && <p className="mt-1 font-mono text-[10px] text-red-400">⚠ {err}</p>}
+    </div>
   );
 }

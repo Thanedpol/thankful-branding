@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { compressImage } from "@/lib/compress-image";
 
 interface Props {
   /** Form field name — submits the resulting public URL. */
@@ -24,12 +25,17 @@ export default function ImageUpload({ name, defaultValue = "", bucket, label }: 
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-picking the same file later
     if (!file) return;
     setBusy(true);
     setErr(null);
 
+    // Downscale/compress in the browser so big photos stay under the upload
+    // limit (and load faster) without going soft.
+    const upload = await compressImage(file).catch(() => file);
+
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("file", upload);
     fd.append("bucket", bucket);
 
     try {
