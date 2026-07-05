@@ -19,19 +19,19 @@ export const revalidate = 0; // always reflect latest admin edits
 
 export default async function HomePage() {
   let profile: SiteProfile | null;
-  let featured: Portfolio[];
+  let portfolios: Portfolio[];
   let posts: BlogPreviewType[];
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
     const [p, f, b] = await Promise.all([
       supabase.from("site_profile").select("*").eq("id", 1).single(),
+      // Every portfolio (not just featured), ordered by display order.
       supabase
         .from("portfolio")
         .select("*")
-        .eq("featured", true)
         .order("display_order", { ascending: true })
-        .limit(6),
+        .limit(12),
       supabase
         .from("blog_previews")
         .select("*")
@@ -39,11 +39,11 @@ export default async function HomePage() {
         .limit(3),
     ]);
     profile = p.data as SiteProfile | null;
-    featured = (f.data as Portfolio[]) ?? [];
+    portfolios = (f.data as Portfolio[]) ?? [];
     posts = (b.data as BlogPreviewType[]) ?? [];
   } else {
     profile = demoProfile;
-    featured = demoPortfolio;
+    portfolios = demoPortfolio;
     posts = demoBlogPreviews;
   }
 
@@ -54,7 +54,7 @@ export default async function HomePage() {
       <main>
         <Hero profile={profile} />
         <About profile={profile} />
-        <PortfolioSection items={featured} />
+        <PortfolioSection items={portfolios} />
         <BlogPreview posts={posts} />
       </main>
       <Footer social={profile?.social_links} />
