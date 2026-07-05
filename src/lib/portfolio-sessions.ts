@@ -8,9 +8,12 @@ export type EventItem = NonNullable<
 /** One sub-session (sub-blog) inside an event. */
 export type EventSession = NonNullable<EventItem["sessions"]>[number];
 
-/** True if HTML has any visible (non-tag, non-whitespace) text. */
+/** True if HTML has visible content — either text, or embedded media (an
+ *  image-only body, e.g. certificates, still counts). */
 export function hasContent(html?: string): boolean {
-  return !!html && html.replace(/<[^>]*>/g, "").trim().length > 0;
+  if (!html) return false;
+  if (html.replace(/<[^>]*>/g, "").trim().length > 0) return true;
+  return /<(img|figure|iframe|video)\b/i.test(html);
 }
 
 /**
