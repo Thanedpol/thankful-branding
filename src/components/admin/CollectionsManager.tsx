@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 import { savePortfolioCollection } from "@/app/admin/actions";
+import RichTextEditor from "./RichTextEditor";
 import type { PortfolioCollection } from "@/lib/types";
 
 const field =
   "w-full rounded-lg border border-line/10 bg-surface/[0.03] px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none focus:border-cyan/50";
 
-type Story = { title?: string; detail: string; youtubeUrl: string };
-type Ev = { title: string; url: string; image?: string };
-type Grp = { name: string; popular?: boolean; events: Ev[] };
+// Stable keys so each rich-text editor stays bound to its item across reorders.
+let uid = 0;
+const key = () => `k${++uid}`;
+
+type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
+type Ev = { _k: string; title: string; url: string; image?: string };
+type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 export default function CollectionsManager({
   collections,
@@ -80,16 +85,33 @@ function Editor({
   const [intro, setIntro] = useState(collection.intro ?? "");
   const [category, setCategory] = useState(collection.category ?? "");
   const [tags, setTags] = useState((collection.tags ?? []).join(", "));
-  const [stories, setStories] = useState<Story[]>(collection.data.stories ?? []);
-  const [groups, setGroups] = useState<Grp[]>(collection.data.groups ?? []);
+  const [stories, setStories] = useState<Story[]>(() =>
+    (collection.data.stories ?? []).map((s) => ({ ...s, _k: key() }))
+  );
+  const [groups, setGroups] = useState<Grp[]>(() =>
+    (collection.data.groups ?? []).map((g) => ({
+      ...g,
+      _k: key(),
+      events: g.events.map((e) => ({ ...e, _k: key() })),
+    }))
+  );
 
+  // Serialise (drop the internal _k keys).
   const payload = {
     title,
     tagline: tagline || null,
     intro: intro || null,
     category: category || null,
     tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-    data: kind === "stories" ? { stories } : { groups },
+    data:
+      kind === "stories"
+        ? { stories: stories.map(({ _k, ...s }) => s) }
+        : {
+            groups: groups.map(({ _k, events, ...g }) => ({
+              ...g,
+              events: events.map(({ _k: _ek, ...e }) => e),
+            })),
+          },
   };
 
   return (
@@ -109,11 +131,11 @@ function Editor({
         <L l="Title">
           <input value={title} onChange={(e) => setTitle(e.target.value)} className={field} />
         </L>
-        <L l="Tagline">
+        <L l="Tagline (บรรทัดสั้น ใต้ชื่อ)">
           <textarea value={tagline} onChange={(e) => setTagline(e.target.value)} rows={2} className={`${field} resize-none`} />
         </L>
-        <L l="Intro">
-          <textarea value={intro} onChange={(e) => setIntro(e.target.value)} rows={3} className={`${field} resize-none`} />
+        <L l="Intro (rich text)">
+          <RichTextEditor defaultValue={intro} onChange={setIntro} />
         </L>
         <div className="grid grid-cols-2 gap-4">
           <L l="Category">
@@ -143,7 +165,7 @@ function Editor({
   );
 }
 
-/* ── Snobby Story: flat list of stories ─────────────────────────────────────*/
+/* ── Snobby Story: flat list of stories (rich-text detail) ──────────────────*/
 function StoriesEditor({
   stories,
   setStories,
@@ -151,26 +173,31 @@ function StoriesEditor({
   stories: Story[];
   setStories: React.Dispatch<React.SetStateAction<Story[]>>;
 }) {
-  const patch = (i: number, p: Partial<Story>) =>
-    setStories((s) => s.map((x, ix) => (ix === i ? { ...x, ...p } : x)));
-  const add = () => setStories((s) => [...s, { title: "", detail: "", youtubeUrl: "" }]);
-  const remove = (i: number) => setStories((s) => s.filter((_, ix) => ix !== i));
-  const move = (i: number, d: number) =>
+  const patch = (k: string, p: Partial<Story>) =>
+    setStories((s) => s.map((x) => (x._k === k ? { ...x, ...p } : x)));
+  const add = () =>
+    setStories((s) => [...s, { _k: key(), title: "", detail: "", youtubeUrl: "" }]);
+  const remove = (k: string) => setStories((s) => s.filter((x) => x._k !== k));
+  const move = (k: string, d: number) =>
     setStories((s) => {
-      const a = [...s];
+      const i = s.findIndex((x) => x._k === k);
       const j = i + d;
-      if (j < 0 || j >= a.length) return a;
+      if (i < 0 || j < 0 || j >= s.length) return s;
+      const a = [...s];
       [a[i], a[j]] = [a[j], a[i]];
       return a;
     });
 
   return (
-    <Section title="เรื่องราว (Stories)" onAdd={add} addLabel="+ เพิ่มเรื่อง">
+    <Section title="เรื่องราว (Stories)" onAdd={add} addLabel="＋ เพิ่มเรื่อง">
       {stories.map((s, i) => (
-        <Card key={i} index={i} count={stories.length} onMove={move} onRemove={remove}>
-          <input placeholder="ชื่อเรื่อง" value={s.title ?? ""} onChange={(e) => patch(i, { title: e.target.value })} className={field} />
-          <textarea placeholder="รายละเอียด" value={s.detail} onChange={(e) => patch(i, { detail: e.target.value })} rows={2} className={`${field} mt-2 resize-none`} />
-          <input placeholder="ลิงก์ YouTube (https://...)" value={s.youtubeUrl} onChange={(e) => patch(i, { youtubeUrl: e.target.value })} className={`${field} mt-2`} />
+        <Card key={s._k} index={i} count={stories.length} onMove={(d) => move(s._k, d)} onRemove={() => remove(s._k)}>
+          <input placeholder="ชื่อเรื่อง" value={s.title ?? ""} onChange={(e) => patch(s._k, { title: e.target.value })} className={field} />
+          <div className="mt-2">
+            <span className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-muted">รายละเอียด (rich text)</span>
+            <RichTextEditor defaultValue={s.detail} onChange={(html) => patch(s._k, { detail: html })} />
+          </div>
+          <input placeholder="ลิงก์ YouTube (https://...)" value={s.youtubeUrl} onChange={(e) => patch(s._k, { youtubeUrl: e.target.value })} className={`${field} mt-2`} />
         </Card>
       ))}
     </Section>
@@ -185,30 +212,30 @@ function GroupsEditor({
   groups: Grp[];
   setGroups: React.Dispatch<React.SetStateAction<Grp[]>>;
 }) {
-  const patchG = (gi: number, p: Partial<Grp>) =>
-    setGroups((g) => g.map((x, ix) => (ix === gi ? { ...x, ...p } : x)));
-  const addG = () => setGroups((g) => [...g, { name: "", events: [] }]);
-  const rmG = (gi: number) => setGroups((g) => g.filter((_, ix) => ix !== gi));
-  const moveG = (gi: number, d: number) =>
+  const patchG = (k: string, p: Partial<Grp>) =>
+    setGroups((g) => g.map((x) => (x._k === k ? { ...x, ...p } : x)));
+  const addG = () => setGroups((g) => [...g, { _k: key(), name: "", events: [] }]);
+  const rmG = (k: string) => setGroups((g) => g.filter((x) => x._k !== k));
+  const moveG = (k: string, d: number) =>
     setGroups((g) => {
+      const i = g.findIndex((x) => x._k === k);
+      const j = i + d;
+      if (i < 0 || j < 0 || j >= g.length) return g;
       const a = [...g];
-      const j = gi + d;
-      if (j < 0 || j >= a.length) return a;
-      [a[gi], a[j]] = [a[j], a[gi]];
+      [a[i], a[j]] = [a[j], a[i]];
       return a;
     });
-  const setEvents = (gi: number, events: Ev[]) => patchG(gi, { events });
 
   return (
-    <Section title="กลุ่ม & งาน (Groups)" onAdd={addG} addLabel="+ เพิ่มกลุ่ม">
+    <Section title="กลุ่ม & งาน (Groups)" onAdd={addG} addLabel="＋ เพิ่มกลุ่ม">
       {groups.map((g, gi) => (
-        <Card key={gi} index={gi} count={groups.length} onMove={moveG} onRemove={rmG}>
-          <input placeholder="ชื่อกลุ่ม" value={g.name} onChange={(e) => patchG(gi, { name: e.target.value })} className={field} />
+        <Card key={g._k} index={gi} count={groups.length} onMove={(d) => moveG(g._k, d)} onRemove={() => rmG(g._k)}>
+          <input placeholder="ชื่อกลุ่ม" value={g.name} onChange={(e) => patchG(g._k, { name: e.target.value })} className={field} />
           <label className="mt-2 flex items-center gap-2 font-mono text-[11px] text-muted">
-            <input type="checkbox" checked={!!g.popular} onChange={(e) => patchG(gi, { popular: e.target.checked })} className="accent-cyan" />
+            <input type="checkbox" checked={!!g.popular} onChange={(e) => patchG(g._k, { popular: e.target.checked })} className="accent-cyan" />
             กลุ่มยอดนิยม (★ ไม่นับรวมจำนวนงาน)
           </label>
-          <EventsEditor events={g.events} setEvents={(ev) => setEvents(gi, ev)} />
+          <EventsEditor events={g.events} setEvents={(events) => patchG(g._k, { events })} />
         </Card>
       ))}
     </Section>
@@ -222,14 +249,15 @@ function EventsEditor({
   events: Ev[];
   setEvents: (ev: Ev[]) => void;
 }) {
-  const patch = (i: number, p: Partial<Ev>) =>
-    setEvents(events.map((x, ix) => (ix === i ? { ...x, ...p } : x)));
-  const add = () => setEvents([...events, { title: "", url: "", image: "" }]);
-  const remove = (i: number) => setEvents(events.filter((_, ix) => ix !== i));
-  const move = (i: number, d: number) => {
-    const a = [...events];
+  const patch = (k: string, p: Partial<Ev>) =>
+    setEvents(events.map((x) => (x._k === k ? { ...x, ...p } : x)));
+  const add = () => setEvents([...events, { _k: key(), title: "", url: "", image: "" }]);
+  const remove = (k: string) => setEvents(events.filter((x) => x._k !== k));
+  const move = (k: string, d: number) => {
+    const i = events.findIndex((x) => x._k === k);
     const j = i + d;
-    if (j < 0 || j >= a.length) return;
+    if (i < 0 || j < 0 || j >= events.length) return;
+    const a = [...events];
     [a[i], a[j]] = [a[j], a[i]];
     setEvents(a);
   };
@@ -237,22 +265,22 @@ function EventsEditor({
   return (
     <div className="mt-3 space-y-2 border-l border-line/10 pl-3">
       {events.map((e, i) => (
-        <div key={i} className="rounded-md border border-line/10 bg-surface/[0.02] p-2">
+        <div key={e._k} className="rounded-md border border-line/10 bg-surface/[0.02] p-2">
           <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-muted">
             <span>งานที่ {i + 1}</span>
             <span className="flex gap-1.5">
-              <button type="button" onClick={() => move(i, -1)} className="hover:text-cyan">↑</button>
-              <button type="button" onClick={() => move(i, 1)} className="hover:text-cyan">↓</button>
-              <button type="button" onClick={() => remove(i)} className="text-red-400/70 hover:text-red-400">✕</button>
+              <button type="button" onClick={() => move(e._k, -1)} className="hover:text-cyan">↑</button>
+              <button type="button" onClick={() => move(e._k, 1)} className="hover:text-cyan">↓</button>
+              <button type="button" onClick={() => remove(e._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>
             </span>
           </div>
-          <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(i, { title: ev.target.value })} className={field} />
-          <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(i, { url: ev.target.value })} className={`${field} mt-1.5`} />
-          <input placeholder="ลิงก์รูป (ไม่บังคับ เช่น /portfolio/xxx.png)" value={e.image ?? ""} onChange={(ev) => patch(i, { image: ev.target.value })} className={`${field} mt-1.5`} />
+          <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
+          <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
+          <input placeholder="ลิงก์รูป (ไม่บังคับ)" value={e.image ?? ""} onChange={(ev) => patch(e._k, { image: ev.target.value })} className={`${field} mt-1.5`} />
         </div>
       ))}
       <button type="button" onClick={add} className="rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10">
-        + เพิ่มงาน
+        ＋ เพิ่มงาน
       </button>
     </div>
   );
@@ -290,8 +318,8 @@ function Card({
 }: {
   index: number;
   count: number;
-  onMove: (i: number, d: number) => void;
-  onRemove: (i: number) => void;
+  onMove: (d: number) => void;
+  onRemove: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -299,9 +327,9 @@ function Card({
       <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted">
         <span>#{index + 1}</span>
         <span className="flex gap-2">
-          <button type="button" onClick={() => onMove(index, -1)} disabled={index === 0} className="disabled:opacity-30 hover:text-cyan">↑</button>
-          <button type="button" onClick={() => onMove(index, 1)} disabled={index === count - 1} className="disabled:opacity-30 hover:text-cyan">↓</button>
-          <button type="button" onClick={() => onRemove(index)} className="text-red-400/70 hover:text-red-400">✕ ลบ</button>
+          <button type="button" onClick={() => onMove(-1)} disabled={index === 0} className="disabled:opacity-30 hover:text-cyan">↑</button>
+          <button type="button" onClick={() => onMove(1)} disabled={index === count - 1} className="disabled:opacity-30 hover:text-cyan">↓</button>
+          <button type="button" onClick={onRemove} className="text-red-400/70 hover:text-red-400">− ลบ</button>
         </span>
       </div>
       {children}

@@ -41,7 +41,10 @@ export default async function SnobbyStoryPage() {
             </h1>
             {tagline && <p className="mt-4 max-w-2xl text-lg text-muted">{tagline}</p>}
             {intro && (
-              <p className="mt-3 max-w-2xl leading-relaxed text-muted">{intro}</p>
+              <div
+                className="prose-cyber mt-3 max-w-2xl"
+                dangerouslySetInnerHTML={{ __html: intro }}
+              />
             )}
             <div className="mt-5 flex flex-wrap gap-2">
               {tags.map((t) => (
@@ -62,7 +65,10 @@ export default async function SnobbyStoryPage() {
                   {s.title && (
                     <h3 className="mb-2 font-display text-lg font-bold">{s.title}</h3>
                   )}
-                  <p className="flex-1 leading-relaxed text-muted">{s.detail}</p>
+                  <div
+                    className="prose-cyber flex-1"
+                    dangerouslySetInnerHTML={{ __html: s.detail }}
+                  />
                   <div className="mt-5">
                     {s.youtubeUrl ? (
                       <a

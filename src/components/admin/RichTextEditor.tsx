@@ -11,9 +11,11 @@ import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
 
 interface Props {
-  /** Form field name — submits the resulting HTML. */
-  name: string;
+  /** Form field name — if set, submits the resulting HTML via a hidden input. */
+  name?: string;
   defaultValue?: string;
+  /** Called with the HTML whenever it changes (for state-based forms). */
+  onChange?: (html: string) => void;
 }
 
 /**
@@ -74,12 +76,16 @@ function splitDoubleBreaks(html: string): string {
  * optional caption — placed as blocks between paragraphs. Outputs clean HTML
  * into a hidden input so the saveBlog server action keeps reading `body`.
  */
-export default function RichTextEditor({ name, defaultValue = "" }: Props) {
+export default function RichTextEditor({ name, defaultValue = "", onChange }: Props) {
   const [html, setHtml] = useState(defaultValue);
   const [, setTick] = useState(0); // refresh toolbar active states on selection
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  // Keep the latest onChange so the editor's create/update callbacks (captured
+  // once) always call the current prop.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   // Heal legacy "two paragraphs merged into one node via <br><br>" content so
   // each paragraph is an independent block (client-only; SSR passes it through).
@@ -112,8 +118,16 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
     immediatelyRender: false, // required for Next.js SSR
     // Sync the hidden input to the normalised HTML on load, so re-saving an
     // untouched post persists the split-paragraph fix.
-    onCreate: ({ editor }) => setHtml(editor.getHTML()),
-    onUpdate: ({ editor }) => setHtml(editor.getHTML()),
+    onCreate: ({ editor }) => {
+      const h = editor.getHTML();
+      setHtml(h);
+      onChangeRef.current?.(h);
+    },
+    onUpdate: ({ editor }) => {
+      const h = editor.getHTML();
+      setHtml(h);
+      onChangeRef.current?.(h);
+    },
     onSelectionUpdate: () => setTick((n) => n + 1),
     editorProps: {
       attributes: {
@@ -204,7 +218,7 @@ export default function RichTextEditor({ name, defaultValue = "" }: Props) {
 
   return (
     <div>
-      <input type="hidden" name={name} value={html} />
+      {name && <input type="hidden" name={name} value={html} />}
       <div className="overflow-hidden rounded-lg border border-line/10 bg-surface/[0.03]">
         <Toolbar
           editor={editor}
