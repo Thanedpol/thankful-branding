@@ -325,6 +325,18 @@ function GroupsEditor({
   groups: Grp[];
   setGroups: React.Dispatch<React.SetStateAction<Grp[]>>;
 }) {
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const toggle = (k: string) =>
+    setCollapsed((s) => {
+      const n = new Set(s);
+      if (n.has(k)) n.delete(k);
+      else n.add(k);
+      return n;
+    });
+  const allCollapsed = groups.length > 0 && groups.every((g) => collapsed.has(g._k));
+  const toggleAll = () =>
+    setCollapsed(allCollapsed ? new Set() : new Set(groups.map((g) => g._k)));
+
   const patchG = (k: string, p: Partial<Grp>) =>
     setGroups((g) => g.map((x) => (x._k === k ? { ...x, ...p } : x)));
   const addG = () => setGroups((g) => [...g, { _k: key(), name: "", events: [] }]);
@@ -340,9 +352,33 @@ function GroupsEditor({
     });
 
   return (
-    <Section title="กลุ่ม & งาน (Groups)" onAdd={addG} addLabel="＋ เพิ่มกลุ่ม">
+    <Section
+      title="กลุ่ม & งาน (Groups)"
+      onAdd={addG}
+      addLabel="＋ เพิ่มกลุ่ม"
+      extra={
+        groups.length > 1 && (
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-muted hover:text-cyan"
+          >
+            {allCollapsed ? "▾ ขยายทุกกลุ่ม" : "▸ ย่อทุกกลุ่ม"}
+          </button>
+        )
+      }
+    >
       {groups.map((g, gi) => (
-        <Card key={g._k} index={gi} count={groups.length} onMove={(d) => moveG(g._k, d)} onRemove={() => rmG(g._k)}>
+        <Card
+          key={g._k}
+          index={gi}
+          count={groups.length}
+          onMove={(d) => moveG(g._k, d)}
+          onRemove={() => rmG(g._k)}
+          collapsed={collapsed.has(g._k)}
+          onToggle={() => toggle(g._k)}
+          summary={`${g.name || "(ยังไม่ตั้งชื่อกลุ่ม)"} · ${g.events.length} งาน`}
+        >
           <input placeholder="ชื่อกลุ่ม" value={g.name} onChange={(e) => patchG(g._k, { name: e.target.value })} className={field} />
           <label className="mt-2 flex items-center gap-2 font-mono text-[11px] text-muted">
             <input type="checkbox" checked={!!g.popular} onChange={(e) => patchG(g._k, { popular: e.target.checked })} className="accent-cyan" />
@@ -362,6 +398,19 @@ function EventsEditor({
   events: Ev[];
   setEvents: (ev: Ev[]) => void;
 }) {
+  // Existing events start collapsed (compact title list); newly-added events
+  // have fresh keys not in the set, so they open ready to edit.
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    () => new Set(events.map((e) => e._k))
+  );
+  const toggle = (k: string) =>
+    setCollapsed((s) => {
+      const n = new Set(s);
+      if (n.has(k)) n.delete(k);
+      else n.add(k);
+      return n;
+    });
+
   const patch = (k: string, p: Partial<Ev>) =>
     setEvents(events.map((x) => (x._k === k ? { ...x, ...p } : x)));
   const add = () => setEvents([...events, { _k: key(), title: "", url: "", image: "" }]);
@@ -377,16 +426,24 @@ function EventsEditor({
 
   return (
     <div className="mt-3 space-y-2 border-l border-line/10 pl-3">
-      {events.map((e, i) => (
+      {events.map((e, i) => {
+        const isCollapsed = collapsed.has(e._k);
+        return (
         <div key={e._k} className="rounded-md border border-line/10 bg-surface/[0.02] p-2">
-          <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-muted">
-            <span>งานที่ {i + 1}</span>
-            <span className="flex gap-1.5">
+          <div className="flex items-center justify-between font-mono text-[10px] text-muted">
+            <button type="button" onClick={() => toggle(e._k)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
+              <span className="text-cyan">{isCollapsed ? "▸" : "▾"}</span>
+              <span className="shrink-0">งานที่ {i + 1}</span>
+              {isCollapsed && <span className="truncate text-ink/70">{e.title || "(ยังไม่ตั้งชื่อ)"}</span>}
+            </button>
+            <span className="flex shrink-0 gap-1.5">
               <button type="button" onClick={() => move(e._k, -1)} className="hover:text-cyan">↑</button>
               <button type="button" onClick={() => move(e._k, 1)} className="hover:text-cyan">↓</button>
               <button type="button" onClick={() => remove(e._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>
             </span>
           </div>
+          {!isCollapsed && (
+          <div className="mt-2">
           <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
           <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
           <input placeholder="ลิงก์รูป (ไม่บังคับ)" value={e.image ?? ""} onChange={(ev) => patch(e._k, { image: ev.target.value })} className={`${field} mt-1.5`} />
@@ -414,8 +471,11 @@ function EventsEditor({
               ＋ เพิ่มเนื้อหา (เขียนแบบ Blog + ลิงก์)
             </button>
           )}
+          </div>
+          )}
         </div>
-      ))}
+        );
+      })}
       <button type="button" onClick={add} className="rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10">
         ＋ เพิ่มงาน
       </button>
@@ -429,15 +489,20 @@ function Section({
   onAdd,
   addLabel,
   children,
+  extra,
 }: {
   title: string;
   onAdd: () => void;
   addLabel: string;
   children: React.ReactNode;
+  extra?: React.ReactNode;
 }) {
   return (
     <div className="rounded-lg border border-line/10 p-3">
-      <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-cyan/80">{title}</p>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <p className="font-mono text-[11px] uppercase tracking-wider text-cyan/80">{title}</p>
+        {extra}
+      </div>
       <div className="space-y-3">{children}</div>
       <button type="button" onClick={onAdd} className="mt-3 rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-cyan hover:bg-cyan/20">
         {addLabel}
@@ -452,24 +517,40 @@ function Card({
   onMove,
   onRemove,
   children,
+  collapsed,
+  onToggle,
+  summary,
 }: {
   index: number;
   count: number;
   onMove: (d: number) => void;
   onRemove: () => void;
   children: React.ReactNode;
+  collapsed?: boolean;
+  onToggle?: () => void;
+  summary?: string;
 }) {
   return (
     <div className="rounded-lg border border-line/10 bg-surface/[0.03] p-3">
-      <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted">
-        <span>#{index + 1}</span>
-        <span className="flex gap-2">
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted">
+        {onToggle ? (
+          <button type="button" onClick={onToggle} className="flex min-w-0 items-center gap-2 hover:text-cyan">
+            <span className="text-cyan">{collapsed ? "▸" : "▾"}</span>
+            <span className="shrink-0">#{index + 1}</span>
+            {collapsed && summary && (
+              <span className="truncate normal-case tracking-normal text-ink/70">{summary}</span>
+            )}
+          </button>
+        ) : (
+          <span>#{index + 1}</span>
+        )}
+        <span className="flex shrink-0 gap-2">
           <button type="button" onClick={() => onMove(-1)} disabled={index === 0} className="disabled:opacity-30 hover:text-cyan">↑</button>
           <button type="button" onClick={() => onMove(1)} disabled={index === count - 1} className="disabled:opacity-30 hover:text-cyan">↓</button>
           <button type="button" onClick={onRemove} className="text-red-400/70 hover:text-red-400">− ลบ</button>
         </span>
       </div>
-      {children}
+      {!collapsed && <div className="mt-2">{children}</div>}
     </div>
   );
 }
