@@ -259,15 +259,22 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     },
   });
 
-  // After clicking into the editor the browser sometimes hands focus to the
-  // toolbar's format <select>, so typing changes the heading instead of the
-  // text (and feels like you "can't type"). Re-assert editor focus once the
-  // click settles — the caret is preserved, and clicking the toolbar itself is
-  // unaffected because this only runs for mousedowns inside the editor.
+  // On mouseup the browser sometimes hands focus from the just-clicked editor
+  // to the first toolbar control, so a plain click doesn't "stick" (you had to
+  // hold the mouse) and typing went elsewhere. Re-assert editor focus after the
+  // release — the click/drag selection is already set by then, so it's
+  // preserved. Only runs when the press started inside the editor, so clicking
+  // the toolbar is unaffected.
   useEffect(() => {
     if (!editor) return;
     const dom = editor.view.dom as HTMLElement;
-    const onMouseDown = () => {
+    let pressedInEditor = false;
+    const onDown = () => {
+      pressedInEditor = true;
+    };
+    const onUp = () => {
+      if (!pressedInEditor) return;
+      pressedInEditor = false;
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           const active = document.activeElement;
@@ -275,8 +282,12 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         })
       );
     };
-    dom.addEventListener("mousedown", onMouseDown, true);
-    return () => dom.removeEventListener("mousedown", onMouseDown, true);
+    dom.addEventListener("mousedown", onDown, true);
+    document.addEventListener("mouseup", onUp, true);
+    return () => {
+      dom.removeEventListener("mousedown", onDown, true);
+      document.removeEventListener("mouseup", onUp, true);
+    };
   }, [editor]);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -311,6 +322,78 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       <p className="mt-1 font-mono text-[10px] text-muted">
         🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▶ ฝังวิดีโอ/โซเชียล · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
       </p>
+    </div>
+  );
+}
+
+const BLOCKS = [
+  { v: "p", label: "ย่อหน้า" },
+  { v: "h1", label: "H1" },
+  { v: "h2", label: "H2" },
+  { v: "h3", label: "H3" },
+  { v: "h4", label: "H4" },
+  { v: "h5", label: "H5" },
+  { v: "h6", label: "H6" },
+];
+
+/**
+ * Block-format picker. A custom button+menu, not a native <select> — a select
+ * would grab focus from the editor when you click the body (so typing changed
+ * the heading and single clicks wouldn't stick). `onMouseDown preventDefault`
+ * keeps the editor's selection so the format applies to it.
+ */
+function FormatMenu({
+  block,
+  onSelect,
+}: {
+  block: string;
+  onSelect: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = BLOCKS.find((b) => b.v === block) ?? BLOCKS[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        title="รูปแบบข้อความ"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1.5 rounded bg-surface/[0.06] px-2 py-1 font-mono text-xs text-ink outline-none hover:bg-surface/[0.1]"
+      >
+        {current.label}
+        <span className="text-[7px] text-muted">▼</span>
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-30 mt-1 w-28 overflow-hidden rounded-md border border-line/15 bg-space-light py-1 shadow-lg shadow-black/40">
+          {BLOCKS.map((b) => (
+            <button
+              key={b.v}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                onSelect(b.v);
+                setOpen(false);
+              }}
+              className={`block w-full px-3 py-1.5 text-left font-mono text-xs transition-colors ${
+                b.v === block ? "bg-cyan/20 text-cyan" : "text-ink hover:bg-surface/[0.08]"
+              }`}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -411,20 +494,7 @@ function Toolbar({
   return (
     <div className="relative border-b border-line/10 bg-surface/[0.03]">
       <div className="flex flex-wrap items-center gap-1 p-2">
-        <select
-          title="รูปแบบข้อความ"
-          value={block}
-          onChange={(e) => setBlock(e.target.value)}
-          className="rounded bg-surface/[0.06] px-2 py-1 font-mono text-xs text-ink outline-none"
-        >
-          <option value="p" className="bg-space">ย่อหน้า</option>
-          <option value="h1" className="bg-space">H1</option>
-          <option value="h2" className="bg-space">H2</option>
-          <option value="h3" className="bg-space">H3</option>
-          <option value="h4" className="bg-space">H4</option>
-          <option value="h5" className="bg-space">H5</option>
-          <option value="h6" className="bg-space">H6</option>
-        </select>
+        <FormatMenu block={block} onSelect={setBlock} />
         <span className="mx-1 h-4 w-px bg-line/15" />
 
         <Btn title="ตัวหนา (Ctrl+B)" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} label={<b>B</b>} />
