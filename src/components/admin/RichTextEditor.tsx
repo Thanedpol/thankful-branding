@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -258,6 +258,26 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       },
     },
   });
+
+  // After clicking into the editor the browser sometimes hands focus to the
+  // toolbar's format <select>, so typing changes the heading instead of the
+  // text (and feels like you "can't type"). Re-assert editor focus once the
+  // click settles — the caret is preserved, and clicking the toolbar itself is
+  // unaffected because this only runs for mousedowns inside the editor.
+  useEffect(() => {
+    if (!editor) return;
+    const dom = editor.view.dom as HTMLElement;
+    const onMouseDown = () => {
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          const active = document.activeElement;
+          if (active !== dom && !dom.contains(active)) editor.view.focus();
+        })
+      );
+    };
+    dom.addEventListener("mousedown", onMouseDown, true);
+    return () => dom.removeEventListener("mousedown", onMouseDown, true);
+  }, [editor]);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
