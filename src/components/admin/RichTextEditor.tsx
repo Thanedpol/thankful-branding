@@ -358,8 +358,14 @@ function FormatMenu({
     const onDown = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
+    // Typing (or any key) closes the menu so it never sits over the text.
+    const onKey = () => setOpen(false);
     document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
   return (
@@ -367,8 +373,14 @@ function FormatMenu({
       <button
         type="button"
         title="รูปแบบข้อความ"
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => setOpen((o) => !o)}
+        // Toggle on a real mouse press (preventDefault keeps the editor's
+        // selection). Using mousedown — not click — also ignores the phantom
+        // "click" the browser fires on this button when it steals focus from
+        // the editor, which used to pop the menu open over the text.
+        onMouseDown={(e) => {
+          e.preventDefault();
+          setOpen((o) => !o);
+        }}
         className="flex items-center gap-1.5 rounded bg-surface/[0.06] px-2 py-1 font-mono text-xs text-ink outline-none hover:bg-surface/[0.1]"
       >
         {current.label}
