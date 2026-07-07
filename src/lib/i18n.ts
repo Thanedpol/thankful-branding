@@ -64,6 +64,8 @@ export const dict: Record<Locale, Dict> = {
     "blog.member.gate.title": "อ่านต่อเฉพาะสมาชิก",
     "blog.member.gate.body": "ล็อกอินหรือสมัครสมาชิก (ฟรี) เพื่ออ่านเนื้อหาส่วนนี้",
     "blog.back": "← บทความทั้งหมด",
+    "blog.by": "โดย",
+    "blog.views": "ครั้งที่เข้าชม",
 
     "press.eyebrow": "// สำหรับสื่อและพาร์ตเนอร์",
     "press.heading": "Press Kit",
@@ -144,6 +146,8 @@ export const dict: Record<Locale, Dict> = {
     "blog.member.gate.title": "The rest is for members",
     "blog.member.gate.body": "Log in or create a free account to read this section.",
     "blog.back": "← All posts",
+    "blog.by": "By",
+    "blog.views": "views",
 
     "press.eyebrow": "// For media & collaborators",
     "press.heading": "Press Kit",
@@ -223,6 +227,8 @@ export const dict: Record<Locale, Dict> = {
     "blog.member.gate.title": "余下内容仅限会员",
     "blog.member.gate.body": "登录或免费注册会员即可阅读此部分。",
     "blog.back": "← 全部文章",
+    "blog.by": "作者",
+    "blog.views": "次浏览",
 
     "press.eyebrow": "// 供媒体与合作伙伴",
     "press.heading": "媒体资料",

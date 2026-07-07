@@ -56,8 +56,8 @@ export const demoBlogPreviews: BlogPreview[] = [
 ];
 
 export const demoBlogPosts: Record<string, BlogPost> = {
-  "why-agents-beat-pipelines": { ...demoBlogPreviews[0], body: "<p>Pipelines assume you know the shape of the problem in advance. Agents do not — they decide the next step from the current state, which is exactly what open-ended work demands.</p><p>This is a public post — anyone can read the full body.</p>", has_member_content: true, member_body: "<p>Members-only: here's the failure taxonomy I use to decide when a loop should escalate vs. retry, with the exact prompts.</p>", status: "published" },
-  "interfaces-2049": { ...demoBlogPreviews[2], body: "<p>Cyberpunk UI looks great in trailers. Shipping it is another matter — readability, accessibility, and performance all push back against the aesthetic.</p>", status: "published" },
+  "why-agents-beat-pipelines": { ...demoBlogPreviews[0], body: "<p>Pipelines assume you know the shape of the problem in advance. Agents do not — they decide the next step from the current state, which is exactly what open-ended work demands.</p><p>This is a public post — anyone can read the full body.</p>", has_member_content: true, member_body: "<p>Members-only: here's the failure taxonomy I use to decide when a loop should escalate vs. retry, with the exact prompts.</p>", status: "published", view_count: 1284 },
+  "interfaces-2049": { ...demoBlogPreviews[2], body: "<p>Cyberpunk UI looks great in trailers. Shipping it is another matter — readability, accessibility, and performance all push back against the aesthetic.</p>", status: "published", view_count: 842 },
   // 'hidden-cost-of-context-windows' is member-only → body withheld in demo too.
 };
 

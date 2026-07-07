@@ -37,10 +37,44 @@ export interface BlogPost {
   status: BlogStatus;
   published_at: string | null;
   created_at: string;
+  /** Denormalized all-time view total (kept in sync by a DB trigger). */
+  view_count?: number;
 }
 
 /** Subset returned by the public `blog_previews` view (no body/member_body). */
 export type BlogPreview = Omit<BlogPost, "body" | "member_body" | "status">;
+
+// ─── Blog analytics (self-built view tracking) ───────────────────────────────
+
+/** Headline counters returned by the `blog_view_totals()` RPC. */
+export interface BlogViewTotals {
+  total: number;
+  today: number;
+  last7: number;
+  last30: number;
+  unique30: number;
+}
+
+/** One point in the daily views series (`blog_views_daily`). */
+export interface DailyViews {
+  day: string; // ISO date (YYYY-MM-DD)
+  views: number;
+}
+
+/** A row of the top-posts table (`blog_top_posts`). */
+export interface TopPost {
+  post_id: string;
+  title: string;
+  slug: string;
+  views: number; // within the selected window
+  total: number; // all-time
+}
+
+/** A labelled bucket in a dimension breakdown (referrer / country). */
+export interface DimensionCount {
+  label: string;
+  views: number;
+}
 
 export interface SocialLinks {
   github: string;

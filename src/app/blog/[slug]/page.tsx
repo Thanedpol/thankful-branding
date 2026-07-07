@@ -7,16 +7,30 @@ import Footer from "@/components/Footer";
 import EmbedFrames from "@/components/EmbedFrames";
 import T from "@/components/T";
 import JsonLd from "@/components/JsonLd";
+import BlogViewTracker from "@/components/BlogViewTracker";
 import { blogPostingJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 import {
   isSupabaseConfigured,
   demoBlogPosts,
   demoBlogPreviews,
+  demoProfile,
 } from "@/lib/demo-data";
 import type { BlogPost, BlogPreview } from "@/lib/types";
 
 export const revalidate = 0;
+
+/** The blog is single-author — the byline is the site owner's name. */
+async function getAuthorName(): Promise<string> {
+  if (!isSupabaseConfigured()) return demoProfile.name;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("site_profile")
+    .select("name")
+    .eq("id", 1)
+    .maybeSingle();
+  return (data as { name?: string } | null)?.name || demoProfile.name;
+}
 
 async function getPreviewBySlug(slug: string): Promise<BlogPreview | null> {
   if (!isSupabaseConfigured()) {
@@ -65,7 +79,13 @@ export default async function BlogDetail({
   if (!isSupabaseConfigured()) {
     const demoPost = demoBlogPosts[slug];
     if (demoPost)
-      return <PublishedPost post={demoPost} memberBody={demoPost.member_body ?? null} />;
+      return (
+        <PublishedPost
+          post={demoPost}
+          memberBody={demoPost.member_body ?? null}
+          authorName={demoProfile.name}
+        />
+      );
     const demoPrev = demoBlogPreviews.find((p) => p.slug === slug);
     if (demoPrev) return <LockedPost preview={demoPrev} slug={slug} />;
     notFound();
@@ -109,19 +129,24 @@ export default async function BlogDetail({
     memberBody = (mc as { member_body: string | null } | null)?.member_body ?? null;
   }
 
-  return <PublishedPost post={post} memberBody={memberBody} />;
+  const authorName = await getAuthorName();
+  return <PublishedPost post={post} memberBody={memberBody} authorName={authorName} />;
 }
 
 function PublishedPost({
   post,
   memberBody = null,
+  authorName,
 }: {
   post: BlogPost;
   memberBody?: string | null;
+  authorName: string;
 }) {
+  const views = post.view_count ?? 0;
   return (
     <>
       <JsonLd data={blogPostingJsonLd(post)} />
+      <BlogViewTracker slug={post.slug} />
       <Navbar />
       <main className="min-h-screen pt-32">
         <article className="mx-auto max-w-3xl px-6 pb-24">
@@ -146,15 +171,41 @@ function PublishedPost({
           <h1 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
             {post.title}
           </h1>
-          {post.published_at && (
-            <p className="mt-3 font-mono text-xs text-muted">
-              {new Date(post.published_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-          )}
+          <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-xs text-muted">
+            <span className="text-ink/80">
+              <T k="blog.by" /> {authorName}
+            </span>
+            {post.published_at && (
+              <>
+                <span className="text-line/30" aria-hidden>·</span>
+                <time dateTime={post.published_at}>
+                  {new Date(post.published_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </time>
+              </>
+            )}
+            <span className="text-line/30" aria-hidden>·</span>
+            <span className="inline-flex items-center gap-1.5 text-cyan/90">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {views.toLocaleString()} <T k="blog.views" />
+            </span>
+          </div>
 
           {post.cover_image_url && (
             <div className="relative mt-8 aspect-video w-full overflow-hidden rounded-2xl">
