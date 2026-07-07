@@ -289,8 +289,26 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       requestAnimationFrame(restore);
       requestAnimationFrame(() => requestAnimationFrame(restore));
     };
+    // Enter triggers the same browser focus-scroll, yanking the modal up to the
+    // toolbar. Enter only ever moves the caret down, so undo an *upward* jump
+    // while still allowing a downward scroll that follows the new line.
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      const sp = scrollParent(dom);
+      if (!sp) return;
+      const top = sp.scrollTop;
+      const restore = () => {
+        if (top - sp.scrollTop > 4) sp.scrollTop = top;
+      };
+      requestAnimationFrame(restore);
+      requestAnimationFrame(() => requestAnimationFrame(restore));
+    };
     dom.addEventListener("mousedown", onDown, true);
-    return () => dom.removeEventListener("mousedown", onDown, true);
+    dom.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      dom.removeEventListener("mousedown", onDown, true);
+      dom.removeEventListener("keydown", onKeyDown, true);
+    };
   }, [editor]);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
