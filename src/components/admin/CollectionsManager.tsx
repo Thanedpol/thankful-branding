@@ -194,7 +194,7 @@ function Editor({
 
   return (
     <div ref={scrollRef} className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
-      <div className="absolute inset-0 bg-space/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-space" onClick={onClose} />
       <form
         action={async (fd) => {
           const res = await savePortfolioCollection(fd);
@@ -204,7 +204,7 @@ function Editor({
           }
           onClose();
         }}
-        className="glass relative z-10 my-4 w-full max-w-2xl space-y-4 p-6"
+        className="glass relative z-10 my-4 w-full max-w-2xl space-y-4 bg-space-light p-6"
       >
         <h2 className="font-display text-xl font-bold">
           {isNew ? "สร้าง Collection ใหม่" : `แก้ไข: ${collection.title}`}
