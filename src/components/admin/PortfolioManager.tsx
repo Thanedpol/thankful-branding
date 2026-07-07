@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { savePortfolio, deletePortfolio } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
+import { useScrollJumpGuard } from "./use-scroll-jump-guard";
 import type { Portfolio, PortfolioCategory } from "@/lib/types";
 
 const CATS: PortfolioCategory[] = ["Video", "Web", "Design", "Other"];
@@ -73,8 +74,10 @@ export default function PortfolioManager({ items }: { items: Portfolio[] }) {
 }
 
 function Editor({ item, onClose }: { item: Portfolio | null; onClose: () => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useScrollJumpGuard(scrollRef);
   return (
-    <div className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
+    <div ref={scrollRef} className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
       <div className="absolute inset-0 bg-space/80 backdrop-blur-sm" onClick={onClose} />
       <form
         action={async (fd) => {

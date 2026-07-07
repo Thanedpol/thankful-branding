@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -258,58 +258,6 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       },
     },
   });
-
-  // Clicking into the editor (notably a table cell) makes the browser scroll
-  // the freshly-focused editable to the top of its scroll container, jumping
-  // the modal up to the toolbar. Record the scroll position on mousedown and
-  // snap it back on the next frame (before paint) so there is no visible jump.
-  useEffect(() => {
-    if (!editor) return;
-    const dom = editor.view.dom as HTMLElement;
-    const scrollParent = (node: HTMLElement | null): HTMLElement | null => {
-      let p = node?.parentElement ?? null;
-      while (p) {
-        const oy = getComputedStyle(p).overflowY;
-        if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight) return p;
-        p = p.parentElement;
-      }
-      return (document.scrollingElement as HTMLElement) ?? null;
-    };
-    // Record the scroll position on mousedown (before the browser focuses and
-    // scrolls) and snap it back over the next couple of frames. Only touches
-    // scrollTop — never focus or selection — so the caret still lands where the
-    // user clicked.
-    const onDown = () => {
-      const sp = scrollParent(dom);
-      if (!sp) return;
-      const top = sp.scrollTop;
-      const restore = () => {
-        if (Math.abs(sp.scrollTop - top) > 1) sp.scrollTop = top;
-      };
-      requestAnimationFrame(restore);
-      requestAnimationFrame(() => requestAnimationFrame(restore));
-    };
-    // Enter triggers the same browser focus-scroll, yanking the modal up to the
-    // toolbar. Enter only ever moves the caret down, so undo an *upward* jump
-    // while still allowing a downward scroll that follows the new line.
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Enter") return;
-      const sp = scrollParent(dom);
-      if (!sp) return;
-      const top = sp.scrollTop;
-      const restore = () => {
-        if (top - sp.scrollTop > 4) sp.scrollTop = top;
-      };
-      requestAnimationFrame(restore);
-      requestAnimationFrame(() => requestAnimationFrame(restore));
-    };
-    dom.addEventListener("mousedown", onDown, true);
-    dom.addEventListener("keydown", onKeyDown, true);
-    return () => {
-      dom.removeEventListener("mousedown", onDown, true);
-      dom.removeEventListener("keydown", onKeyDown, true);
-    };
-  }, [editor]);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

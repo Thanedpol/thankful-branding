@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { saveBlog, deleteBlog } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
 import RichTextEditor from "./RichTextEditor";
+import { useScrollJumpGuard } from "./use-scroll-jump-guard";
 import type { BlogPost } from "@/lib/types";
 
 const field =
@@ -87,8 +88,10 @@ function Badge({ on, yes, no }: { on: boolean; yes: string; no: string }) {
 }
 
 function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useScrollJumpGuard(scrollRef);
   return (
-    <div className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
+    <div ref={scrollRef} className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
       <div className="absolute inset-0 bg-space/80 backdrop-blur-sm" onClick={onClose} />
       <form
         action={async (fd) => {

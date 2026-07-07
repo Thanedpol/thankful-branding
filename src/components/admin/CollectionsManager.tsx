@@ -9,6 +9,7 @@ import RichTextEditor from "./RichTextEditor";
 import { slugify } from "@/lib/slugify";
 import { hasContent } from "@/lib/portfolio-sessions";
 import { compressImage } from "@/lib/compress-image";
+import { useScrollJumpGuard } from "./use-scroll-jump-guard";
 import type { PortfolioCollection } from "@/lib/types";
 
 type PortfolioLink = { id: string; title: string; project_url: string | null };
@@ -123,6 +124,8 @@ function Editor({
   portfolios: PortfolioLink[];
   onClose: () => void;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useScrollJumpGuard(scrollRef);
   const [slug, setSlug] = useState(collection.slug);
   const [kind, setKind] = useState<"stories" | "groups">(
     collection.data.groups ? "groups" : "stories"
@@ -190,7 +193,7 @@ function Editor({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
+    <div ref={scrollRef} className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
       <div className="absolute inset-0 bg-space/80 backdrop-blur-sm" onClick={onClose} />
       <form
         action={async (fd) => {
