@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070711"/>
+      <stop offset="0.55" stop-color="#08060f"/>
+      <stop offset="1" stop-color="#0b0716"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.46" r="0.55">
+      <stop offset="0" stop-color="#1a2b5c" stop-opacity="0.45"/>
+      <stop offset="0.5" stop-color="#2a1a5c" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#08060f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00F5FF"/>
+      <stop offset="1" stop-color="#7B2FFF"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#5566aa" stroke-width="1" opacity="0.06"/>
+    </pattern>
+  </defs>
+
+  <!-- backdrop -->
+  <rect width="1200" height="360" fill="url(#bg)"/>
+  <rect width="1200" height="360" fill="url(#grid)"/>
+  <rect width="1200" height="360" fill="url(#glow)"/>
+
+  <!-- neon particles -->
+  <g fill="#00F5FF">
+    <circle cx="120" cy="70" r="2.5" opacity="0.7"/>
+    <circle cx="245" cy="150" r="1.6" opacity="0.4"/>
+    <circle cx="70" cy="220" r="2" opacity="0.55"/>
+    <circle cx="330" cy="285" r="1.5" opacity="0.35"/>
+    <circle cx="190" cy="315" r="2.2" opacity="0.5"/>
+    <circle cx="1080" cy="80" r="2.6" opacity="0.7"/>
+    <circle cx="960" cy="150" r="1.6" opacity="0.4"/>
+    <circle cx="1130" cy="230" r="2" opacity="0.55"/>
+    <circle cx="880" cy="300" r="1.5" opacity="0.35"/>
+    <circle cx="1030" cy="315" r="2.2" opacity="0.5"/>
+    <circle cx="420" cy="55" r="1.4" opacity="0.3"/>
+    <circle cx="790" cy="60" r="1.4" opacity="0.3"/>
+  </g>
+  <g fill="#7B2FFF">
+    <circle cx="150" cy="130" r="2" opacity="0.5"/>
+    <circle cx="1050" cy="120" r="2" opacity="0.5"/>
+    <circle cx="300" cy="90" r="1.5" opacity="0.35"/>
+    <circle cx="900" cy="255" r="1.6" opacity="0.4"/>
+  </g>
+
+  <!-- eyebrow -->
+  <text x="600" y="132" text-anchor="middle" fill="url(#accent)" font-size="16"
+        font-weight="600" letter-spacing="6">◢  AI · BUSINESS · SCIENCE &amp; TECHNOLOGY</text>
+
+  <!-- title -->
+  <text x="600" y="212" text-anchor="middle" fill="#F4F6FB" font-size="78"
+        font-weight="800" letter-spacing="-1">Thank Thanedpol</text>
+
+  <!-- accent underline -->
+  <rect x="540" y="236" width="120" height="4" rx="2" fill="url(#accent)"/>
+
+  <!-- tagline -->
+  <text x="600" y="286" text-anchor="middle" fill="#8892A4" font-size="21" font-weight="400">
+    Content Creator — AI &amp; Business news · Thailand &amp; worldwide
+  </text>
+</svg>

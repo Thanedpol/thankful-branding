@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/cover.svg" alt="Thank Thanedpol — AI · Business · Science &amp; Technology" width="100%">
+</p>
+
 # Thank Thanedpol — เล่าข่าว AI · ธุรกิจ · วิทยาศาสตร์และเทคโนโลยี
 
 > *Making AI, business, and technology news simple, timely, and useful.*
