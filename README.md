@@ -1,4 +1,4 @@
-![Thank Thanedpol — AI · Business · Science & Technology](docs/cover.png)
+![Thank Thanedpol — AI · Business · Science & Technology](https://cdn.jsdelivr.net/gh/Thanedpol/thankful-branding@main/docs/cover.png)
 
 # Thank Thanedpol — เล่าข่าว AI · ธุรกิจ · วิทยาศาสตร์และเทคโนโลยี
 
