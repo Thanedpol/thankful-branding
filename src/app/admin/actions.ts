@@ -21,7 +21,33 @@ function slugify(s: string) {
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, ""); // no leading/trailing dashes
+}
+
+/**
+ * Guarantee a non-empty, unique blog slug. Thai-only titles slugify to ""
+ * (all non-ASCII stripped); the `slug` column is UNIQUE + NOT NULL, so without
+ * this a second empty slug collided and the insert failed silently. Falls back
+ * to "post" and appends -2, -3… until the slug is free.
+ */
+async function uniqueBlogSlug(
+  supabase: ReturnType<typeof createAdminClient>,
+  base: string,
+  excludeId: string | null
+): Promise<string> {
+  const root = base || "post";
+  for (let i = 1; i <= 100; i++) {
+    const candidate = i === 1 ? root : `${root}-${i}`;
+    const { data } = await supabase
+      .from("blog_posts")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
+    const taken = !!data && (!excludeId || (data as { id: string }).id !== excludeId);
+    if (!taken) return candidate;
+  }
+  return `${root}-${Date.now().toString(36)}`;
 }
 
 function tagsFromString(s: FormDataEntryValue | null): string[] {
@@ -68,7 +94,9 @@ export async function deletePortfolio(formData: FormData) {
 }
 
 // ─── Blog ─────────────────────────────────────────────────────────────────
-export async function saveBlog(formData: FormData): Promise<{ id: string | null }> {
+export async function saveBlog(
+  formData: FormData
+): Promise<{ id: string | null; error?: string }> {
   const supabase = await assertAdmin();
   const id = formData.get("id") as string | null;
   const title = String(formData.get("title"));
@@ -76,9 +104,13 @@ export async function saveBlog(formData: FormData): Promise<{ id: string | null 
 
   const memberBody = String(formData.get("member_body") ?? "") || null;
 
+  // Non-empty, unique slug — Thai-only titles otherwise slugify to "" and collide.
+  const baseSlug = slugify(String(formData.get("slug") ?? "")) || slugify(title);
+  const slug = await uniqueBlogSlug(supabase, baseSlug, id);
+
   const row = {
     title,
-    slug: String(formData.get("slug") || "") || slugify(title),
+    slug,
     excerpt: String(formData.get("excerpt") ?? "") || null,
     body: String(formData.get("body") ?? "") || null,
     cover_image_url: String(formData.get("cover_image_url") ?? "") || null,
@@ -93,13 +125,15 @@ export async function saveBlog(formData: FormData): Promise<{ id: string | null 
 
   let postId = id;
   if (id) {
-    await supabase.from("blog_posts").update(row).eq("id", id);
+    const { error } = await supabase.from("blog_posts").update(row).eq("id", id);
+    if (error) return { id: null, error: `บันทึกไม่สำเร็จ: ${error.message}` };
   } else {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("blog_posts")
       .insert(row)
       .select("id")
       .single();
+    if (error) return { id: null, error: `บันทึกไม่สำเร็จ: ${error.message}` };
     postId = (data as { id: string } | null)?.id ?? null;
   }
 

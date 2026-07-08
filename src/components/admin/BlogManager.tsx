@@ -115,12 +115,18 @@ function Badge({ on, yes, no }: { on: boolean; yes: string; no: string }) {
 function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   useScrollJumpGuard(scrollRef);
+  const [saveError, setSaveError] = useState<string | null>(null);
   return (
     <div ref={scrollRef} className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
       <div className="absolute inset-0 bg-space" onClick={onClose} />
       <form
         action={async (fd) => {
+          setSaveError(null);
           const res = await saveBlog(fd);
+          if (res?.error) {
+            setSaveError(res.error);
+            return; // keep the editor open so the work isn't lost
+          }
           onClose();
           // Auto-translate to EN + 简体中文 in the background (non-blocking).
           if (res?.id) {
@@ -186,6 +192,12 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
             Public (uncheck = members-only body)
           </label>
         </div>
+
+        {saveError && (
+          <p className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+            ⚠ {saveError}
+          </p>
+        )}
 
         <div className="flex gap-3 pt-2">
           <button type="submit" className="btn-neon flex-1">
