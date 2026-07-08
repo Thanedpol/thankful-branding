@@ -21,6 +21,19 @@ export interface Portfolio {
   created_at: string;
 }
 
+/** AI translation of a post into one language. Body absent on previews. */
+export interface BlogTranslation {
+  title?: string;
+  excerpt?: string;
+  body?: string;
+}
+
+/** Per-locale translations map (source is Thai; en/zh are machine-translated). */
+export interface BlogTranslations {
+  en?: BlogTranslation;
+  zh?: BlogTranslation;
+}
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -39,6 +52,8 @@ export interface BlogPost {
   created_at: string;
   /** Denormalized all-time view total (kept in sync by a DB trigger). */
   view_count?: number;
+  /** AI translations (title/excerpt/body) keyed by locale. */
+  translations?: BlogTranslations;
 }
 
 /** Subset returned by the public `blog_previews` view (no body/member_body). */

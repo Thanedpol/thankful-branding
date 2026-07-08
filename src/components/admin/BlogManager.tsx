@@ -5,6 +5,7 @@ import { saveBlog, deleteBlog } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
 import RichTextEditor from "./RichTextEditor";
 import AdminSearch from "./AdminSearch";
+import TranslateButton from "./TranslateButton";
 import { useScrollJumpGuard } from "./use-scroll-jump-guard";
 import type { BlogPost } from "@/lib/types";
 
@@ -74,6 +75,7 @@ export default function BlogManager({ posts }: { posts: BlogPost[] }) {
                   <span className="text-ink/30">/{p.slug}</span>
                 </p>
               </div>
+              <TranslateButton id={p.id} />
               <button
                 onClick={() => setEditing(p)}
                 className="font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
@@ -118,8 +120,17 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
       <div className="absolute inset-0 bg-space" onClick={onClose} />
       <form
         action={async (fd) => {
-          await saveBlog(fd);
+          const res = await saveBlog(fd);
           onClose();
+          // Auto-translate to EN + 简体中文 in the background (non-blocking).
+          if (res?.id) {
+            fetch("/api/translate-post", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: res.id }),
+              keepalive: true,
+            }).catch(() => {});
+          }
         }}
         className="glass relative z-10 my-4 w-full max-w-2xl space-y-4 bg-space-light p-6"
       >

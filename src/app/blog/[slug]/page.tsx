@@ -8,6 +8,7 @@ import EmbedFrames from "@/components/EmbedFrames";
 import T from "@/components/T";
 import JsonLd from "@/components/JsonLd";
 import BlogViewTracker from "@/components/BlogViewTracker";
+import { LocalizedTitle, LocalizedExcerpt, LocalizedBody } from "@/components/BlogLocalized";
 import { blogPostingJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -168,9 +169,7 @@ function PublishedPost({
             )}
           </div>
 
-          <h1 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
-            {post.title}
-          </h1>
+          <LocalizedTitle title={post.title} translations={post.translations} />
           <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-xs text-muted">
             <span className="text-ink/80">
               <T k="blog.by" /> {authorName}
@@ -220,10 +219,7 @@ function PublishedPost({
             </div>
           )}
 
-          <div
-            className="prose-cyber mt-10"
-            dangerouslySetInnerHTML={{ __html: post.body ?? "" }}
-          />
+          <LocalizedBody body={post.body ?? ""} translations={post.translations} />
 
           {post.has_member_content &&
             (memberBody ? (
@@ -295,9 +291,7 @@ function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
           <span className="mt-6 inline-block tag !border-purple/40 !text-purple">
             <T k="blog.locked.tag" />
           </span>
-          <h1 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
-            {preview.title}
-          </h1>
+          <LocalizedTitle title={preview.title} translations={preview.translations} />
 
           {preview.cover_image_url && (
             <div className="relative mt-8 aspect-video w-full overflow-hidden rounded-2xl">
@@ -311,9 +305,11 @@ function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
             </div>
           )}
 
-          <p className="mt-10 text-lg leading-relaxed text-muted">
-            {preview.excerpt}
-          </p>
+          <LocalizedExcerpt
+            excerpt={preview.excerpt ?? ""}
+            translations={preview.translations}
+            className="mt-10 text-lg leading-relaxed text-muted"
+          />
 
           {/* Lock gate */}
           <div className="glass relative mt-8 overflow-hidden p-10 text-center">

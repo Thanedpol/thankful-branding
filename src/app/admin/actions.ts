@@ -68,7 +68,7 @@ export async function deletePortfolio(formData: FormData) {
 }
 
 // ─── Blog ─────────────────────────────────────────────────────────────────
-export async function saveBlog(formData: FormData) {
+export async function saveBlog(formData: FormData): Promise<{ id: string | null }> {
   const supabase = await assertAdmin();
   const id = formData.get("id") as string | null;
   const title = String(formData.get("title"));
@@ -121,6 +121,7 @@ export async function saveBlog(formData: FormData) {
 
   refreshPublic();
   revalidatePath("/admin/blog");
+  return { id: postId };
 }
 
 export async function deleteBlog(formData: FormData) {

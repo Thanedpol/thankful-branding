@@ -2,11 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useT } from "@/components/providers/AppProvider";
+import { useApp, useT } from "@/components/providers/AppProvider";
 import type { BlogPreview } from "@/lib/types";
 
 export default function BlogCard({ post }: { post: BlogPreview }) {
   const t = useT();
+  const { locale } = useApp();
+  const tr = locale !== "th" ? post.translations?.[locale as "en" | "zh"] : undefined;
+  const title = tr?.title?.trim() ? tr.title : post.title;
+  const excerpt = tr?.excerpt?.trim() ? tr.excerpt : post.excerpt;
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -39,10 +43,10 @@ export default function BlogCard({ post }: { post: BlogPreview }) {
           ))}
         </div>
         <h3 className="line-clamp-2 min-h-[3.25rem] font-display text-lg font-bold leading-snug transition-colors group-hover:text-cyan">
-          {post.title}
+          {title}
         </h3>
         <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm text-muted">
-          {post.excerpt}
+          {excerpt}
         </p>
         <span className="mt-auto pt-4 font-mono text-xs uppercase tracking-wider text-cyan">
           {t("blog.read")}
