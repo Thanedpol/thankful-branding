@@ -61,6 +61,21 @@ export interface DailyViews {
   views: number;
 }
 
+/** One bucket in a ranged, granularity-aware series (`blog_views_series`). */
+export interface SeriesPoint {
+  bucket_start: string; // ISO timestamp of the bucket's start
+  views: number;
+}
+
+/** Time-bucket granularity for the analytics chart. */
+export type Bucket = "hour" | "day" | "week" | "month";
+
+/** Total + unique visitors inside a selected range (`blog_range_totals`). */
+export interface RangeTotals {
+  total: number;
+  unique_visitors: number;
+}
+
 /** A row of the top-posts table (`blog_top_posts`). */
 export interface TopPost {
   post_id: string;

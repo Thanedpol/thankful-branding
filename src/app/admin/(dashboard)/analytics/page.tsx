@@ -2,23 +2,69 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/demo-data";
 import ViewsChart from "@/components/admin/ViewsChart";
+import AnalyticsRangePicker from "@/components/admin/AnalyticsRangePicker";
 import type {
   BlogViewTotals,
-  DailyViews,
+  SeriesPoint,
+  Bucket,
+  RangeTotals,
   TopPost,
   DimensionCount,
 } from "@/lib/types";
 
 export const revalidate = 0;
 
-// ─── Demo data (renders the full dashboard with no backend) ──────────────────
-function demoDaily(): DailyViews[] {
-  return Array.from({ length: 30 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (29 - i));
-    const views = 18 + Math.round(34 * Math.abs(Math.sin(i / 3.2))) + (i % 5);
-    return { day: d.toISOString().slice(0, 10), views };
-  });
+const DAY_MS = 86_400_000;
+const PRESET_DAYS = [1, 7, 14, 90, 180, 365];
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Pick a sensible bucket granularity for a span (in days). */
+function bucketFor(spanDays: number): Bucket {
+  if (spanDays <= 2) return "hour";
+  if (spanDays <= 45) return "day";
+  if (spanDays <= 183) return "week";
+  return "month";
+}
+
+/** Human label for the chart header. */
+function rangeLabel(days: number | null, from?: string, to?: string): string {
+  if (days === null) return `${from} → ${to}`;
+  if (days === 1) return "last 24 hours";
+  if (days < 30) return `last ${days} days`;
+  if (days < 365) return `last ${Math.round(days / 30)} months`;
+  return "last 12 months";
+}
+
+// ─── Demo series (renders the full dashboard with no backend) ────────────────
+function stepDate(d: Date, bucket: Bucket): Date {
+  const n = new Date(d);
+  if (bucket === "hour") n.setUTCHours(n.getUTCHours() + 1);
+  else if (bucket === "day") n.setUTCDate(n.getUTCDate() + 1);
+  else if (bucket === "week") n.setUTCDate(n.getUTCDate() + 7);
+  else n.setUTCMonth(n.getUTCMonth() + 1);
+  return n;
+}
+function truncDate(d: Date, bucket: Bucket): Date {
+  const n = new Date(d);
+  n.setUTCMilliseconds(0);
+  n.setUTCSeconds(0);
+  n.setUTCMinutes(0);
+  if (bucket !== "hour") n.setUTCHours(0);
+  if (bucket === "week") n.setUTCDate(n.getUTCDate() - ((n.getUTCDay() + 6) % 7));
+  if (bucket === "month") n.setUTCDate(1);
+  return n;
+}
+function demoSeries(from: Date, to: Date, bucket: Bucket): SeriesPoint[] {
+  const pts: SeriesPoint[] = [];
+  let cur = truncDate(from, bucket);
+  let i = 0;
+  while (cur <= to && i < 800) {
+    const views = 8 + Math.round(24 * Math.abs(Math.sin(i / 3.1))) + (i % 4);
+    pts.push({ bucket_start: cur.toISOString(), views });
+    cur = stepDate(cur, bucket);
+    i++;
+  }
+  return pts;
 }
 
 // ─── Safe RPC wrapper: any failure (incl. "migration not run") → fallback ─────
@@ -41,9 +87,38 @@ async function safeRpc<T>(
   }
 }
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
+}) {
+  const sp = await searchParams;
+
+  // ── Resolve the selected window ───────────────────────────────────────────
+  let activeDays: number | null;
+  let fromDate: Date;
+  let toDate: Date;
+
+  if (sp.from && sp.to && DATE_RE.test(sp.from) && DATE_RE.test(sp.to) && sp.from <= sp.to) {
+    activeDays = null;
+    fromDate = new Date(`${sp.from}T00:00:00.000Z`);
+    toDate = new Date(`${sp.to}T23:59:59.999Z`);
+  } else {
+    activeDays = PRESET_DAYS.includes(Number(sp.range)) ? Number(sp.range) : 7;
+    toDate = new Date();
+    fromDate = new Date(toDate.getTime() - activeDays * DAY_MS);
+  }
+
+  const spanDays = (toDate.getTime() - fromDate.getTime()) / DAY_MS;
+  const bucket = bucketFor(spanDays);
+  const label = rangeLabel(activeDays, sp.from, sp.to);
+  const fromISO = fromDate.toISOString();
+  const toISO = toDate.toISOString();
+
+  // ── Fetch ─────────────────────────────────────────────────────────────────
   let totals: BlogViewTotals = { total: 0, today: 0, last7: 0, last30: 0, unique30: 0 };
-  let daily: DailyViews[] = [];
+  let series: SeriesPoint[] = [];
+  let rangeTotals: RangeTotals = { total: 0, unique_visitors: 0 };
   let top: TopPost[] = [];
   let referrers: DimensionCount[] = [];
   let countries: DimensionCount[] = [];
@@ -51,28 +126,31 @@ export default async function AnalyticsPage() {
 
   if (isSupabaseConfigured()) {
     const admin = createAdminClient();
-    const [totalsRows, dailyRows, topRows, refRows, countryRows] = await Promise.all([
+    const [totalsRows, seriesRows, rangeRows, topRows, refRows, countryRows] = await Promise.all([
       safeRpc<BlogViewTotals[]>(admin, "blog_view_totals", {}, []),
-      safeRpc<DailyViews[]>(admin, "blog_views_daily", { days: 30 }, []),
-      safeRpc<TopPost[]>(admin, "blog_top_posts", { days: 30, lim: 10 }, []),
-      safeRpc<DimensionCount[]>(admin, "blog_views_by_referrer", { days: 30, lim: 8 }, []),
-      safeRpc<DimensionCount[]>(admin, "blog_views_by_country", { days: 30, lim: 8 }, []),
+      safeRpc<SeriesPoint[]>(admin, "blog_views_series", { p_from: fromISO, p_to: toISO, p_bucket: bucket }, []),
+      safeRpc<RangeTotals[]>(admin, "blog_range_totals", { p_from: fromISO, p_to: toISO }, []),
+      safeRpc<TopPost[]>(admin, "blog_top_posts_range", { p_from: fromISO, p_to: toISO, lim: 10 }, []),
+      safeRpc<DimensionCount[]>(admin, "blog_views_by_referrer_range", { p_from: fromISO, p_to: toISO, lim: 8 }, []),
+      safeRpc<DimensionCount[]>(admin, "blog_views_by_country_range", { p_from: fromISO, p_to: toISO, lim: 8 }, []),
     ]);
     totals = totalsRows[0] ?? totals;
-    daily = dailyRows;
+    series = seriesRows;
+    rangeTotals = rangeRows[0] ?? rangeTotals;
     top = topRows;
     referrers = refRows;
     countries = countryRows;
-    // If every RPC came back empty, the migration probably hasn't been applied.
-    notMigrated = daily.length === 0;
+    // A working series function always zero-fills ≥1 bucket; empty ⇒ not migrated.
+    notMigrated = series.length === 0;
   } else {
     // Demo — synthesize a believable dataset so the page is fully reviewable.
-    daily = demoDaily();
-    const sum = daily.reduce((a, d) => a + d.views, 0);
+    series = demoSeries(fromDate, toDate, bucket);
+    const sum = series.reduce((a, d) => a + d.views, 0);
+    rangeTotals = { total: sum, unique_visitors: Math.round(sum * 0.62) };
     totals = {
       total: sum + 3120,
-      today: daily[daily.length - 1].views,
-      last7: daily.slice(-7).reduce((a, d) => a + d.views, 0),
+      today: series[series.length - 1]?.views ?? 0,
+      last7: Math.round(sum * 0.3),
       last30: sum,
       unique30: Math.round(sum * 0.62),
     };
@@ -117,12 +195,12 @@ export default async function AnalyticsPage() {
 
       {notMigrated && (
         <div className="mb-8 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 font-mono text-xs leading-relaxed text-amber-300">
-          ⚠ ยังไม่พบตาราง analytics — รัน <code>supabase/add-blog-analytics.sql</code> ใน
-          Supabase SQL Editor ก่อน แล้วยอด Views จะเริ่มถูกบันทึกและแสดงผลที่นี่
+          ⚠ ยังไม่พบฟังก์ชันช่วงเวลา — รัน <code>supabase/add-analytics-ranges.sql</code> ใน
+          Supabase SQL Editor เพื่อเปิดใช้การเลือกช่วงเวลา (1 วัน / 7 / 14 วัน / 3 / 6 เดือน / 1 ปี / กำหนดเอง)
         </div>
       )}
 
-      {/* Headline counters */}
+      {/* Headline counters (fixed standard windows) */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((s) => (
           <div key={s.label} className="glass p-5">
@@ -137,12 +215,21 @@ export default async function AnalyticsPage() {
         ))}
       </div>
 
-      {/* Trend chart */}
+      {/* Range selector + trend chart */}
       <div className="mt-8">
-        <ViewsChart data={daily} />
+        <AnalyticsRangePicker activeDays={activeDays} from={sp.from} to={sp.to} />
+        <div className="mt-4">
+          <ViewsChart
+            data={series}
+            bucket={bucket}
+            label={label}
+            totalInRange={rangeTotals.total}
+            uniqueInRange={rangeTotals.unique_visitors}
+          />
+        </div>
       </div>
 
-      {/* Top posts + breakdowns */}
+      {/* Top posts + breakdowns (all follow the selected range) */}
       <div className="mt-8 grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <h2 className="mb-4 font-display text-lg font-bold">Top posts</h2>
@@ -175,7 +262,7 @@ export default async function AnalyticsPage() {
             )}
           </div>
           <p className="mt-2 font-mono text-[10px] text-ink/30">
-            Ranked by views in the last 30 days.
+            Ranked by views in {label}.
           </p>
         </div>
 
