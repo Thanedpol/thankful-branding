@@ -1,5 +1,6 @@
 import { saveProfile } from "@/app/admin/actions";
 import ImageUpload from "@/components/admin/ImageUpload";
+import PublicFileUpload from "@/components/admin/PublicFileUpload";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured, demoProfile } from "@/lib/demo-data";
 import type { SiteProfile } from "@/lib/types";
@@ -44,6 +45,24 @@ export default async function AdminProfilePage() {
         <L l="Background reel URL">
           <input name="background_reel_url" defaultValue={p?.background_reel_url ?? ""} className={field} />
         </L>
+
+        <p className="pt-2 font-mono text-[11px] uppercase tracking-wider text-cyan/70">
+          CV / Resume — ปุ่ม “ดู CV” หน้าแรก
+        </p>
+        <PublicFileUpload
+          name="cv_th_url"
+          defaultValue={p?.cv_th_url ?? ""}
+          label="CV (ภาษาไทย)"
+          accept=".pdf,.html,.doc,.docx,image/*"
+          hint="วางลิงก์ (PDF / เว็บ / Google Drive) หรืออัปโหลดไฟล์ · เว้นว่าง = ใช้ค่าเริ่มต้น /cv/cv-th.html"
+        />
+        <PublicFileUpload
+          name="cv_en_url"
+          defaultValue={p?.cv_en_url ?? ""}
+          label="CV (English)"
+          accept=".pdf,.html,.doc,.docx,image/*"
+          hint="Paste a link or upload a file · blank = built-in /cv/cv-en.html"
+        />
 
         <p className="pt-2 font-mono text-[11px] uppercase tracking-wider text-cyan/70">
           Social links

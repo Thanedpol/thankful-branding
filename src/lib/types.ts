@@ -108,6 +108,9 @@ export interface SiteProfile {
   avatar_url: string | null;
   background_reel_url: string | null;
   social_links: SocialLinks;
+  /** "View CV" targets — blank falls back to the built-in /cv/*.html pages. */
+  cv_th_url?: string | null;
+  cv_en_url?: string | null;
 }
 
 /** An editable portfolio case-study page (Snobby Story, Insightist). Header

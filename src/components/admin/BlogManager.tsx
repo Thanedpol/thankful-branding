@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { saveBlog, deleteBlog } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
 import RichTextEditor from "./RichTextEditor";
+import AdminSearch from "./AdminSearch";
 import { useScrollJumpGuard } from "./use-scroll-jump-guard";
 import type { BlogPost } from "@/lib/types";
 
@@ -12,24 +13,46 @@ const field =
 
 export default function BlogManager({ posts }: { posts: BlogPost[] }) {
   const [editing, setEditing] = useState<BlogPost | "new" | null>(null);
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? posts.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.slug.toLowerCase().includes(q) ||
+          p.tags.some((t) => t.toLowerCase().includes(q))
+      )
+    : posts;
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="eyebrow">// Content</p>
           <h1 className="font-display text-3xl font-bold">Blog</h1>
         </div>
-        <button onClick={() => setEditing("new")} className="btn-neon">
-          + New Post
-        </button>
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <AdminSearch value={query} onChange={setQuery} placeholder="ค้นหาบทความ / สลัก / แท็ก…" />
+          <button onClick={() => setEditing("new")} className="btn-neon shrink-0 whitespace-nowrap">
+            + New Post
+          </button>
+        </div>
       </div>
+
+      {q && (
+        <p className="mb-2 font-mono text-[11px] text-muted">
+          พบ {filtered.length} จาก {posts.length} บทความ
+        </p>
+      )}
 
       <div className="glass divide-y divide-line/[0.06]">
         {posts.length === 0 ? (
           <p className="p-6 font-mono text-sm text-muted">No posts yet.</p>
+        ) : filtered.length === 0 ? (
+          <p className="p-6 font-mono text-sm text-muted">ไม่พบบทความที่ตรงกับ “{query}”</p>
         ) : (
-          posts.map((p) => (
+          filtered.map((p) => (
             <div key={p.id} className="flex items-center gap-4 p-4">
               <div className="min-w-0 flex-1">
                 <p className="truncate font-body font-medium">{p.title}</p>

@@ -54,7 +54,11 @@ export default async function HomePage() {
       <main>
         <Hero profile={profile} />
         <About profile={profile} />
-        <PortfolioSection items={portfolios} />
+        <PortfolioSection
+          items={portfolios}
+          cvThUrl={profile?.cv_th_url}
+          cvEnUrl={profile?.cv_en_url}
+        />
         <BlogPreview posts={posts} />
       </main>
       <Footer social={profile?.social_links} />

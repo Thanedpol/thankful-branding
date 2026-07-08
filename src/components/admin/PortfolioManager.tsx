@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { savePortfolio, deletePortfolio } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
+import AdminSearch from "./AdminSearch";
 import { useScrollJumpGuard } from "./use-scroll-jump-guard";
 import type { Portfolio, PortfolioCategory } from "@/lib/types";
 
@@ -13,24 +14,46 @@ const field =
 
 export default function PortfolioManager({ items }: { items: Portfolio[] }) {
   const [editing, setEditing] = useState<Portfolio | "new" | null>(null);
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? items.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.tech_tags.some((t) => t.toLowerCase().includes(q))
+      )
+    : items;
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="eyebrow">// Content</p>
           <h1 className="font-display text-3xl font-bold">Portfolio</h1>
         </div>
-        <button onClick={() => setEditing("new")} className="btn-neon">
-          + New Portfolio
-        </button>
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <AdminSearch value={query} onChange={setQuery} placeholder="ค้นหาผลงาน / หมวด / แท็ก…" />
+          <button onClick={() => setEditing("new")} className="btn-neon shrink-0 whitespace-nowrap">
+            + New Portfolio
+          </button>
+        </div>
       </div>
+
+      {q && (
+        <p className="mb-2 font-mono text-[11px] text-muted">
+          พบ {filtered.length} จาก {items.length} ผลงาน
+        </p>
+      )}
 
       <div className="glass divide-y divide-line/[0.06]">
         {items.length === 0 ? (
           <p className="p-6 font-mono text-sm text-muted">No projects yet.</p>
+        ) : filtered.length === 0 ? (
+          <p className="p-6 font-mono text-sm text-muted">ไม่พบผลงานที่ตรงกับ “{query}”</p>
         ) : (
-          items.map((p) => (
+          filtered.map((p) => (
             <div key={p.id} className="flex items-center gap-4 p-4">
               <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-surface/5">
                 {p.thumbnail_url && (

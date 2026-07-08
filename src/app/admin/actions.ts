@@ -220,6 +220,18 @@ export async function saveProfile(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);
+
+  // CV columns — separate + tolerant so the core save still works if the
+  // add-cv-links.sql migration hasn't been applied yet.
+  const { error: cvErr } = await supabase
+    .from("site_profile")
+    .update({
+      cv_th_url: String(formData.get("cv_th_url") ?? "") || null,
+      cv_en_url: String(formData.get("cv_en_url") ?? "") || null,
+    })
+    .eq("id", 1);
+  if (cvErr) console.error("[saveProfile] CV columns not migrated?", cvErr.message);
+
   refreshPublic();
   revalidatePath("/admin/profile");
 }

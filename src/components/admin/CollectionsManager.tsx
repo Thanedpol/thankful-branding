@@ -6,6 +6,7 @@ import {
   deletePortfolioCollection,
 } from "@/app/admin/actions";
 import RichTextEditor from "./RichTextEditor";
+import AdminSearch from "./AdminSearch";
 import { slugify } from "@/lib/slugify";
 import { hasContent } from "@/lib/portfolio-sessions";
 import { compressImage } from "@/lib/compress-image";
@@ -50,10 +51,21 @@ export default function CollectionsManager({
     collection: PortfolioCollection;
     isNew: boolean;
   } | null>(null);
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? collections.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          c.slug.toLowerCase().includes(q) ||
+          (c.category ?? "").toLowerCase().includes(q)
+      )
+    : collections;
 
   return (
     <div>
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="eyebrow">// Content</p>
           <h1 className="font-display text-3xl font-bold">Portfolio Collections</h1>
@@ -61,16 +73,28 @@ export default function CollectionsManager({
             หน้าผลงานรวม — แก้ไขหรือสร้างใหม่ แล้วลิงก์กับการ์ด Portfolio ได้
           </p>
         </div>
-        <button
-          onClick={() => setEditing({ collection: emptyCollection(), isNew: true })}
-          className="btn-neon shrink-0"
-        >
-          + New Collection
-        </button>
+        <div className="flex w-full items-center gap-3 sm:w-auto">
+          <AdminSearch value={query} onChange={setQuery} placeholder="ค้นหา collection…" />
+          <button
+            onClick={() => setEditing({ collection: emptyCollection(), isNew: true })}
+            className="btn-neon shrink-0 whitespace-nowrap"
+          >
+            + New Collection
+          </button>
+        </div>
       </div>
 
+      {q && (
+        <p className="mb-2 font-mono text-[11px] text-muted">
+          พบ {filtered.length} จาก {collections.length} รายการ
+        </p>
+      )}
+
       <div className="glass divide-y divide-line/[0.06]">
-        {collections.map((c) => {
+        {collections.length > 0 && filtered.length === 0 && (
+          <p className="p-6 font-mono text-sm text-muted">ไม่พบ collection ที่ตรงกับ “{query}”</p>
+        )}
+        {filtered.map((c) => {
           const count = c.data.stories
             ? `${c.data.stories.length} เรื่อง`
             : `${c.data.groups?.reduce((n, g) => n + g.events.length, 0) ?? 0} งาน`;

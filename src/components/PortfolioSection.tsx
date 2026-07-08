@@ -7,7 +7,15 @@ import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
 import type { Portfolio } from "@/lib/types";
 
-export default function PortfolioSection({ items }: { items: Portfolio[] }) {
+export default function PortfolioSection({
+  items,
+  cvThUrl,
+  cvEnUrl,
+}: {
+  items: Portfolio[];
+  cvThUrl?: string | null;
+  cvEnUrl?: string | null;
+}) {
   const t = useT();
   const [active, setActive] = useState<Portfolio | null>(null);
 
@@ -34,7 +42,7 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
             {t("nav.cv")}:
           </span>
           <a
-            href="/cv/cv-th.html"
+            href={cvThUrl || "/cv/cv-th.html"}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-neon !px-4 !py-2 text-xs"
@@ -42,7 +50,7 @@ export default function PortfolioSection({ items }: { items: Portfolio[] }) {
             {t("cv.th")}
           </a>
           <a
-            href="/cv/cv-en.html"
+            href={cvEnUrl || "/cv/cv-en.html"}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-ghost !px-4 !py-2 text-xs"
