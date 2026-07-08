@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="docs/cover.png" alt="Thank Thanedpol — AI · Business · Science &amp; Technology" width="100%">
-</p>
+![Thank Thanedpol — AI · Business · Science & Technology](docs/cover.png)
 
 # Thank Thanedpol — เล่าข่าว AI · ธุรกิจ · วิทยาศาสตร์และเทคโนโลยี
 
