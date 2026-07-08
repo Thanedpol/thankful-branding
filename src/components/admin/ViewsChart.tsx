@@ -57,7 +57,7 @@ export default function ViewsChart({
               <div
                 key={d.bucket_start}
                 title={`${fmt(d.bucket_start, bucket)} — ${d.views.toLocaleString()} views`}
-                className="group relative flex flex-1 flex-col justify-end"
+                className="group relative flex h-full flex-1 flex-col justify-end"
               >
                 <div
                   className="w-full rounded-t-sm bg-gradient-to-t from-cyan/25 to-cyan/80 transition-colors group-hover:from-cyan/50 group-hover:to-cyan"
