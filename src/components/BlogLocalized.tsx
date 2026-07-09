@@ -22,7 +22,7 @@ function useLocalized(
 export function LocalizedTitle({
   title,
   translations,
-  className = "mt-4 font-display text-4xl font-bold leading-[1.8] md:text-5xl",
+  className = "mt-4 font-display text-4xl/[1.5] font-bold md:text-5xl/[1.5]",
 }: {
   title: string;
   translations?: BlogTranslations;
