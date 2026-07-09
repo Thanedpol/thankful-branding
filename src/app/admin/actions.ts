@@ -108,6 +108,24 @@ export async function saveBlog(
   const baseSlug = slugify(String(formData.get("slug") ?? "")) || slugify(title);
   const slug = await uniqueBlogSlug(supabase, baseSlug, id);
 
+  // Preserve the FIRST-published timestamp: stamp it once (the first time the
+  // post becomes published) and keep it stable on later edits — so re-editing a
+  // published post doesn't jump it to the top of the blog or change its date.
+  let existingPublishedAt: string | null = null;
+  if (id) {
+    const { data: existing } = await supabase
+      .from("blog_posts")
+      .select("published_at")
+      .eq("id", id)
+      .maybeSingle();
+    existingPublishedAt =
+      (existing as { published_at: string | null } | null)?.published_at ?? null;
+  }
+  const publishedAt =
+    status === "published" && !existingPublishedAt
+      ? new Date().toISOString()
+      : existingPublishedAt;
+
   const row = {
     title,
     slug,
@@ -117,10 +135,7 @@ export async function saveBlog(
     tags: tagsFromString(formData.get("tags")),
     is_public: formData.get("is_public") === "on",
     status,
-    published_at:
-      status === "published"
-        ? (String(formData.get("published_at") || "") || new Date().toISOString())
-        : null,
+    published_at: publishedAt,
   };
 
   let postId = id;
