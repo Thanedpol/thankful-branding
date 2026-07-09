@@ -63,6 +63,17 @@ export async function generateMetadata({
       description: p.excerpt ?? undefined,
       type: "article",
       url: `/blog/${slug}`,
+      siteName: "Thank Thanedpol",
+      locale: "th_TH",
+      publishedTime: p.published_at ?? undefined,
+      authors: ["Thank Thanedpol"],
+      tags: p.tags,
+      images: p.cover_image_url ? [p.cover_image_url] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: p.title,
+      description: p.excerpt ?? undefined,
       images: p.cover_image_url ? [p.cover_image_url] : undefined,
     },
   };

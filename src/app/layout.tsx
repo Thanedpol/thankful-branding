@@ -8,7 +8,9 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/components/providers/AppProvider";
-import { SITE_URL } from "@/lib/seo";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/seo";
+
+const SITE_TITLE = "Thank Thanedpol — AI, Business & Technology News";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -46,9 +48,42 @@ const notoSC = Noto_Sans_SC({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Thank Thanedpol — Content Creator · AI & Business",
-  description:
-    "Thank Thanedpol — Content Creator covering AI & Business news across Thailand and worldwide. Portfolio, writing, and press kit.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "AI",
+    "ปัญญาประดิษฐ์",
+    "ข่าว AI",
+    "AI news",
+    "ธุรกิจ",
+    "business",
+    "เทคโนโลยี",
+    "technology",
+    "วิทยาศาสตร์",
+    "science",
+    "Thank Thanedpol",
+    "content creator",
+  ],
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    locale: "th_TH",
+    alternateLocale: ["en_US", "zh_CN"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 // Applies the saved theme before paint to avoid a flash of the wrong mode.
