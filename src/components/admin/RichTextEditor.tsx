@@ -158,7 +158,11 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok || !data.publicUrl) {
-        setErr(data.error || "Upload failed");
+        setErr(
+          res.status === 401
+            ? "เซสชันหมดอายุ — กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ (ปุ่ม Logout ในเมนู) แล้วลองอีกครั้ง"
+            : data.error || "Upload failed"
+        );
       } else {
         const chain = ed.chain().focus();
         if (typeof pos === "number") chain.setTextSelection(pos);

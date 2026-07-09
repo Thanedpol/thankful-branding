@@ -42,7 +42,11 @@ export default function ImageUpload({ name, defaultValue = "", bucket, label }: 
       const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
-        setErr(data.error || "Upload failed");
+        setErr(
+          res.status === 401
+            ? "เซสชันหมดอายุ — กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ (ปุ่ม Logout ในเมนู) แล้วลองอีกครั้ง"
+            : data.error || "Upload failed"
+        );
       } else {
         setUrl(data.publicUrl || "");
       }
