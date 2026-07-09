@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import EventDetailView, {
   type EventItem,
 } from "@/components/portfolio/EventDetailView";
+import JsonLd from "@/components/JsonLd";
+import { creativeWorkJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
 import { eventHasContent } from "@/lib/portfolio-sessions";
 
@@ -41,11 +43,30 @@ export default async function InsightistEventPage({
   const { event } = await params;
   const item = await findEvent(decodeURIComponent(event));
   if (!item) notFound();
+  const path = `/portfolio/insightist/${item.slug}`;
   return (
-    <EventDetailView
-      event={item}
-      backHref="/portfolio/insightist"
-      backLabel="← กลับหน้า Insightist"
-    />
+    <>
+      <JsonLd
+        data={[
+          creativeWorkJsonLd({
+            title: item.title,
+            path,
+            description: item.body,
+            image: item.image,
+            partOf: { name: "Insightist", path: "/portfolio/insightist" },
+          }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Insightist", path: "/portfolio/insightist" },
+            { name: item.title, path },
+          ]),
+        ]}
+      />
+      <EventDetailView
+        event={item}
+        backHref="/portfolio/insightist"
+        backLabel="← กลับหน้า Insightist"
+      />
+    </>
   );
 }

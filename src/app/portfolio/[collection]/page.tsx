@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CollectionView from "@/components/portfolio/CollectionView";
+import JsonLd from "@/components/JsonLd";
+import { collectionPageJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { fetchCollection } from "@/lib/portfolio-collections";
 
 export const revalidate = 0;
@@ -28,5 +30,18 @@ export default async function CollectionPage({
   const { collection } = await params;
   const c = await fetchCollection(decodeURIComponent(collection));
   if (!c) notFound();
-  return <CollectionView c={c} />;
+  return (
+    <>
+      <JsonLd
+        data={[
+          collectionPageJsonLd(c),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: c.title, path: `/portfolio/${c.slug}` },
+          ]),
+        ]}
+      />
+      <CollectionView c={c} />
+    </>
+  );
 }

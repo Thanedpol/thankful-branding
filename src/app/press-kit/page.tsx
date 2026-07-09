@@ -4,6 +4,8 @@ import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import PressDownload from "@/components/PressDownload";
 import T from "@/components/T";
+import JsonLd from "@/components/JsonLd";
+import { personJsonLd, profilePageJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured, demoPressKit } from "@/lib/demo-data";
 import type { PressKit, LogoFile } from "@/lib/types";
@@ -23,6 +25,16 @@ export default async function PressKitPage() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          personJsonLd(null),
+          profilePageJsonLd(),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Press Kit", path: "/press-kit" },
+          ]),
+        ]}
+      />
       <Navbar />
       <main className="min-h-screen pt-32">
         <div className="section-pad !pt-0">

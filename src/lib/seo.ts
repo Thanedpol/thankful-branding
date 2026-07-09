@@ -152,3 +152,96 @@ export function faqJsonLd() {
     })),
   };
 }
+
+const PERSON_REF = { "@type": "Person", name: NAME, url: SITE_URL } as const;
+const strip = (s?: string | null) => (s ? s.replace(/<[^>]*>/g, "").trim() : undefined);
+
+/** Breadcrumb trail — helps engines understand where a page sits in the site. */
+export function breadcrumbJsonLd(crumbs: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.name,
+      item: `${SITE_URL}${c.path}`,
+    })),
+  };
+}
+
+/** The /blog index — a Blog listing its recent posts. */
+export function blogListJsonLd(posts: BlogPreview[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    name: `${NAME} — Blog`,
+    url: `${SITE_URL}/blog`,
+    description: "Articles on AI, business, science and technology.",
+    inLanguage: ["th", "en", "zh"],
+    publisher: PERSON_REF,
+    blogPost: posts.slice(0, 20).map((p) => ({
+      "@type": "BlogPosting",
+      headline: p.title,
+      url: `${SITE_URL}/blog/${p.slug}`,
+      datePublished: p.published_at ?? undefined,
+      image: p.cover_image_url ?? undefined,
+    })),
+  };
+}
+
+/** The /press-kit page — a ProfilePage about the person. */
+export function profilePageJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: `${SITE_URL}/press-kit`,
+    name: `${NAME} — Press Kit`,
+    mainEntity: PERSON_REF,
+  };
+}
+
+/** A portfolio collection page (Snobby Story, Insightist, …). */
+export function collectionPageJsonLd(c: {
+  slug: string;
+  title: string;
+  intro?: string | null;
+  category?: string | null;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: c.title,
+    url: `${SITE_URL}/portfolio/${c.slug}`,
+    description: strip(c.intro),
+    about: c.category || undefined,
+    inLanguage: "th",
+    isPartOf: { "@type": "WebSite", name: `${NAME} — Portfolio & Blog`, url: SITE_URL },
+    author: PERSON_REF,
+    creator: PERSON_REF,
+  };
+}
+
+/** A single portfolio work/event within a collection. */
+export function creativeWorkJsonLd(opts: {
+  title: string;
+  path: string;
+  description?: string | null;
+  image?: string | null;
+  partOf?: { name: string; path: string };
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: opts.title,
+    url: `${SITE_URL}${opts.path}`,
+    description: strip(opts.description),
+    image: opts.image || undefined,
+    inLanguage: "th",
+    author: PERSON_REF,
+    creator: PERSON_REF,
+    isPartOf: opts.partOf
+      ? { "@type": "CollectionPage", name: opts.partOf.name, url: `${SITE_URL}${opts.partOf.path}` }
+      : undefined,
+  };
+}

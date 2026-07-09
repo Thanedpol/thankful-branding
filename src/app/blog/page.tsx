@@ -3,6 +3,8 @@ import Footer from "@/components/Footer";
 import BlogList from "@/components/BlogList";
 import Reveal from "@/components/Reveal";
 import T from "@/components/T";
+import JsonLd from "@/components/JsonLd";
+import { blogListJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 import {
   isSupabaseConfigured,
@@ -37,6 +39,15 @@ export default async function BlogIndex() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          blogListJsonLd(list),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Blog", path: "/blog" },
+          ]),
+        ]}
+      />
       <Navbar />
       <main className="min-h-screen pt-32">
         <div className="section-pad !py-0">

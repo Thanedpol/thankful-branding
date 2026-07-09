@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import EventDetailView, {
   type EventItem,
 } from "@/components/portfolio/EventDetailView";
+import JsonLd from "@/components/JsonLd";
+import { creativeWorkJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { fetchCollection } from "@/lib/portfolio-collections";
 import { eventHasContent } from "@/lib/portfolio-sessions";
 import type { PortfolioCollection } from "@/lib/types";
@@ -53,11 +55,30 @@ export default async function CollectionEventPage({
     decodeURIComponent(event)
   );
   if (!found) notFound();
+  const path = `/portfolio/${found.c.slug}/${found.e.slug}`;
   return (
-    <EventDetailView
-      event={found.e}
-      backHref={`/portfolio/${found.c.slug}`}
-      backLabel={`← กลับหน้า ${found.c.title}`}
-    />
+    <>
+      <JsonLd
+        data={[
+          creativeWorkJsonLd({
+            title: found.e.title,
+            path,
+            description: found.e.body,
+            image: found.e.image,
+            partOf: { name: found.c.title, path: `/portfolio/${found.c.slug}` },
+          }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: found.c.title, path: `/portfolio/${found.c.slug}` },
+            { name: found.e.title, path },
+          ]),
+        ]}
+      />
+      <EventDetailView
+        event={found.e}
+        backHref={`/portfolio/${found.c.slug}`}
+        backLabel={`← กลับหน้า ${found.c.title}`}
+      />
+    </>
   );
 }
