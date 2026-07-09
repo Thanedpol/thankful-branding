@@ -66,6 +66,8 @@ export const dict: Record<Locale, Dict> = {
     "blog.back": "← บทความทั้งหมด",
     "blog.by": "โดย",
     "blog.views": "ครั้งที่เข้าชม",
+    "blog.related": "บทความที่เกี่ยวข้อง",
+    "blog.related.eyebrow": "// อ่านต่อ",
 
     "press.eyebrow": "// สำหรับสื่อและพาร์ตเนอร์",
     "press.heading": "Press Kit",
@@ -148,6 +150,8 @@ export const dict: Record<Locale, Dict> = {
     "blog.back": "← All posts",
     "blog.by": "By",
     "blog.views": "views",
+    "blog.related": "Related posts",
+    "blog.related.eyebrow": "// Keep reading",
 
     "press.eyebrow": "// For media & collaborators",
     "press.heading": "Press Kit",
@@ -229,6 +233,8 @@ export const dict: Record<Locale, Dict> = {
     "blog.back": "← 全部文章",
     "blog.by": "作者",
     "blog.views": "次浏览",
+    "blog.related": "相关文章",
+    "blog.related.eyebrow": "// 继续阅读",
 
     "press.eyebrow": "// 供媒体与合作伙伴",
     "press.heading": "媒体资料",

@@ -8,6 +8,7 @@ import EmbedFrames from "@/components/EmbedFrames";
 import T from "@/components/T";
 import JsonLd from "@/components/JsonLd";
 import BlogViewTracker from "@/components/BlogViewTracker";
+import RelatedPosts from "@/components/RelatedPosts";
 import { LocalizedTitle, LocalizedExcerpt, LocalizedBody } from "@/components/BlogLocalized";
 import { blogPostingJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
@@ -31,6 +32,37 @@ async function getAuthorName(): Promise<string> {
     .eq("id", 1)
     .maybeSingle();
   return (data as { name?: string } | null)?.name || demoProfile.name;
+}
+
+/**
+ * Related posts: other published posts ranked by how many tags they share with
+ * the current one (most-similar first), topped up with recent posts so the
+ * section always fills. Uses `blog_previews` (safe, published, no body).
+ */
+async function getRelatedPosts(slug: string, tags: string[]): Promise<BlogPreview[]> {
+  let all: BlogPreview[];
+  if (!isSupabaseConfigured()) {
+    all = demoBlogPreviews;
+  } else {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("blog_previews")
+      .select("*")
+      .order("published_at", { ascending: false });
+    all = (data as BlogPreview[]) ?? [];
+  }
+
+  const want = new Set(tags.map((t) => t.toLowerCase()));
+  const scored = all
+    .filter((p) => p.slug !== slug)
+    .map((p) => ({
+      p,
+      score: (p.tags ?? []).reduce((n, t) => n + (want.has(t.toLowerCase()) ? 1 : 0), 0),
+    }));
+
+  const shared = scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score);
+  const rest = scored.filter((s) => s.score === 0); // already recency-ordered
+  return [...shared, ...rest].map((s) => s.p).slice(0, 3);
 }
 
 async function getPreviewBySlug(slug: string): Promise<BlogPreview | null> {
@@ -90,14 +122,17 @@ export default async function BlogDetail({
   // the member-only post shows the locked gate.
   if (!isSupabaseConfigured()) {
     const demoPost = demoBlogPosts[slug];
-    if (demoPost)
+    if (demoPost) {
+      const related = await getRelatedPosts(slug, demoPost.tags);
       return (
         <PublishedPost
           post={demoPost}
           memberBody={demoPost.member_body ?? null}
           authorName={demoProfile.name}
+          related={related}
         />
       );
+    }
     const demoPrev = demoBlogPreviews.find((p) => p.slug === slug);
     if (demoPrev) return <LockedPost preview={demoPrev} slug={slug} />;
     notFound();
@@ -142,17 +177,27 @@ export default async function BlogDetail({
   }
 
   const authorName = await getAuthorName();
-  return <PublishedPost post={post} memberBody={memberBody} authorName={authorName} />;
+  const related = await getRelatedPosts(slug, post.tags);
+  return (
+    <PublishedPost
+      post={post}
+      memberBody={memberBody}
+      authorName={authorName}
+      related={related}
+    />
+  );
 }
 
 function PublishedPost({
   post,
   memberBody = null,
   authorName,
+  related = [],
 }: {
   post: BlogPost;
   memberBody?: string | null;
   authorName: string;
+  related?: BlogPreview[];
 }) {
   const views = post.view_count ?? 0;
   return (
@@ -250,6 +295,8 @@ function PublishedPost({
               <MemberGate slug={post.slug} />
             ))}
         </article>
+
+        <RelatedPosts posts={related} />
       </main>
       <EmbedFrames />
       <Footer />
