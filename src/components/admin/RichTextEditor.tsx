@@ -313,7 +313,11 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
             fileRef.current?.click();
           }}
         />
-        <EditorContent editor={editor} />
+        {/* Bounded, self-scrolling content area so the toolbar stays in view
+            while writing a long body (no need to scroll the whole modal up). */}
+        <div className="max-h-[55vh] overflow-y-auto">
+          <EditorContent editor={editor} />
+        </div>
       </div>
       <input
         ref={fileRef}
