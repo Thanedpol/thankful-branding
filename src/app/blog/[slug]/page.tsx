@@ -34,12 +34,41 @@ async function getAuthorName(): Promise<string> {
   return (data as { name?: string } | null)?.name || demoProfile.name;
 }
 
-/**
- * Related posts: other published posts ranked by how many tags they share with
- * the current one (most-similar first), topped up with recent posts so the
- * section always fills. Uses `blog_previews` (safe, published, no body).
- */
-async function getRelatedPosts(slug: string, tags: string[]): Promise<BlogPreview[]> {
+// ─── Related-post ranking by content similarity (TF-IDF-lite) ────────────────
+// Score other posts by shared meaningful terms across title + excerpt + tags,
+// weighting rare/specific terms (e.g. "Gemini", "ByteDance", "Chef") far higher
+// than common ones (e.g. "AI") so the results are actually on-topic — not just
+// "shares the AI tag". Uses `blog_previews` (safe, published, no body).
+const STOP = new Set([
+  "the", "a", "an", "and", "or", "of", "to", "in", "for", "on", "with", "is", "are",
+  "was", "it", "this", "that", "at", "by", "from", "as", "be", "how", "why", "what",
+  "who", "your", "you", "we", "our", "its", "new",
+  "และ", "ที่", "ของ", "ใน", "เป็น", "การ", "ให้", "กับ", "จาก", "มี", "ได้", "ก็", "แต่",
+  "หรือ", "จะ", "ว่า", "แล้ว", "นี้", "ด้วย", "ไป", "มา", "คือ", "เพื่อ", "ทั้ง", "อย่าง",
+  "ต่อ", "โดย", "ก่อน", "ขึ้น", "ทุก", "แบบ", "ยัง",
+]);
+
+function tokenize(s: string): string[] {
+  return (s || "")
+    .toLowerCase()
+    .replace(/<[^>]*>/g, " ")
+    .split(/[^\p{L}\p{N}\p{M}]+/u) // keep Thai marks so Thai words stay intact
+    .filter((t) => t.length >= 2 && !STOP.has(t) && !/^\d+$/.test(t));
+}
+
+/** Weighted term map for a post: tags strongest, then title, then excerpt. */
+function termWeights(p: BlogPreview): Map<string, number> {
+  const m = new Map<string, number>();
+  const add = (text: string, w: number) => {
+    for (const t of tokenize(text)) m.set(t, Math.max(m.get(t) ?? 0, w));
+  };
+  (p.tags ?? []).forEach((tag) => add(tag, 3));
+  add(p.title ?? "", 2);
+  add(p.excerpt ?? "", 1);
+  return m;
+}
+
+async function getRelatedPosts(slug: string): Promise<BlogPreview[]> {
   let all: BlogPreview[];
   if (!isSupabaseConfigured()) {
     all = demoBlogPreviews;
@@ -52,17 +81,47 @@ async function getRelatedPosts(slug: string, tags: string[]): Promise<BlogPrevie
     all = (data as BlogPreview[]) ?? [];
   }
 
-  const want = new Set(tags.map((t) => t.toLowerCase()));
-  const scored = all
-    .filter((p) => p.slug !== slug)
-    .map((p) => ({
-      p,
-      score: (p.tags ?? []).reduce((n, t) => n + (want.has(t.toLowerCase()) ? 1 : 0), 0),
-    }));
+  const docs = all.map((p) => ({ p, terms: termWeights(p) }));
+  const cur = docs.find((d) => d.p.slug === slug);
+  const others = docs.filter((d) => d.p.slug !== slug);
+  if (!cur) return others.slice(0, 3).map((d) => d.p);
 
-  const shared = scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score);
-  const rest = scored.filter((s) => s.score === 0); // already recency-ordered
-  return [...shared, ...rest].map((s) => s.p).slice(0, 3);
+  // Document frequency → idf: a term shared by few posts is more meaningful.
+  const df = new Map<string, number>();
+  for (const d of docs) for (const t of d.terms.keys()) df.set(t, (df.get(t) ?? 0) + 1);
+  const N = docs.length;
+  const idf = (t: string) => Math.log((N + 1) / ((df.get(t) ?? 0) + 1)) + 1;
+
+  // idf-weighted vector per post; rank by COSINE similarity so a post doesn't
+  // rank high just for being long (cosine normalizes vector length).
+  const vecOf = (terms: Map<string, number>) => {
+    const v = new Map<string, number>();
+    let sq = 0;
+    for (const [t, w] of terms) {
+      const x = w * idf(t);
+      v.set(t, x);
+      sq += x * x;
+    }
+    return { v, norm: Math.sqrt(sq) || 1 };
+  };
+
+  const curVec = vecOf(cur.terms);
+  const scored = others.map((d) => {
+    const cand = vecOf(d.terms);
+    let dot = 0;
+    for (const [t, x] of curVec.v) {
+      const y = cand.v.get(t);
+      if (y) dot += x * y;
+    }
+    return { p: d.p, score: dot / (curVec.norm * cand.norm) };
+  });
+
+  // Only genuinely similar posts — no padding with unrelated recent posts.
+  return scored
+    .filter((s) => s.score > 0.02)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((s) => s.p);
 }
 
 async function getPreviewBySlug(slug: string): Promise<BlogPreview | null> {
@@ -123,7 +182,7 @@ export default async function BlogDetail({
   if (!isSupabaseConfigured()) {
     const demoPost = demoBlogPosts[slug];
     if (demoPost) {
-      const related = await getRelatedPosts(slug, demoPost.tags);
+      const related = await getRelatedPosts(slug);
       return (
         <PublishedPost
           post={demoPost}
@@ -177,7 +236,7 @@ export default async function BlogDetail({
   }
 
   const authorName = await getAuthorName();
-  const related = await getRelatedPosts(slug, post.tags);
+  const related = await getRelatedPosts(slug);
   return (
     <PublishedPost
       post={post}
