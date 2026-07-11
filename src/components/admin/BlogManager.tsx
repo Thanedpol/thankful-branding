@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { saveBlog, deleteBlog } from "@/app/admin/actions";
 import ImageUpload from "./ImageUpload";
 import RichTextEditor from "./RichTextEditor";
@@ -75,6 +76,27 @@ export default function BlogManager({ posts }: { posts: BlogPost[] }) {
                   <span className="text-ink/30">/{p.slug}</span>
                 </p>
               </div>
+              <Link
+                href={`/admin/analytics/${p.slug}`}
+                title="ดูสถิติ Views ของโพสต์นี้ (กราฟ + รายละเอียด)"
+                className="flex shrink-0 items-center gap-1 font-mono text-xs uppercase tracking-wider text-cyan/70 hover:text-cyan"
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                {(p.view_count ?? 0).toLocaleString()}
+              </Link>
               <TranslateButton id={p.id} />
               <button
                 onClick={() => setEditing(p)}
