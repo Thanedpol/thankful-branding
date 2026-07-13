@@ -293,11 +293,16 @@ function PublishedPost({
               <>
                 <span className="text-line/30" aria-hidden>·</span>
                 <time dateTime={post.published_at}>
-                  {new Date(post.published_at).toLocaleDateString("en-US", {
+                  {new Date(post.published_at).toLocaleString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
-                  })}
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                    timeZone: "Asia/Bangkok",
+                  })}{" "}
+                  น.
                 </time>
               </>
             )}

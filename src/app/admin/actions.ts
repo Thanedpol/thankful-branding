@@ -121,10 +121,19 @@ export async function saveBlog(
     existingPublishedAt =
       (existing as { published_at: string | null } | null)?.published_at ?? null;
   }
+  // An explicit publish time from the editor lets the admin SCHEDULE a future
+  // post (goes live automatically at that time) or back-date one. The client
+  // sends it already normalized to a UTC ISO string.
+  const rawPublishAt = String(formData.get("published_at") ?? "").trim();
+  const explicitPublishAt =
+    rawPublishAt && !Number.isNaN(Date.parse(rawPublishAt))
+      ? new Date(rawPublishAt).toISOString()
+      : "";
+
   const publishedAt =
-    status === "published" && !existingPublishedAt
-      ? new Date().toISOString()
-      : existingPublishedAt;
+    status !== "published"
+      ? existingPublishedAt
+      : explicitPublishAt || existingPublishedAt || new Date().toISOString();
 
   const row = {
     title,

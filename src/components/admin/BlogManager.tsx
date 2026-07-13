@@ -54,16 +54,31 @@ export default function BlogManager({ posts }: { posts: BlogPost[] }) {
         ) : filtered.length === 0 ? (
           <p className="p-6 font-mono text-sm text-muted">ไม่พบบทความที่ตรงกับ “{query}”</p>
         ) : (
-          filtered.map((p) => (
+          filtered.map((p) => {
+            const scheduled =
+              p.status === "published" &&
+              !!p.published_at &&
+              new Date(p.published_at) > new Date();
+            return (
             <div key={p.id} className="flex items-center gap-4 p-4">
               <div className="min-w-0 flex-1">
                 <p className="truncate font-body font-medium">{p.title}</p>
                 <p className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs">
-                  <Badge
-                    on={p.status === "published"}
-                    yes="published"
-                    no="draft"
-                  />
+                  {scheduled ? (
+                    <span className="rounded border border-amber-400/40 px-1.5 py-0.5 text-amber-300">
+                      ⏰{" "}
+                      {new Date(p.published_at!).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                        timeZone: "Asia/Bangkok",
+                      })}
+                    </span>
+                  ) : (
+                    <Badge on={p.status === "published"} yes="published" no="draft" />
+                  )}
                   <span
                     className={`rounded px-1.5 py-0.5 ${
                       p.is_public
@@ -111,7 +126,8 @@ export default function BlogManager({ posts }: { posts: BlogPost[] }) {
                 </button>
               </form>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -144,6 +160,14 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
       <form
         action={async (fd) => {
           setSaveError(null);
+          // Convert the local (Thai) wall-clock publish time → UTC ISO so the
+          // server stores an unambiguous instant (browser knows the timezone).
+          const localPub = String(fd.get("published_at_local") ?? "").trim();
+          if (localPub) {
+            const d = new Date(localPub);
+            if (!Number.isNaN(d.getTime())) fd.set("published_at", d.toISOString());
+          }
+          fd.delete("published_at_local");
           const res = await saveBlog(fd);
           if (res?.error) {
             setSaveError(res.error);
@@ -195,6 +219,17 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
         </div>
         <L l="Tags (comma separated)">
           <input name="tags" defaultValue={item?.tags.join(", ")} className={field} />
+        </L>
+
+        <L l="⏰ ตั้งเวลาเผยแพร่ (เว้นว่าง = ลงทันที / คงเวลาเดิม)">
+          <input
+            type="datetime-local"
+            name="published_at_local"
+            className={`${field} [color-scheme:dark]`}
+          />
+          <span className="mt-1 block font-mono text-[10px] text-muted">
+            ใส่วัน-เวลาในอนาคต + ตั้ง Status เป็น <b>published</b> = โพสต์จะเผยแพร่เองตอนถึงเวลานั้น (เวลาไทย)
+          </span>
         </L>
 
         <div className="grid grid-cols-2 gap-4">
