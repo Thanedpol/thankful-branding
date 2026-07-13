@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
-  verification: { google: "qn8OHedMHOxPLuIL" },
+  verification: { google: "qn8OHedMHOxPLuILt06k6oPP5n-y3ANMMAz6rypMtqM" },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
