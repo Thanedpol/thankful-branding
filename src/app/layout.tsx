@@ -70,6 +70,7 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
+  verification: { google: "qn8OHedMHOxPLuIL" },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
