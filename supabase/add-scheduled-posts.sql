@@ -37,40 +37,44 @@ begin
   end if;
 end $$;
 
--- ─── previews view — rebuild so it also hides scheduled posts. Includes the
---     translations column only if it exists (i.e. the translation migration
---     has been run); the app falls back gracefully either way. ───────────────
+-- ─── previews view — rebuild so it also hides scheduled posts. The
+--     has_member_content and translations columns are optional (added by the
+--     add-member-content / add-blog-translations migrations); include each only
+--     if it exists so this runs on any schema version. The app selects "*" and
+--     treats both as optional, so a missing column degrades gracefully. ────────
 do $$
+declare
+  select_cols text := 'id, slug, title, excerpt, cover_image_url, tags, is_public, published_at, created_at';
 begin
-  drop view if exists public.blog_previews;
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'blog_posts' and column_name = 'has_member_content'
+  ) then
+    select_cols := select_cols || ', has_member_content';
+  end if;
+
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public' and table_name = 'blog_posts' and column_name = 'translations'
   ) then
-    execute $v$
-      create view public.blog_previews as
-        select id, slug, title, excerpt, cover_image_url, tags, is_public,
-               published_at, created_at, has_member_content,
-               jsonb_strip_nulls(jsonb_build_object(
-                 'en', case when translations ? 'en' then
-                   jsonb_build_object('title', translations->'en'->>'title',
-                                      'excerpt', translations->'en'->>'excerpt') end,
-                 'zh', case when translations ? 'zh' then
-                   jsonb_build_object('title', translations->'zh'->>'title',
-                                      'excerpt', translations->'zh'->>'excerpt') end
-               )) as translations
-        from public.blog_posts
-        where status = 'published' and (published_at is null or published_at <= now())
-    $v$;
-  else
-    execute $v$
-      create view public.blog_previews as
-        select id, slug, title, excerpt, cover_image_url, tags, is_public,
-               published_at, created_at, has_member_content
-        from public.blog_posts
-        where status = 'published' and (published_at is null or published_at <= now())
-    $v$;
+    select_cols := select_cols || $v$,
+      jsonb_strip_nulls(jsonb_build_object(
+        'en', case when translations ? 'en' then
+          jsonb_build_object('title', translations->'en'->>'title',
+                             'excerpt', translations->'en'->>'excerpt') end,
+        'zh', case when translations ? 'zh' then
+          jsonb_build_object('title', translations->'zh'->>'title',
+                             'excerpt', translations->'zh'->>'excerpt') end
+      )) as translations$v$;
   end if;
+
+  drop view if exists public.blog_previews;
+  execute format(
+    $q$create view public.blog_previews as
+        select %s from public.blog_posts
+        where status = %L and (published_at is null or published_at <= now())$q$,
+    select_cols, 'published'
+  );
 end $$;
 
 grant select on public.blog_previews to anon, authenticated;
