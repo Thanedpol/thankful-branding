@@ -41,8 +41,15 @@ function postInCategory(post: BlogPreview, cat: Category) {
   return tags.some((t) => cat.tags.includes(t));
 }
 
-/** Blog grid with fixed category filters and a title/tag search box. */
-export default function BlogList({ posts }: { posts: BlogPreview[] }) {
+/** Blog grid with fixed category filters and a title/tag search box.
+ *  `withSidebar` caps the grid at two columns so it fits beside a side rail. */
+export default function BlogList({
+  posts,
+  withSidebar = false,
+}: {
+  posts: BlogPreview[];
+  withSidebar?: boolean;
+}) {
   const t = useT();
   const [active, setActive] = useState<string | null>(null); // category key, or null = all
   const [query, setQuery] = useState("");
@@ -139,7 +146,9 @@ export default function BlogList({ posts }: { posts: BlogPreview[] }) {
           (kept off `query` so the grid doesn't flicker while typing) */}
       <div
         key={active ?? "__all"}
-        className="mt-8 grid gap-6 pb-24 sm:grid-cols-2 lg:grid-cols-3"
+        className={`mt-8 grid gap-6 pb-24 sm:grid-cols-2 ${
+          withSidebar ? "" : "lg:grid-cols-3"
+        }`}
       >
         {filtered.length === 0 ? (
           <p className="font-mono text-sm text-muted">

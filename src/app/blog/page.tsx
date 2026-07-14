@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BlogList from "@/components/BlogList";
+import LatestNews from "@/components/LatestNews";
 import Reveal from "@/components/Reveal";
 import T from "@/components/T";
 import JsonLd from "@/components/JsonLd";
@@ -61,7 +62,14 @@ export default async function BlogIndex() {
             </p>
           </Reveal>
 
-          <BlogList posts={list} />
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
+            <div className="min-w-0">
+              <BlogList posts={list} withSidebar />
+            </div>
+            <div className="lg:mt-10">
+              <LatestNews posts={list.slice(0, 5)} />
+            </div>
+          </div>
         </div>
       </main>
       <Footer social={profile?.social_links} />
