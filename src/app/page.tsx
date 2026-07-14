@@ -6,7 +6,7 @@ import BlogPreview from "@/components/BlogPreview";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { personJsonLd, websiteJsonLd, faqJsonLd } from "@/lib/seo";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import {
   isSupabaseConfigured,
   demoProfile,
@@ -15,7 +15,10 @@ import {
 } from "@/lib/demo-data";
 import type { Portfolio, BlogPreview as BlogPreviewType, SiteProfile } from "@/lib/types";
 
-export const revalidate = 0; // always reflect latest admin edits
+// ISR for instant navigation. Admin edits still reflect immediately because
+// refreshPublic() in admin/actions.ts calls revalidatePath("/"); the 60s window
+// is just a backstop.
+export const revalidate = 60;
 
 export default async function HomePage() {
   let profile: SiteProfile | null;
@@ -23,7 +26,7 @@ export default async function HomePage() {
   let posts: BlogPreviewType[];
 
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const [p, f, b] = await Promise.all([
       supabase.from("site_profile").select("*").eq("id", 1).single(),
       // Every portfolio (not just featured), ordered by display order.

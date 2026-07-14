@@ -6,7 +6,7 @@ import Reveal from "@/components/Reveal";
 import T from "@/components/T";
 import JsonLd from "@/components/JsonLd";
 import { blogListJsonLd, breadcrumbJsonLd } from "@/lib/seo";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import {
   isSupabaseConfigured,
   demoBlogPreviews,
@@ -14,7 +14,10 @@ import {
 } from "@/lib/demo-data";
 import type { BlogPreview, SiteProfile } from "@/lib/types";
 
-export const revalidate = 0;
+// ISR: served from cache for instant navigation, regenerated at most once a
+// minute (so scheduled posts appear promptly). Admin edits call revalidatePath
+// ("/blog") for immediate freshness — see refreshPublic() in admin/actions.ts.
+export const revalidate = 60;
 
 export const metadata = { title: "Blog — Thank Thanedpol" };
 
@@ -23,7 +26,7 @@ export default async function BlogIndex() {
   let profile: Pick<SiteProfile, "social_links"> | null;
 
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const [{ data: posts }, { data: prof }] = await Promise.all([
       supabase
         .from("blog_previews")

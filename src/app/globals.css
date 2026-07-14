@@ -456,6 +456,32 @@ body {
 }
 .carousel-slide { animation: carouselSlide 0.28s ease; }
 
+/* ── Skeleton shimmer (route loading states) ───────────────────────────────*/
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--surface) / 0.06);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--surface) / 0.08),
+    transparent
+  );
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .glitch::before,
   .glitch::after,
