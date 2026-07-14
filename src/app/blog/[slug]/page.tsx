@@ -9,6 +9,7 @@ import T from "@/components/T";
 import JsonLd from "@/components/JsonLd";
 import BlogViewTracker from "@/components/BlogViewTracker";
 import RelatedPosts from "@/components/RelatedPosts";
+import LatestNews from "@/components/LatestNews";
 import { LocalizedTitle, LocalizedExcerpt, LocalizedBody } from "@/components/BlogLocalized";
 import { blogPostingJsonLd } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
@@ -124,6 +125,22 @@ async function getRelatedPosts(slug: string): Promise<BlogPreview[]> {
     .map((s) => s.p);
 }
 
+/** Newest published posts for the "Latest News" side rail (excludes current). */
+async function getLatestPosts(excludeSlug: string): Promise<BlogPreview[]> {
+  if (!isSupabaseConfigured()) {
+    return demoBlogPreviews.filter((p) => p.slug !== excludeSlug).slice(0, 5);
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("blog_previews")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .limit(6);
+  return ((data as BlogPreview[]) ?? [])
+    .filter((p) => p.slug !== excludeSlug)
+    .slice(0, 5);
+}
+
 async function getPreviewBySlug(slug: string): Promise<BlogPreview | null> {
   if (!isSupabaseConfigured()) {
     return demoBlogPreviews.find((p) => p.slug === slug) ?? null;
@@ -183,12 +200,14 @@ export default async function BlogDetail({
     const demoPost = demoBlogPosts[slug];
     if (demoPost) {
       const related = await getRelatedPosts(slug);
+      const latest = await getLatestPosts(slug);
       return (
         <PublishedPost
           post={demoPost}
           memberBody={demoPost.member_body ?? null}
           authorName={demoProfile.name}
           related={related}
+          latest={latest}
         />
       );
     }
@@ -237,12 +256,14 @@ export default async function BlogDetail({
 
   const authorName = await getAuthorName();
   const related = await getRelatedPosts(slug);
+  const latest = await getLatestPosts(slug);
   return (
     <PublishedPost
       post={post}
       memberBody={memberBody}
       authorName={authorName}
       related={related}
+      latest={latest}
     />
   );
 }
@@ -252,11 +273,13 @@ function PublishedPost({
   memberBody = null,
   authorName,
   related = [],
+  latest = [],
 }: {
   post: BlogPost;
   memberBody?: string | null;
   authorName: string;
   related?: BlogPreview[];
+  latest?: BlogPreview[];
 }) {
   const views = post.view_count ?? 0;
   return (
@@ -265,7 +288,8 @@ function PublishedPost({
       <BlogViewTracker slug={post.slug} />
       <Navbar />
       <main className="min-h-screen pt-32">
-        <article className="mx-auto max-w-3xl px-6 pb-24">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 pb-24 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
+          <article className="mx-auto w-full min-w-0 max-w-3xl">
           <Link
             href="/blog"
             className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
@@ -358,7 +382,10 @@ function PublishedPost({
             ) : (
               <MemberGate slug={post.slug} />
             ))}
-        </article>
+          </article>
+
+          <LatestNews posts={latest} />
+        </div>
 
         <RelatedPosts posts={related} />
       </main>
