@@ -327,6 +327,43 @@ body {
   color: rgb(var(--muted) / 0.7);
   pointer-events: none;
 }
+/* ── Image gallery row (WordPress-style, 2–5 images side by side) ───────────
+   Unscoped .blog-gallery so it styles both the published body and the editor.
+   The img rule (0,1,1) outranks the default .prose-cyber :where(img) (0,1,0). */
+.blog-gallery {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1.75rem 0;
+}
+.blog-gallery-1 { grid-template-columns: 1fr; }
+.blog-gallery-2 { grid-template-columns: repeat(2, 1fr); }
+.blog-gallery-3 { grid-template-columns: repeat(3, 1fr); }
+.blog-gallery-4 { grid-template-columns: repeat(4, 1fr); }
+.blog-gallery-5 { grid-template-columns: repeat(5, 1fr); }
+.blog-gallery img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(var(--line) / 0.6);
+}
+/* Phones: keep tiles from getting tiny — cap denser rows at 2 per line. */
+@media (max-width: 640px) {
+  .blog-gallery-3,
+  .blog-gallery-4,
+  .blog-gallery-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* Editor: highlight the gallery block when selected (like figures/embeds). */
+.ProseMirror .blog-gallery.ProseMirror-selectednode {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
 /* ── Tables ────────────────────────────────────────────────────────────────*/
 .prose-cyber table {
   width: 100%;

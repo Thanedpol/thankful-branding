@@ -7,6 +7,7 @@ import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import { TableKit } from "@tiptap/extension-table";
 import { Figure } from "./figure-extension";
+import { Gallery } from "./gallery-extension";
 import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
 import { compressImage } from "@/lib/compress-image";
@@ -124,6 +125,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
   // Keep the latest onChange so the editor's create/update callbacks (captured
   // once) always call the current prop.
   const onChangeRef = useRef(onChange);
@@ -180,6 +182,64 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     setUploading(false);
   }
 
+  // Upload up to 5 images and insert them as one gallery row. One image falls
+  // back to a normal captioned figure. Reuses the same compress + upload path.
+  async function uploadGallery(fileList: FileList | File[]) {
+    const ed = editorRef.current;
+    if (!ed) return;
+    const files = Array.from(fileList).slice(0, 5);
+    if (!files.length) return;
+
+    setUploading(true);
+    setErr(null);
+    const urls: string[] = [];
+    let sessionExpired = false;
+
+    for (const file of files) {
+      const upload = await compressImage(file).catch(() => file);
+      const fd = new FormData();
+      fd.append("file", upload);
+      fd.append("bucket", "blog-images");
+      try {
+        const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (res.ok && data.publicUrl) {
+          urls.push(data.publicUrl);
+        } else if (res.status === 401) {
+          sessionExpired = true;
+          break;
+        }
+      } catch {
+        // skip this file, keep going with the rest
+      }
+    }
+    setUploading(false);
+
+    if (sessionExpired) {
+      setErr(
+        "เซสชันหมดอายุ — กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ (ปุ่ม Logout ในเมนู) แล้วลองอีกครั้ง"
+      );
+    }
+    if (!urls.length) {
+      if (!sessionExpired) setErr("Upload failed");
+      return;
+    }
+
+    const chain = ed.chain().focus();
+    if (urls.length === 1) {
+      chain.insertContent([
+        { type: "figure", attrs: { src: urls[0], alt: files[0].name } },
+        { type: "paragraph" },
+      ]);
+    } else {
+      chain.insertContent([
+        { type: "gallery", attrs: { images: urls } },
+        { type: "paragraph" },
+      ]);
+    }
+    chain.run();
+  }
+
   // Heal legacy "two paragraphs merged into one node via <br><br>" content so
   // each paragraph is an independent block (client-only; SSR passes it through).
   const initialHtml = useMemo(
@@ -201,6 +261,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         HTMLAttributes: { class: "blog-img" },
       }),
       Figure,
+      Gallery,
       Embed,
       TableKit.configure({
         table: { resizable: true, HTMLAttributes: { class: "blog-table" } },
@@ -301,6 +362,12 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     pendingPosRef.current = undefined;
   }
 
+  async function onGalleryFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    e.target.value = ""; // allow picking the same files again later
+    if (files && files.length) await uploadGallery(files);
+  }
+
   return (
     <div>
       {name && <input type="hidden" name={name} value={html} />}
@@ -312,6 +379,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
             pendingPosRef.current = editorRef.current?.state.selection.from;
             fileRef.current?.click();
           }}
+          onGallery={() => galleryRef.current?.click()}
         />
         {/* Bounded, self-scrolling content area so the toolbar stays in view
             while writing a long body (no need to scroll the whole modal up). */}
@@ -326,9 +394,17 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         onChange={onFile}
         className="hidden"
       />
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={onGalleryFile}
+        className="hidden"
+      />
       {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▶ ฝังวิดีโอ/โซเชียล · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
+        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▦ แถวรูป (หลายรูปในแถวเดียว สูงสุด 5) · ▶ ฝังวิดีโอ/โซเชียล · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
       </p>
     </div>
   );
@@ -422,10 +498,12 @@ function Toolbar({
   editor,
   uploading,
   onImage,
+  onGallery,
 }: {
   editor: Editor | null;
   uploading: boolean;
   onImage: () => void;
+  onGallery: () => void;
 }) {
   if (!editor) return null;
 
@@ -537,6 +615,7 @@ function Toolbar({
         <span className="mx-1 h-4 w-px bg-line/15" />
 
         <Btn title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
+        <Btn title="แถวรูป (แกลเลอรี) — เลือกได้หลายรูปพร้อมกัน สูงสุด 5 รูปเรียงในแถวเดียว" disabled={uploading} onClick={onGallery} label={uploading ? "⏳ …" : "▦ แถวรูป"} />
         <Btn title="ฝังวิดีโอ/โซเชียล/เว็บไซต์ (YouTube, Vimeo, Facebook, IG, TikTok, X, Loom, Google Drive, Canva, ไฟล์ .mp4 ฯลฯ)" onClick={insertEmbed} label="▶ ฝัง" />
         <Btn
           title="แทรกตาราง 3×3"
