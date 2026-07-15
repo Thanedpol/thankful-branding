@@ -32,7 +32,10 @@ export const Embed = Node.create({
           return {
             provider: e.getAttribute("data-provider"),
             url: e.getAttribute("data-url"),
-            src: e.querySelector("iframe")?.getAttribute("src") || null,
+            src:
+              (e.querySelector("iframe") || e.querySelector("video"))?.getAttribute(
+                "src"
+              ) || null,
           };
         },
       },
@@ -41,13 +44,31 @@ export const Embed = Node.create({
 
   renderHTML({ node }) {
     const { provider, src, url } = node.attrs;
+    const wrap = {
+      class: `blog-embed blog-embed-${provider || "generic"}`,
+      "data-provider": provider,
+      "data-url": url,
+    };
+    // Direct video files play in a native <video> element; everything else is
+    // an iframe pointing at a platform embed endpoint.
+    if (provider === "video") {
+      return [
+        "div",
+        wrap,
+        [
+          "video",
+          mergeAttributes({
+            src,
+            controls: "true",
+            playsinline: "true",
+            preload: "metadata",
+          }),
+        ],
+      ];
+    }
     return [
       "div",
-      {
-        class: `blog-embed blog-embed-${provider || "generic"}`,
-        "data-provider": provider,
-        "data-url": url,
-      },
+      wrap,
       [
         "iframe",
         mergeAttributes({

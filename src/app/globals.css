@@ -414,16 +414,56 @@ body {
 }
 /* 16:9 video players */
 .prose-cyber .blog-embed-youtube,
-.prose-cyber .blog-embed-vimeo {
+.prose-cyber .blog-embed-vimeo,
+.prose-cyber .blog-embed-facebook,
+.prose-cyber .blog-embed-loom,
+.prose-cyber .blog-embed-gdrive,
+.prose-cyber .blog-embed-dailymotion,
+.prose-cyber .blog-embed-streamable,
+.prose-cyber .blog-embed-canva,
+.prose-cyber .blog-embed-generic {
   aspect-ratio: 16 / 9;
 }
 .prose-cyber .blog-embed-youtube iframe,
-.prose-cyber .blog-embed-vimeo iframe {
+.prose-cyber .blog-embed-vimeo iframe,
+.prose-cyber .blog-embed-facebook iframe,
+.prose-cyber .blog-embed-loom iframe,
+.prose-cyber .blog-embed-gdrive iframe,
+.prose-cyber .blog-embed-dailymotion iframe,
+.prose-cyber .blog-embed-streamable iframe,
+.prose-cyber .blog-embed-canva iframe,
+.prose-cyber .blog-embed-generic iframe {
   height: 100%;
 }
-/* Spotify: fixed-height player */
+/* Direct video file → native player (keeps its own aspect ratio) */
+.prose-cyber .blog-embed-video video {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  border-radius: 0.75rem;
+  background: #000;
+}
+/* Spotify / SoundCloud: fixed-height audio players */
 .prose-cyber .blog-embed-spotify iframe {
   height: 352px;
+}
+.prose-cyber .blog-embed-soundcloud iframe {
+  height: 166px;
+}
+/* Instagram: portrait card */
+.prose-cyber .blog-embed-instagram {
+  max-width: 400px;
+}
+.prose-cyber .blog-embed-instagram iframe {
+  height: 680px;
+}
+/* Facebook post: tall card */
+.prose-cyber .blog-embed-facebook-post {
+  max-width: 500px;
+}
+.prose-cyber .blog-embed-facebook-post iframe {
+  height: 640px;
 }
 /* TikTok: portrait card (auto-resized taller by EmbedFrames when it posts height) */
 .prose-cyber .blog-embed-tiktok {
@@ -440,7 +480,8 @@ body {
   height: 550px;
 }
 /* Editor: keep embeds non-interactive so the block stays selectable/deletable */
-.ProseMirror .blog-embed iframe {
+.ProseMirror .blog-embed iframe,
+.ProseMirror .blog-embed video {
   pointer-events: none;
 }
 .ProseMirror .blog-embed.ProseMirror-selectednode {

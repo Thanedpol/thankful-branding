@@ -488,14 +488,18 @@ function Toolbar({
 
   const insertEmbed = () => {
     const raw = window.prompt(
-      "วางลิงก์ YouTube / Vimeo / Spotify / X / TikTok:",
+      "วางลิงก์วิดีโอ/โซเชียล/เว็บไซต์ หรือไฟล์วิดีโอ (.mp4):\n" +
+        "YouTube, Vimeo, Facebook, Instagram, TikTok, X, Loom, Google Drive,\n" +
+        "Dailymotion, Streamable, Canva, Spotify, SoundCloud … หรือลิงก์เว็บอื่นๆ",
       "https://"
     );
     if (raw === null) return;
     const parsed = parseEmbed(raw);
     if (!parsed) {
       window.alert(
-        "ลิงก์นี้ยังไม่รองรับ\nรองรับ: YouTube, Vimeo, Spotify, X (Twitter), TikTok"
+        "ฝังไม่ได้ — กรุณาวางลิงก์ (URL) ที่ขึ้นต้นด้วย http:// หรือ https://\n" +
+          "รองรับแพลตฟอร์มยอดนิยม, ไฟล์วิดีโอ .mp4/.webm และเว็บไซต์ทั่วไป\n" +
+          "(บางเว็บอาจบล็อกการฝัง ทำให้แสดงเป็นพื้นที่ว่าง)"
       );
       return;
     }
@@ -533,7 +537,7 @@ function Toolbar({
         <span className="mx-1 h-4 w-px bg-line/15" />
 
         <Btn title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
-        <Btn title="ฝังวิดีโอ/โซเชียล (YouTube, Vimeo, Spotify, X, TikTok)" onClick={insertEmbed} label="▶ ฝัง" />
+        <Btn title="ฝังวิดีโอ/โซเชียล/เว็บไซต์ (YouTube, Vimeo, Facebook, IG, TikTok, X, Loom, Google Drive, Canva, ไฟล์ .mp4 ฯลฯ)" onClick={insertEmbed} label="▶ ฝัง" />
         <Btn
           title="แทรกตาราง 3×3"
           active={inTable}
