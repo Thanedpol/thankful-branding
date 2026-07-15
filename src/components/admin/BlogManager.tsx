@@ -164,7 +164,14 @@ function Editor({ item, onClose }: { item: BlogPost | null; onClose: () => void 
           // server stores an unambiguous instant (browser knows the timezone).
           const localPub = String(fd.get("published_at_local") ?? "").trim();
           if (localPub) {
-            const d = new Date(localPub);
+            // Thai-locale browsers can put the Buddhist-era year (e.g. 2569)
+            // into a datetime-local value instead of the Gregorian year (2026).
+            // A year that far in the future is always BE — convert it (−543)
+            // before parsing, so the post doesn't get scheduled 543 years out.
+            const normalized = localPub.replace(/^(\d{4})/, (y) =>
+              Number(y) > 2200 ? String(Number(y) - 543) : y
+            );
+            const d = new Date(normalized);
             if (!Number.isNaN(d.getTime())) fd.set("published_at", d.toISOString());
           }
           fd.delete("published_at_local");
