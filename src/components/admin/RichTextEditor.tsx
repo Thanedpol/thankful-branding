@@ -120,7 +120,13 @@ function imageFromDataTransfer(dt: DataTransfer | null): File | null {
  * into a hidden input so the saveBlog server action keeps reading `body`.
  */
 export default function RichTextEditor({ name, defaultValue = "", onChange }: Props) {
-  const [html, setHtml] = useState(defaultValue);
+  // The hidden <input name={name}> that carries the body into the form. We
+  // write the editor HTML straight to its DOM value (via this ref) on every
+  // change — synchronously — instead of routing it through async React state.
+  // On mobile the last text is committed at blur (IME compositionend) at the
+  // same moment the user taps Publish, and an async state update loses that
+  // race, submitting an empty/stale body. A direct DOM write can't.
+  const hiddenRef = useRef<HTMLInputElement>(null);
   const [, setTick] = useState(0); // refresh toolbar active states on selection
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -275,12 +281,12 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     onCreate: ({ editor }) => {
       editorRef.current = editor;
       const h = editor.getHTML();
-      setHtml(h);
+      if (hiddenRef.current) hiddenRef.current.value = h;
       onChangeRef.current?.(h);
     },
     onUpdate: ({ editor }) => {
       const h = editor.getHTML();
-      setHtml(h);
+      if (hiddenRef.current) hiddenRef.current.value = h;
       onChangeRef.current?.(h);
     },
     onSelectionUpdate: () => setTick((n) => n + 1),
@@ -347,11 +353,18 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         })
       );
     };
+    // When focus leaves the editor (e.g. tapping Publish on mobile), make sure
+    // the hidden input holds the very latest HTML before the form is read.
+    const onBlur = () => {
+      if (hiddenRef.current) hiddenRef.current.value = editor.getHTML();
+    };
     dom.addEventListener("mousedown", onDown, true);
     document.addEventListener("mouseup", onUp, true);
+    dom.addEventListener("blur", onBlur, true);
     return () => {
       dom.removeEventListener("mousedown", onDown, true);
       document.removeEventListener("mouseup", onUp, true);
+      dom.removeEventListener("blur", onBlur, true);
     };
   }, [editor]);
 
@@ -370,7 +383,9 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
 
   return (
     <div>
-      {name && <input type="hidden" name={name} value={html} />}
+      {name && (
+        <input type="hidden" name={name} defaultValue={defaultValue} ref={hiddenRef} />
+      )}
       <div className="overflow-hidden rounded-lg border border-line/10 bg-surface/[0.03]">
         <Toolbar
           editor={editor}
