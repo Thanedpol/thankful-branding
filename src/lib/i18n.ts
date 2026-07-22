@@ -70,6 +70,7 @@ export const dict: Record<Locale, Dict> = {
     "blog.related.eyebrow": "// อ่านต่อ",
     "blog.latest": "ข่าวล่าสุด",
     "blog.latest.all": "ดูข่าวทั้งหมด →",
+    "blog.aiTools": "// AI ที่เราเขียนถึง",
 
     "press.eyebrow": "// สำหรับสื่อและพาร์ตเนอร์",
     "press.heading": "Press Kit",
@@ -156,6 +157,7 @@ export const dict: Record<Locale, Dict> = {
     "blog.related.eyebrow": "// Keep reading",
     "blog.latest": "Latest News",
     "blog.latest.all": "See all news →",
+    "blog.aiTools": "// AI we've covered",
 
     "press.eyebrow": "// For media & collaborators",
     "press.heading": "Press Kit",
@@ -241,6 +243,7 @@ export const dict: Record<Locale, Dict> = {
     "blog.related.eyebrow": "// 继续阅读",
     "blog.latest": "最新文章",
     "blog.latest.all": "查看全部 →",
+    "blog.aiTools": "// 涵盖的 AI",
 
     "press.eyebrow": "// 供媒体与合作伙伴",
     "press.heading": "媒体资料",
