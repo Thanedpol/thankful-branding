@@ -125,13 +125,14 @@ export default function BlogList({
 
   const filtered = useMemo(() => {
     let list = posts;
-    if (active) {
-      const cat = CATEGORIES.find((c) => c.key === active);
-      if (cat) list = list.filter((p) => postInCategory(p, cat));
-    }
+    // A picked AI tool takes precedence and shows exactly that tool's posts
+    // (so the grid matches the chip's count); otherwise filter by category.
     if (activeTool) {
       const re = TOOL_RE.get(activeTool);
       if (re) list = list.filter((p) => re.test(postHaystack(p)));
+    } else if (active) {
+      const cat = CATEGORIES.find((c) => c.key === active);
+      if (cat) list = list.filter((p) => postInCategory(p, cat));
     }
     if (q) {
       list = list.filter((p) =>
@@ -219,8 +220,9 @@ export default function BlogList({
         </div>
       </div>
 
-      {/* AI tools we've written about — click to filter to that tool's posts */}
-      {aiCounts.length > 0 && (
+      {/* AI tools we've written about — shown only under the AI category.
+          Click a chip to filter to that tool's posts. */}
+      {active === "ai" && aiCounts.length > 0 && (
         <div className="mt-6">
           <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted">
             {t("blog.aiTools")}
@@ -236,10 +238,7 @@ export default function BlogList({
                 <button
                   key={tool.key}
                   type="button"
-                  onClick={() => {
-                    setActiveTool(on ? null : tool.key);
-                    setActive(null);
-                  }}
+                  onClick={() => setActiveTool(on ? null : tool.key)}
                   aria-pressed={on}
                   title={`${tool.label} · ${count} บทความ`}
                   style={
