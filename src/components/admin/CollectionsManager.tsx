@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   savePortfolioCollection,
   deletePortfolioCollection,
+  getCollectionData,
 } from "@/app/admin/actions";
 import RichTextEditor from "./RichTextEditor";
 import AdminSearch from "./AdminSearch";
@@ -45,6 +46,34 @@ type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
 type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string; _stripped?: boolean };
 type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; metrics?: CollectionEventMetrics; _stripped?: boolean; sessions: Sess[] };
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
+
+/** Build editor state (with stable _k keys) from stored group data, migrating a
+ *  legacy single event body into one sub-session. When `orig` is passed, record
+ *  each session's original body keyed by its _k, so an untouched session can be
+ *  saved compactly (sent stripped, restored server-side). */
+function toGroupsState(
+  dataGroups: PortfolioCollection["data"]["groups"],
+  orig?: Map<string, string>
+): Grp[] {
+  return (dataGroups ?? []).map((g) => ({
+    ...g,
+    _k: key(),
+    events: g.events.map((e) => ({
+      ...e,
+      _k: key(),
+      sessions: (e.sessions?.length
+        ? e.sessions
+        : hasContent(e.body)
+        ? [{ title: "", body: e.body }]
+        : []
+      ).map((s) => {
+        const sk = key();
+        if (orig) orig.set(sk, s.body ?? "");
+        return { ...s, _k: sk };
+      }),
+    })),
+  }));
+}
 
 export default function CollectionsManager({
   collections,
@@ -175,24 +204,50 @@ function Editor({
   const [stories, setStories] = useState<Story[]>(() =>
     (collection.data.stories ?? []).map((s) => ({ ...s, _k: key() }))
   );
-  const [groups, setGroups] = useState<Grp[]>(() =>
-    (collection.data.groups ?? []).map((g) => ({
-      ...g,
-      _k: key(),
-      events: g.events.map((e) => ({
-        ...e,
-        _k: key(),
-        // Migrate a legacy single body into one sub-session so old events keep
-        // their content and can gain more sessions.
-        sessions: (e.sessions?.length
-          ? e.sessions
-          : hasContent(e.body)
-          ? [{ title: "", body: e.body }]
-          : []
-        ).map((s) => ({ ...s, _k: key() })),
-      })),
-    }))
+  const [groups, setGroups] = useState<Grp[]>(() => toGroupsState(collection.data.groups));
+
+  // Large collections arrive with their session/event bodies stripped (for the
+  // list-view payload limit). Pull the full content on open so it's visible and
+  // editable, and remember each original body so an untouched session can be
+  // saved compactly (sent back stripped, restored server-side) instead of
+  // re-uploading the whole ~4 MB blob every save.
+  const wasStripped = useMemo(
+    () =>
+      (collection.data.groups ?? []).some((g) =>
+        g.events.some((e) => e._stripped || (e.sessions ?? []).some((s) => s._stripped))
+      ),
+    [collection]
   );
+  const origBody = useRef<Map<string, string>>(new Map());
+  const [hydrating, setHydrating] = useState(wasStripped);
+  const [hydrateError, setHydrateError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!wasStripped) return;
+    let cancelled = false;
+    getCollectionData(collection.slug)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.error || !res.data?.groups) {
+          setHydrateError(res.error ?? "โหลดเนื้อหาไม่สำเร็จ");
+          setHydrating(false);
+          return;
+        }
+        const og = new Map<string, string>();
+        setGroups(toGroupsState(res.data.groups, og));
+        origBody.current = og;
+        setHydrating(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setHydrateError("โหลดเนื้อหาไม่สำเร็จ — ลองปิดแล้วเปิดใหม่");
+        setHydrating(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Serialise (drop the internal _k keys).
   const payload = {
@@ -209,11 +264,22 @@ function Editor({
               ...g,
               events: events.map(({ _k: _ek, sessions, body: _body, ...e }) => {
                 const cleaned = sessions
-                  .map(({ _k: _sk, ...s }) => s)
+                  .map(({ _k: _sk, ...s }) => {
+                    // Untouched session in a hydrated large collection → send it
+                    // stripped so the payload stays tiny; the server restores its
+                    // stored body. Edited/new sessions are sent with their body.
+                    if (wasStripped) {
+                      const orig = origBody.current.get(_sk);
+                      if (orig !== undefined && (s.body ?? "") === orig) {
+                        return { ...s, body: "", _stripped: true };
+                      }
+                    }
+                    return s;
+                  })
                   .filter(
                     (s) =>
-                      // Keep stripped sessions (their body is hidden but real —
-                      // restored server-side); drop only genuinely empty ones.
+                      // Keep stripped sessions (body hidden but real — restored
+                      // server-side); drop only genuinely empty ones.
                       s._stripped ||
                       hasContent(s.body) ||
                       !!s.image ||
@@ -313,10 +379,19 @@ function Editor({
           </p>
         </div>
 
-        {kind === "stories" ? (
+        {hydrating ? (
+          <div className="rounded-lg border border-cyan/20 bg-cyan/[0.04] p-6 text-center font-mono text-sm text-cyan/80">
+            ⏳ กำลังโหลดเนื้อหาทั้งหมดของคอลเลกชันนี้… (ข้อมูลใหญ่ อาจใช้เวลาสองสามวินาที)
+          </div>
+        ) : kind === "stories" ? (
           <StoriesEditor stories={stories} setStories={setStories} />
         ) : (
           <GroupsEditor groups={groups} setGroups={setGroups} />
+        )}
+        {hydrateError && (
+          <p className="rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-400">
+            ⚠ {hydrateError}
+          </p>
         )}
 
         {saveError && (
@@ -326,8 +401,8 @@ function Editor({
         )}
 
         <div className="flex items-center gap-3 pt-2">
-          <button type="submit" disabled={saving} className="btn-neon flex-1 disabled:opacity-60">
-            {saving ? "กำลังบันทึก…" : "Save"}
+          <button type="submit" disabled={saving || hydrating} className="btn-neon flex-1 disabled:opacity-60">
+            {saving ? "กำลังบันทึก…" : hydrating ? "กำลังโหลด…" : "Save"}
           </button>
           <button type="button" onClick={onClose} disabled={saving} className="btn-ghost disabled:opacity-60">
             Cancel

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasContent } from "@/lib/portfolio-sessions";
-import type { PortfolioCategory } from "@/lib/types";
+import type { PortfolioCategory, PortfolioCollection } from "@/lib/types";
 
 /**
  * Verify the admin passcode and return a service-role client. Writes go
@@ -304,6 +304,25 @@ export async function deletePortfolioCollection(formData: FormData) {
   await supabase.from("portfolio_collections").delete().eq("slug", slug);
   refreshPublic();
   revalidatePath("/admin/collections");
+}
+
+/**
+ * Full data (with every session/event body) for a single collection. The admin
+ * list strips bodies from large collections to stay under Vercel's page-response
+ * limit; the editor calls this on open to hydrate the real content so it can be
+ * viewed and edited. One collection's blob is well under the response limit.
+ */
+export async function getCollectionData(
+  slug: string
+): Promise<{ data?: PortfolioCollection["data"]; error?: string }> {
+  const supabase = await assertAdmin();
+  const { data, error } = await supabase
+    .from("portfolio_collections")
+    .select("data")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) return { error: error.message };
+  return { data: (data?.data as PortfolioCollection["data"]) ?? {} };
 }
 
 // ─── Site profile ───────────────────────────────────────────────────────────
