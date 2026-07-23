@@ -46,9 +46,24 @@ export default function SessionCarousel({ items }: { items: EventSession[] }) {
   return (
     <div>
       {many && (
-        <p className="mb-3 font-mono text-xs uppercase tracking-wider text-muted">
-          {total} session · เลื่อน ◀ ▶ เพื่อดูทีละอัน
-        </p>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <p className="font-mono text-xs uppercase tracking-wider text-muted">
+            {total} session
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="mr-1 font-mono text-xs tabular-nums text-muted">
+              {i + 1} / {total}
+            </span>
+            <ArrowBtn
+              dir={-1}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-line/15 font-display text-xl text-cyan transition-colors hover:border-cyan/50 hover:text-ink disabled:pointer-events-none disabled:opacity-25"
+            />
+            <ArrowBtn
+              dir={1}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-line/15 font-display text-xl text-cyan transition-colors hover:border-cyan/50 hover:text-ink disabled:pointer-events-none disabled:opacity-25"
+            />
+          </div>
+        </div>
       )}
 
       <div
