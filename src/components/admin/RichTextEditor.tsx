@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -132,6 +132,11 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  // Stable ids so the toolbar's <label> triggers can open these file inputs
+  // natively (a programmatic input.click() is blocked by some browsers when a
+  // re-render interrupts the gesture; a label's default action is not).
+  const figureId = useId();
+  const galleryId = useId();
   // Keep the latest onChange so the editor's create/update callbacks (captured
   // once) always call the current prop.
   const onChangeRef = useRef(onChange);
@@ -407,13 +412,15 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         <Toolbar
           editor={editor}
           uploading={uploading}
+          figureId={figureId}
+          galleryId={galleryId}
+          // The <label> opens the picker natively; this just records the caret so
+          // the uploaded image lands where the user was typing.
           onImage={() => {
             pendingPosRef.current = editorRef.current?.state.selection.from;
-            fileRef.current?.click();
           }}
           onGallery={() => {
             pendingPosRef.current = editorRef.current?.state.selection.from;
-            galleryRef.current?.click();
           }}
         />
         {/* Bounded, self-scrolling content area so the toolbar stays in view
@@ -424,6 +431,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       </div>
       <input
         ref={fileRef}
+        id={figureId}
         type="file"
         accept="image/*"
         onChange={onFile}
@@ -431,6 +439,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       />
       <input
         ref={galleryRef}
+        id={galleryId}
         type="file"
         accept="image/*"
         multiple
@@ -532,15 +541,40 @@ function FormatMenu({
 function Toolbar({
   editor,
   uploading,
+  figureId,
+  galleryId,
   onImage,
   onGallery,
 }: {
   editor: Editor | null;
   uploading: boolean;
+  figureId: string;
+  galleryId: string;
   onImage: () => void;
   onGallery: () => void;
 }) {
   if (!editor) return null;
+
+  // File triggers are <label htmlFor> so the browser opens the picker natively
+  // (a programmatic input.click() gets blocked by some browsers). While an
+  // upload is running the label is inert.
+  const FileLabel = ({ htmlFor, onPick, title, children }: {
+    htmlFor: string;
+    onPick: () => void;
+    title: string;
+    children: React.ReactNode;
+  }) => (
+    <label
+      htmlFor={uploading ? undefined : htmlFor}
+      title={title}
+      onClick={() => { if (!uploading) onPick(); }}
+      className={`flex min-w-8 cursor-pointer select-none items-center justify-center rounded px-2 py-1 font-mono text-xs transition-colors ${
+        uploading ? "pointer-events-none opacity-50" : "text-muted hover:bg-surface/[0.06] hover:text-ink"
+      }`}
+    >
+      {children}
+    </label>
+  );
 
   const Btn = ({
     onClick,
@@ -649,8 +683,12 @@ function Toolbar({
         <Btn title="ข้อความอ้างอิง" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} label="❝" />
         <span className="mx-1 h-4 w-px bg-line/15" />
 
-        <Btn title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้" disabled={uploading} onClick={onImage} label={uploading ? "⏳ …" : "🖼 รูป"} />
-        <Btn title="แถวรูป (แกลเลอรี) — เลือกได้หลายรูปพร้อมกัน สูงสุด 5 รูปเรียงในแถวเดียว" disabled={uploading} onClick={onGallery} label={uploading ? "⏳ …" : "▦ แถวรูป"} />
+        <FileLabel htmlFor={figureId} onPick={onImage} title="แทรกรูปภาพ (อัปโหลด) + ใส่คำอธิบายได้">
+          {uploading ? "⏳ …" : "🖼 รูป"}
+        </FileLabel>
+        <FileLabel htmlFor={galleryId} onPick={onGallery} title="แถวรูป (แกลเลอรี) — เลือกได้หลายรูปพร้อมกัน สูงสุด 5 รูปเรียงในแถวเดียว">
+          {uploading ? "⏳ …" : "▦ แถวรูป"}
+        </FileLabel>
         <Btn title="ฝังวิดีโอ/โซเชียล/เว็บไซต์ (YouTube, Vimeo, Facebook, IG, TikTok, X, Loom, Google Drive, Canva, ไฟล์ .mp4 ฯลฯ)" onClick={insertEmbed} label="▶ ฝัง" />
         <Btn
           title="แทรกตาราง 3×3"
