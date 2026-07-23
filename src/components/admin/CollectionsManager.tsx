@@ -11,7 +11,7 @@ import { slugify } from "@/lib/slugify";
 import { hasContent } from "@/lib/portfolio-sessions";
 import { compressImage } from "@/lib/compress-image";
 import { useScrollJumpGuard } from "./use-scroll-jump-guard";
-import type { PortfolioCollection } from "@/lib/types";
+import type { PortfolioCollection, CollectionEventMetrics } from "@/lib/types";
 
 type PortfolioLink = { id: string; title: string; project_url: string | null };
 const DEFAULT_SLUGS = ["snobby-story", "insightist"];
@@ -35,9 +35,15 @@ const field =
 let uid = 0;
 const key = () => `k${++uid}`;
 
+/** Parse a number input's text → integer, or undefined when blank/invalid. */
+const numOrUndef = (s: string): number | undefined => {
+  const n = parseInt(s, 10);
+  return Number.isFinite(n) ? n : undefined;
+};
+
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
 type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string };
-type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; sessions: Sess[] };
+type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; metrics?: CollectionEventMetrics; sessions: Sess[] };
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 export default function CollectionsManager({
@@ -500,6 +506,14 @@ function EventsEditor({
           <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
           <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
           <UploadImageField className="mt-1.5" value={e.image ?? ""} onChange={(url) => patch(e._k, { image: url })} />
+          <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+            <input type="number" min="0" inputMode="numeric" placeholder="❤️ รีแอก" value={e.metrics?.reactions ?? ""}
+              onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, reactions: numOrUndef(ev.target.value) } })} className={field} />
+            <input type="number" min="0" inputMode="numeric" placeholder="💬 คอมเมนต์" value={e.metrics?.comments ?? ""}
+              onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, comments: numOrUndef(ev.target.value) } })} className={field} />
+            <input type="number" min="0" inputMode="numeric" placeholder="🔄 แชร์" value={e.metrics?.shares ?? ""}
+              onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, shares: numOrUndef(ev.target.value) } })} className={field} />
+          </div>
           <SubSessionsEditor event={e} patch={patch} />
           </div>
           )}

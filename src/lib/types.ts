@@ -128,6 +128,18 @@ export interface SiteProfile {
   cv_en_url?: string | null;
 }
 
+/** Social metrics for a collection event (e.g. a Facebook post's numbers).
+ *  All optional — old events simply omit them. */
+export interface CollectionEventMetrics {
+  reactions?: number;
+  comments?: number;
+  shares?: number;
+  reach?: number;
+  views?: number;
+  /** ISO or display date the post was published. */
+  date?: string;
+}
+
 /** An editable portfolio case-study page (Snobby Story, Insightist). Header
  *  fields plus shape-specific items in `data`. */
 export interface PortfolioCollection {
@@ -149,6 +161,8 @@ export interface PortfolioCollection {
         /** Legacy single body — superseded by `sessions` (kept for old rows). */
         body?: string;
         slug?: string;
+        /** Social metrics (reactions/comments/shares/…) shown on the card. */
+        metrics?: CollectionEventMetrics;
         /** Sub-sessions (sub-blogs) shown as a carousel on the event's page. */
         sessions?: {
           title?: string;

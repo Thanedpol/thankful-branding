@@ -6,6 +6,14 @@ import Reveal from "@/components/Reveal";
 import type { PortfolioCollection } from "@/lib/types";
 import { eventHasContent, inlineEmojiImages } from "@/lib/portfolio-sessions";
 
+/** Compact number for metric chips: 1250 → "1.2K", 2_400_000 → "2.4M". */
+function fmtNum(n?: number): string | null {
+  if (typeof n !== "number" || !Number.isFinite(n)) return null;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(n);
+}
+
 /** Full portfolio collection page — renders a stories layout (Snobby-style) or
  *  a grouped-events layout (Insightist-style) from the same data shape. Shared
  *  by the fixed pages and the dynamic /portfolio/[collection] route. */
@@ -118,9 +126,24 @@ export default function CollectionView({ c }: { c: PortfolioCollection }) {
                         <>
                           {cover}
                           <div className="flex flex-1 flex-col justify-between gap-4 p-5">
-                            <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
-                              {e.title}
-                            </p>
+                            <div className="space-y-2.5">
+                              <p className="font-body font-medium leading-snug transition-colors group-hover:text-cyan">
+                                {e.title}
+                              </p>
+                              {e.metrics && (
+                                <div className="flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted">
+                                  {fmtNum(e.metrics.reactions) && (
+                                    <span title="รีแอกชัน">❤️ {fmtNum(e.metrics.reactions)}</span>
+                                  )}
+                                  {fmtNum(e.metrics.comments) && (
+                                    <span title="คอมเมนต์">💬 {fmtNum(e.metrics.comments)}</span>
+                                  )}
+                                  {fmtNum(e.metrics.shares) && (
+                                    <span title="แชร์">🔄 {fmtNum(e.metrics.shares)}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                             <span className="font-mono text-xs uppercase tracking-wider text-cyan group-hover:text-ink">
                               {label}
                             </span>

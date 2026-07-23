@@ -4,6 +4,8 @@
  * homepage card links to /portfolio/insightist, which lists the 23 events he
  * covered on-site (2025–2026), grouped by theme, each with its Facebook post.
  */
+import type { CollectionEventMetrics } from "@/lib/types";
+
 export interface InsightistEvent {
   title: string;
   /** Facebook post URL. */
@@ -14,6 +16,8 @@ export interface InsightistEvent {
   body?: string;
   /** URL slug for the content detail page (/portfolio/insightist/<slug>). */
   slug?: string;
+  /** Social metrics (reactions/comments/shares/…) shown on the card. */
+  metrics?: CollectionEventMetrics;
 }
 
 export interface InsightistGroup {
