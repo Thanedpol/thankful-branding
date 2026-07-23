@@ -203,23 +203,30 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     setErr(null);
     const urls: string[] = [];
     let sessionExpired = false;
+    let lastFail = ""; // keep the real reason so the message isn't just "failed"
 
     for (const file of files) {
       const upload = await compressImage(file).catch(() => file);
+      const sizeMB = (upload.size / 1024 / 1024).toFixed(1);
       const fd = new FormData();
       fd.append("file", upload);
       fd.append("bucket", "blog-images");
       try {
         const res = await fetch("/api/admin-upload", { method: "POST", body: fd });
-        const data = await res.json();
-        if (res.ok && data.publicUrl) {
-          urls.push(data.publicUrl);
-        } else if (res.status === 401) {
+        if (res.status === 401) {
           sessionExpired = true;
           break;
         }
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.publicUrl) {
+          urls.push(data.publicUrl);
+        } else if (res.status === 413) {
+          lastFail = `“${file.name}” ใหญ่เกินไป (${sizeMB}MB) — ใช้รูปเล็กลง`;
+        } else {
+          lastFail = `“${file.name}” → ${res.status} ${data.error || ""}`.trim();
+        }
       } catch {
-        // skip this file, keep going with the rest
+        lastFail = `“${file.name}” — เชื่อมต่อไม่สำเร็จ (เน็ตหลุด?)`;
       }
     }
     setUploading(false);
@@ -230,7 +237,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       );
     }
     if (!urls.length) {
-      if (!sessionExpired) setErr("Upload failed");
+      if (!sessionExpired) setErr("อัปโหลดรูปไม่สำเร็จ — " + (lastFail || "ไม่ทราบสาเหตุ"));
       return;
     }
 
