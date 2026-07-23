@@ -190,7 +190,10 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
 
   // Upload up to 5 images and insert them as one gallery row. One image falls
   // back to a normal captioned figure. Reuses the same compress + upload path.
-  async function uploadGallery(fileList: FileList | File[]) {
+  // `pos` restores the caret captured when the button was pressed — the file
+  // dialog blurs the editor, so without it the row lands at the top of a long
+  // body instead of where the user was typing (and looks like it vanished).
+  async function uploadGallery(fileList: FileList | File[], pos?: number) {
     const ed = editorRef.current;
     if (!ed) return;
     const files = Array.from(fileList).slice(0, 5);
@@ -232,6 +235,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     }
 
     const chain = ed.chain().focus();
+    if (typeof pos === "number") chain.setTextSelection(pos);
     if (urls.length === 1) {
       chain.insertContent([
         { type: "figure", attrs: { src: urls[0], alt: files[0].name } },
@@ -383,7 +387,8 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   async function onGalleryFile(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     e.target.value = ""; // allow picking the same files again later
-    if (files && files.length) await uploadGallery(files);
+    if (files && files.length) await uploadGallery(files, pendingPosRef.current);
+    pendingPosRef.current = undefined;
   }
 
   return (
@@ -399,7 +404,10 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
             pendingPosRef.current = editorRef.current?.state.selection.from;
             fileRef.current?.click();
           }}
-          onGallery={() => galleryRef.current?.click()}
+          onGallery={() => {
+            pendingPosRef.current = editorRef.current?.state.selection.from;
+            galleryRef.current?.click();
+          }}
         />
         {/* Bounded, self-scrolling content area so the toolbar stays in view
             while writing a long body (no need to scroll the whole modal up). */}
