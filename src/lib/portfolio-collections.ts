@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured } from "@/lib/demo-data";
 import { snobbyStory } from "@/lib/snobby-story";
 import { insightist } from "@/lib/insightist";
@@ -82,7 +82,7 @@ export async function fetchCollection(
 ): Promise<PortfolioCollection | null> {
   if (!isSupabaseConfigured()) return collectionDefault(slug);
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("portfolio_collections")
       .select("*")

@@ -8,7 +8,21 @@ import { creativeWorkJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
 import { eventHasContent } from "@/lib/portfolio-sessions";
 
-export const revalidate = 0;
+export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
+
+/** Pre-render every event's detail page as static+ISR so the large collection
+ *  JSONB is fetched once at build, not on every request. New events (added
+ *  after a deploy) still render on demand and get cached. */
+export async function generateStaticParams() {
+  const c = await fetchCollection("insightist");
+  const slugs = new Set<string>();
+  for (const g of c?.data.groups ?? []) {
+    for (const e of g.events as EventItem[]) {
+      if (e.slug && eventHasContent(e)) slugs.add(e.slug);
+    }
+  }
+  return [...slugs].map((event) => ({ event }));
+}
 
 async function findEvent(slug: string): Promise<EventItem | null> {
   const c =

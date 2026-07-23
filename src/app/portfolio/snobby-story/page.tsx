@@ -4,7 +4,7 @@ import JsonLd from "@/components/JsonLd";
 import { collectionPageJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
 
-export const revalidate = 0;
+export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
 
 export async function generateMetadata(): Promise<Metadata> {
   const c =

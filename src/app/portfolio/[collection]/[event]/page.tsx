@@ -9,7 +9,7 @@ import { fetchCollection } from "@/lib/portfolio-collections";
 import { eventHasContent } from "@/lib/portfolio-sessions";
 import type { PortfolioCollection } from "@/lib/types";
 
-export const revalidate = 0;
+export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
 
 async function find(
   collectionSlug: string,

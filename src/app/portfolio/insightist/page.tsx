@@ -4,7 +4,10 @@ import JsonLd from "@/components/JsonLd";
 import { collectionPageJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
 
-export const revalidate = 0;
+// ISR: the collection JSONB is large, so serve from cache instead of
+// re-fetching + re-rendering on every request (avoids serverless timeouts).
+// Admin edits call revalidatePath; the 5-min window is a backstop.
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const c =
