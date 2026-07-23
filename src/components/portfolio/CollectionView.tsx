@@ -4,15 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import type { PortfolioCollection } from "@/lib/types";
-import { eventHasContent, inlineEmojiImages } from "@/lib/portfolio-sessions";
-
-/** Compact number for metric chips: 1250 → "1.2K", 2_400_000 → "2.4M". */
-function fmtNum(n?: number): string | null {
-  if (typeof n !== "number" || !Number.isFinite(n)) return null;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return String(n);
-}
+import { eventHasContent, inlineEmojiImages, fmtNum } from "@/lib/portfolio-sessions";
 
 /** Full portfolio collection page — renders a stories layout (Snobby-style) or
  *  a grouped-events layout (Insightist-style) from the same data shape. Shared

@@ -169,6 +169,8 @@ export interface PortfolioCollection {
           image?: string;
           body?: string;
           url?: string;
+          /** Social metrics for this session (e.g. its own Facebook post). */
+          metrics?: CollectionEventMetrics;
         }[];
       }[];
     }[];

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { EventSession } from "@/lib/portfolio-sessions";
-import { hasContent, inlineEmojiImages } from "@/lib/portfolio-sessions";
+import { hasContent, inlineEmojiImages, fmtNum } from "@/lib/portfolio-sessions";
 
 /**
  * Carousel of an event's sub-sessions (sub-blogs): each slide is one session
@@ -97,6 +97,13 @@ export default function SessionCarousel({ items }: { items: EventSession[] }) {
               className={`prose-cyber ${s.image ? "mt-6" : ""}`}
               dangerouslySetInnerHTML={{ __html: inlineEmojiImages(s.body) }}
             />
+          )}
+          {s.metrics && (
+            <div className="mt-6 flex flex-wrap gap-4 border-t border-line/[0.08] pt-4 font-mono text-xs text-muted">
+              {fmtNum(s.metrics.reactions) && <span title="รีแอกชัน">❤️ {fmtNum(s.metrics.reactions)}</span>}
+              {fmtNum(s.metrics.comments) && <span title="คอมเมนต์">💬 {fmtNum(s.metrics.comments)}</span>}
+              {fmtNum(s.metrics.shares) && <span title="แชร์">🔄 {fmtNum(s.metrics.shares)}</span>}
+            </div>
           )}
           {s.url && (
             <a
