@@ -412,8 +412,10 @@ function GroupsEditor({
   const toggleAll = () =>
     setCollapsed(allCollapsed ? new Set() : new Set(groups.map((g) => g._k)));
 
-  const patchG = (k: string, p: Partial<Grp>) =>
-    setGroups((g) => g.map((x) => (x._k === k ? { ...x, ...p } : x)));
+  const patchG = (k: string, p: Partial<Grp> | ((g: Grp) => Partial<Grp>)) =>
+    setGroups((g) =>
+      g.map((x) => (x._k === k ? { ...x, ...(typeof p === "function" ? p(x) : p) } : x))
+    );
   const addG = () => setGroups((g) => [...g, { _k: key(), name: "", events: [] }]);
   const rmG = (k: string) => setGroups((g) => g.filter((x) => x._k !== k));
   const moveG = (k: string, d: number) =>
@@ -459,7 +461,10 @@ function GroupsEditor({
             <input type="checkbox" checked={!!g.popular} onChange={(e) => patchG(g._k, { popular: e.target.checked })} className="accent-cyan" />
             กลุ่มยอดนิยม (★ ไม่นับรวมจำนวนงาน)
           </label>
-          <EventsEditor events={g.events} setEvents={(events) => patchG(g._k, { events })} />
+          <EventsEditor
+            events={g.events}
+            updateEvents={(fn) => patchG(g._k, (grp) => ({ events: fn(grp.events) }))}
+          />
         </Card>
       ))}
     </Section>
@@ -468,10 +473,12 @@ function GroupsEditor({
 
 function EventsEditor({
   events,
-  setEvents,
+  updateEvents,
 }: {
   events: Ev[];
-  setEvents: (ev: Ev[]) => void;
+  // Functional updater so concurrent edits (typing while other editors fire
+  // their own state updates) never clobber each other via a stale closure.
+  updateEvents: (fn: (evs: Ev[]) => Ev[]) => void;
 }) {
   // Existing events start collapsed (compact title list); newly-added events
   // have fresh keys not in the set, so they open ready to edit.
@@ -486,19 +493,22 @@ function EventsEditor({
       return n;
     });
 
-  const patch = (k: string, p: Partial<Ev>) =>
-    setEvents(events.map((x) => (x._k === k ? { ...x, ...p } : x)));
+  const patch = (k: string, p: Partial<Ev> | ((e: Ev) => Partial<Ev>)) =>
+    updateEvents((evs) =>
+      evs.map((x) => (x._k === k ? { ...x, ...(typeof p === "function" ? p(x) : p) } : x))
+    );
   const add = () =>
-    setEvents([...events, { _k: key(), title: "", url: "", image: "", sessions: [] }]);
-  const remove = (k: string) => setEvents(events.filter((x) => x._k !== k));
-  const move = (k: string, d: number) => {
-    const i = events.findIndex((x) => x._k === k);
-    const j = i + d;
-    if (i < 0 || j < 0 || j >= events.length) return;
-    const a = [...events];
-    [a[i], a[j]] = [a[j], a[i]];
-    setEvents(a);
-  };
+    updateEvents((evs) => [...evs, { _k: key(), title: "", url: "", image: "", sessions: [] }]);
+  const remove = (k: string) => updateEvents((evs) => evs.filter((x) => x._k !== k));
+  const move = (k: string, d: number) =>
+    updateEvents((evs) => {
+      const i = evs.findIndex((x) => x._k === k);
+      const j = i + d;
+      if (i < 0 || j < 0 || j >= evs.length) return evs;
+      const a = [...evs];
+      [a[i], a[j]] = [a[j], a[i]];
+      return a;
+    });
 
   return (
     <div className="mt-3 space-y-2 border-l border-line/10 pl-3">
@@ -550,27 +560,31 @@ function SubSessionsEditor({
   patch,
 }: {
   event: Ev;
-  patch: (k: string, p: Partial<Ev>) => void;
+  patch: (k: string, p: Partial<Ev> | ((e: Ev) => Partial<Ev>)) => void;
 }) {
   const sessions = event.sessions;
-  const setSessions = (s: Sess[]) => patch(event._k, { sessions: s });
+  // Functional updates so a body typed into a freshly-added session can't be
+  // dropped by another editor's concurrent (stale-closure) state write.
+  const updateSessions = (fn: (ss: Sess[]) => Sess[]) =>
+    patch(event._k, (ev) => ({ sessions: fn(ev.sessions ?? []) }));
   const patchS = (sk: string, p: Partial<Sess>) =>
-    setSessions(sessions.map((x) => (x._k === sk ? { ...x, ...p } : x)));
+    updateSessions((ss) => ss.map((x) => (x._k === sk ? { ...x, ...p } : x)));
   const addS = () =>
-    patch(event._k, {
-      sessions: [...sessions, { _k: key(), title: "", body: "", image: "", url: "" }],
+    patch(event._k, (ev) => ({
+      sessions: [...(ev.sessions ?? []), { _k: key(), title: "", body: "", image: "", url: "" }],
       // Ensure the event has a slug so its carousel page is reachable.
-      slug: event.slug || slugify(event.title) || `event-${Date.now().toString(36)}`,
+      slug: ev.slug || slugify(ev.title) || `event-${Date.now().toString(36)}`,
+    }));
+  const rmS = (sk: string) => updateSessions((ss) => ss.filter((x) => x._k !== sk));
+  const moveS = (sk: string, d: number) =>
+    updateSessions((ss) => {
+      const i = ss.findIndex((x) => x._k === sk);
+      const j = i + d;
+      if (i < 0 || j < 0 || j >= ss.length) return ss;
+      const a = [...ss];
+      [a[i], a[j]] = [a[j], a[i]];
+      return a;
     });
-  const rmS = (sk: string) => setSessions(sessions.filter((x) => x._k !== sk));
-  const moveS = (sk: string, d: number) => {
-    const i = sessions.findIndex((x) => x._k === sk);
-    const j = i + d;
-    if (i < 0 || j < 0 || j >= sessions.length) return;
-    const a = [...sessions];
-    [a[i], a[j]] = [a[j], a[i]];
-    setSessions(a);
-  };
 
   return (
     <div className="mt-2 rounded-md border border-cyan/15 bg-cyan/[0.03] p-2.5">

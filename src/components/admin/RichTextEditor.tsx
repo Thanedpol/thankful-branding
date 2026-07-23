@@ -356,7 +356,12 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     // When focus leaves the editor (e.g. tapping Publish on mobile), make sure
     // the hidden input holds the very latest HTML before the form is read.
     const onBlur = () => {
-      if (hiddenRef.current) hiddenRef.current.value = editor.getHTML();
+      const h = editor.getHTML();
+      if (hiddenRef.current) hiddenRef.current.value = h;
+      // Also push the final HTML into state-based forms (e.g. the collections
+      // sub-session editor), so content typed right before clicking Save isn't
+      // lost to an uncommitted async update.
+      onChangeRef.current?.(h);
     };
     dom.addEventListener("mousedown", onDown, true);
     document.addEventListener("mouseup", onUp, true);
