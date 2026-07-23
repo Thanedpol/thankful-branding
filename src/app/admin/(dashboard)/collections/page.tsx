@@ -1,7 +1,7 @@
 import CollectionsManager from "@/components/admin/CollectionsManager";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/demo-data";
-import { mergeAdminCollections } from "@/lib/portfolio-collections";
+import { mergeAdminCollections, stripSessionBodies } from "@/lib/portfolio-collections";
 import type { PortfolioCollection } from "@/lib/types";
 
 export const revalidate = 0;
@@ -28,7 +28,7 @@ export default async function AdminCollectionsPage() {
 
   return (
     <CollectionsManager
-      collections={mergeAdminCollections(rows)}
+      collections={stripSessionBodies(mergeAdminCollections(rows))}
       portfolios={portfolios}
     />
   );

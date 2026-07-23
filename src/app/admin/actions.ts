@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasContent } from "@/lib/portfolio-sessions";
 import type { PortfolioCategory } from "@/lib/types";
 
 /**
@@ -209,6 +210,30 @@ export async function savePortfolioCollection(
     p = JSON.parse(String(formData.get("payload") ?? "{}"));
   } catch {
     return { error: "Invalid payload" };
+  }
+
+  // The admin editor strips body HTML from large collections to keep its
+  // payload small; those sessions come back empty. Restore each empty body from
+  // the stored row (matched by Facebook url) so a structure/header edit never
+  // wipes imported content.
+  type Ev = { url?: string; body?: string; sessions?: { url?: string; body?: string }[] };
+  const { data: existingRow } = await supabase
+    .from("portfolio_collections")
+    .select("data")
+    .eq("slug", slug)
+    .maybeSingle();
+  const stored = (existingRow?.data as { groups?: { events?: Ev[] }[] } | undefined)?.groups;
+  const incoming = (p.data as { groups?: { events?: Ev[] }[] } | undefined)?.groups;
+  if (stored && incoming) {
+    const bodyByUrl = new Map<string, string>();
+    for (const g of stored) for (const e of g.events ?? []) {
+      if (e.body && e.url) bodyByUrl.set("e|" + e.url, e.body);
+      for (const s of e.sessions ?? []) if (s.body && s.url) bodyByUrl.set("s|" + s.url, s.body);
+    }
+    for (const g of incoming) for (const e of g.events ?? []) {
+      if (!hasContent(e.body) && e.url && bodyByUrl.has("e|" + e.url)) e.body = bodyByUrl.get("e|" + e.url);
+      for (const s of e.sessions ?? []) if (!hasContent(s.body) && s.url && bodyByUrl.has("s|" + s.url)) s.body = bodyByUrl.get("s|" + s.url);
+    }
   }
 
   const { error } = await supabase.from("portfolio_collections").upsert({
