@@ -5,6 +5,10 @@ import { mergeAdminCollections, stripSessionBodies } from "@/lib/portfolio-colle
 import type { PortfolioCollection } from "@/lib/types";
 
 export const revalidate = 0;
+// Saving the large Insightist collection round-trips a ~4 MB blob (read the
+// stored bodies + write them back), which can exceed the default serverless
+// timeout. Give the save action room so it doesn't silently fail.
+export const maxDuration = 60;
 
 type PortfolioLink = { id: string; title: string; project_url: string | null };
 

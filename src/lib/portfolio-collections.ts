@@ -37,9 +37,10 @@ export function collectionDefault(slug: string): PortfolioCollection | null {
  * Drop session/event body HTML from collections that have more than
  * `maxSessions` sessions, so the admin editor's serialized props stay well
  * under Vercel's ~4.5 MB response limit (a large imported collection is ~1.8 MB
- * of body HTML). Non-destructive: savePortfolioCollection restores the stored
- * body (matched by Facebook url) for any session that comes back empty. Small
- * collections are returned untouched so their content stays editable inline.
+ * of body HTML). Each stripped body is flagged with `_stripped` so the editor
+ * keeps the (now empty-looking) session in its payload and savePortfolioCollection
+ * can restore the stored body. Non-destructive; small collections are returned
+ * untouched so their content stays editable inline.
  */
 export function stripSessionBodies(
   cols: PortfolioCollection[],
@@ -59,8 +60,10 @@ export function stripSessionBodies(
           ...g,
           events: g.events.map((e) => ({
             ...e,
-            ...(e.body ? { body: "" } : {}),
-            sessions: e.sessions?.map((s) => (s.body ? { ...s, body: "" } : s)),
+            ...(e.body ? { body: "", _stripped: true } : {}),
+            sessions: e.sessions?.map((s) =>
+              s.body ? { ...s, body: "", _stripped: true } : s
+            ),
           })),
         })),
       },

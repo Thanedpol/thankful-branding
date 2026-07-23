@@ -214,26 +214,50 @@ export async function savePortfolioCollection(
 
   // The admin editor strips body HTML from large collections to keep its
   // payload small; those sessions come back empty. Restore each empty body from
-  // the stored row (matched by Facebook url) so a structure/header edit never
-  // wipes imported content.
-  type Ev = { url?: string; body?: string; sessions?: { url?: string; body?: string }[] };
+  // the stored row so a structure/header edit never wipes imported content.
+  // Primary match is the Facebook url; a positional fallback (parent event +
+  // session index) covers sessions that have no url of their own.
+  type Sess = { url?: string; body?: string; _stripped?: boolean };
+  type Ev = { url?: string; body?: string; _stripped?: boolean; sessions?: Sess[] };
+  type Grp = { name?: string; events?: Ev[] };
   const { data: existingRow } = await supabase
     .from("portfolio_collections")
     .select("data")
     .eq("slug", slug)
     .maybeSingle();
-  const stored = (existingRow?.data as { groups?: { events?: Ev[] }[] } | undefined)?.groups;
-  const incoming = (p.data as { groups?: { events?: Ev[] }[] } | undefined)?.groups;
-  if (stored && incoming) {
-    const bodyByUrl = new Map<string, string>();
-    for (const g of stored) for (const e of g.events ?? []) {
-      if (e.body && e.url) bodyByUrl.set("e|" + e.url, e.body);
-      for (const s of e.sessions ?? []) if (s.body && s.url) bodyByUrl.set("s|" + s.url, s.body);
-    }
-    for (const g of incoming) for (const e of g.events ?? []) {
-      if (!hasContent(e.body) && e.url && bodyByUrl.has("e|" + e.url)) e.body = bodyByUrl.get("e|" + e.url);
-      for (const s of e.sessions ?? []) if (!hasContent(s.body) && s.url && bodyByUrl.has("s|" + s.url)) s.body = bodyByUrl.get("s|" + s.url);
-    }
+  const stored = (existingRow?.data as { groups?: Grp[] } | undefined)?.groups;
+  const incoming = (p.data as { groups?: Grp[] } | undefined)?.groups;
+  if (incoming) {
+    // A stable-ish key for an event: prefer its url, else its position.
+    const evKey = (g: Grp, e: Ev, ei: number) =>
+      e.url ? "u|" + e.url : "p|" + (g.name ?? "") + "|" + ei;
+    const evBody = new Map<string, string>(); // event url → event body
+    const sByUrl = new Map<string, string>(); // session url → body
+    const sByPos = new Map<string, string>(); // evKey|index → session body
+    for (const g of stored ?? [])
+      (g.events ?? []).forEach((e, ei) => {
+        if (e.body && e.url) evBody.set(e.url, e.body);
+        const ek = evKey(g, e, ei);
+        (e.sessions ?? []).forEach((s, si) => {
+          if (!s.body) return;
+          if (s.url) sByUrl.set(s.url, s.body);
+          sByPos.set(ek + "|" + si, s.body);
+        });
+      });
+    incoming.forEach((g) =>
+      (g.events ?? []).forEach((e, ei) => {
+        if (!hasContent(e.body) && e.url && evBody.has(e.url)) e.body = evBody.get(e.url);
+        delete e._stripped; // internal marker — never persist
+        const ek = evKey(g, e, ei);
+        (e.sessions ?? []).forEach((s, si) => {
+          if (!hasContent(s.body)) {
+            const restored = (s.url && sByUrl.get(s.url)) || sByPos.get(ek + "|" + si);
+            if (restored) s.body = restored;
+          }
+          delete s._stripped; // internal marker — never persist
+        });
+      })
+    );
   }
 
   const { error } = await supabase.from("portfolio_collections").upsert({

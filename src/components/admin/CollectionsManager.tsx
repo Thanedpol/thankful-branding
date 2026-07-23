@@ -42,8 +42,8 @@ const numOrUndef = (s: string): number | undefined => {
 };
 
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
-type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string };
-type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; metrics?: CollectionEventMetrics; sessions: Sess[] };
+type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string; _stripped?: boolean };
+type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; metrics?: CollectionEventMetrics; _stripped?: boolean; sessions: Sess[] };
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 export default function CollectionsManager({
@@ -171,6 +171,7 @@ function Editor({
   const [category, setCategory] = useState(collection.category ?? "");
   const [tags, setTags] = useState((collection.tags ?? []).join(", "));
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [stories, setStories] = useState<Story[]>(() =>
     (collection.data.stories ?? []).map((s) => ({ ...s, _k: key() }))
   );
@@ -211,6 +212,9 @@ function Editor({
                   .map(({ _k: _sk, ...s }) => s)
                   .filter(
                     (s) =>
+                      // Keep stripped sessions (their body is hidden but real —
+                      // restored server-side); drop only genuinely empty ones.
+                      s._stripped ||
                       hasContent(s.body) ||
                       !!s.image ||
                       !!(s.title && s.title.trim()) ||
@@ -227,12 +231,25 @@ function Editor({
       <div className="absolute inset-0 bg-space" onClick={onClose} />
       <form
         action={async (fd) => {
-          const res = await savePortfolioCollection(fd);
-          if (res?.error) {
-            setSaveError(res.error);
-            return;
+          setSaving(true);
+          setSaveError(null);
+          try {
+            const res = await savePortfolioCollection(fd);
+            if (res?.error) {
+              setSaveError(res.error);
+              return;
+            }
+            onClose();
+          } catch (err) {
+            // A thrown action (timeout, network drop) would otherwise fail
+            // silently and look like "Save does nothing" — surface it instead.
+            setSaveError(
+              "บันทึกไม่สำเร็จ — อาจใช้เวลานานเกินไปหรือการเชื่อมต่อหลุด กรุณาลองอีกครั้ง" +
+                (err instanceof Error ? ` (${err.message})` : "")
+            );
+          } finally {
+            setSaving(false);
           }
-          onClose();
         }}
         className="glass relative z-10 my-4 w-full max-w-2xl space-y-4 bg-space-light p-6"
       >
@@ -309,10 +326,10 @@ function Editor({
         )}
 
         <div className="flex items-center gap-3 pt-2">
-          <button type="submit" className="btn-neon flex-1">
-            Save
+          <button type="submit" disabled={saving} className="btn-neon flex-1 disabled:opacity-60">
+            {saving ? "กำลังบันทึก…" : "Save"}
           </button>
-          <button type="button" onClick={onClose} className="btn-ghost">
+          <button type="button" onClick={onClose} disabled={saving} className="btn-ghost disabled:opacity-60">
             Cancel
           </button>
           {!isNew && !DEFAULT_SLUGS.includes(slug) && (

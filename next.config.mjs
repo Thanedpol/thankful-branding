@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    // Admin collection saves post a JSON payload that can exceed the 1 MB
+    // default (a medium collection with full session bodies), so give it room.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",

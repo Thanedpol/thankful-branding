@@ -163,6 +163,9 @@ export interface PortfolioCollection {
         slug?: string;
         /** Social metrics (reactions/comments/shares/…) shown on the card. */
         metrics?: CollectionEventMetrics;
+        /** Admin-only marker: this body was stripped for the editor and must be
+         *  restored from the stored row on save. Never persisted. */
+        _stripped?: boolean;
         /** Sub-sessions (sub-blogs) shown as a carousel on the event's page. */
         sessions?: {
           title?: string;
@@ -171,6 +174,9 @@ export interface PortfolioCollection {
           url?: string;
           /** Social metrics for this session (e.g. its own Facebook post). */
           metrics?: CollectionEventMetrics;
+          /** Admin-only marker: body stripped for the editor, restored on save.
+           *  Never persisted. */
+          _stripped?: boolean;
         }[];
       }[];
     }[];
