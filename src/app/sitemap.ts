@@ -30,7 +30,9 @@ async function getPortfolioEventRoutes(): Promise<MetadataRoute.Sitemap> {
       for (const e of g.events) {
         if (e.slug && eventHasContent(e)) {
           routes.push({
-            url: `${SITE_URL}/portfolio/${slug}/${e.slug}`,
+            // Percent-encode the (often Thai) event slug so every <loc> is a
+            // spec-compliant ASCII URL — some sitemap parsers reject raw UTF-8.
+            url: `${SITE_URL}/portfolio/${slug}/${encodeURIComponent(e.slug)}`,
             changeFrequency: "monthly",
             priority: 0.5,
           });
