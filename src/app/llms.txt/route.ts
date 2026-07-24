@@ -1,5 +1,5 @@
 import { SITE_URL } from "@/lib/seo";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured, demoBlogPreviews } from "@/lib/demo-data";
 import type { BlogPreview } from "@/lib/types";
 
@@ -10,7 +10,7 @@ export const revalidate = 3600;
 export async function GET() {
   let posts: BlogPreview[] = demoBlogPreviews;
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("blog_previews")
       .select("*")

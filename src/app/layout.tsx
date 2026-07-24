@@ -68,7 +68,14 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    types: {
+      "application/rss+xml": "/rss.xml",
+      "application/atom+xml": "/atom.xml",
+      "application/feed+json": "/feed.json",
+    },
+  },
   robots: { index: true, follow: true },
   verification: { google: "qn8OHedMHOxPLuILt06k6oPP5n-y3ANMMAz6rypMtqM" },
   openGraph: {
