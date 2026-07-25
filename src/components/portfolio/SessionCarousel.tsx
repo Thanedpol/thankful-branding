@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import type { EventSession } from "@/lib/portfolio-sessions";
 import { hasContent, inlineEmojiImages, fmtNum } from "@/lib/portfolio-sessions";
 
@@ -97,15 +96,17 @@ export default function SessionCarousel({ items }: { items: EventSession[] }) {
             </h2>
           )}
           {s.image && (
-            <div className="relative aspect-video w-full overflow-hidden rounded-xl">
-              <Image
-                src={s.image}
-                alt={s.title || ""}
-                fill
-                className="object-cover"
-                sizes="(max-width: 896px) 100vw, 896px"
-              />
-            </div>
+            // Plain <img> (not next/image): shows the picture at its real aspect
+            // ratio — never cropped to 16:9, works for portrait/square/any size —
+            // and loads external URLs (e.g. Facebook) directly, bypassing the
+            // Vercel optimizer that can't fetch hotlink-protected images.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={s.image}
+              alt={s.title || ""}
+              loading="lazy"
+              className="mx-auto block max-h-[80vh] w-auto max-w-full rounded-xl border border-line/10"
+            />
           )}
           {hasContent(s.body) && (
             <div
