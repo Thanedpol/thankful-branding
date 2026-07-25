@@ -292,6 +292,11 @@ export async function savePortfolioCollection(
 
   refreshPublic();
   revalidatePath(`/portfolio/${slug}`);
+  // Also revalidate the event detail routes so a newly-added event page (or one
+  // whose content just changed) doesn't keep serving a cached 404 from a click
+  // made before the data was live.
+  revalidatePath("/portfolio/insightist/[event]", "page");
+  revalidatePath("/portfolio/[collection]/[event]", "page");
   revalidatePath("/admin/collections");
   revalidatePath("/admin/portfolio");
   return {};
