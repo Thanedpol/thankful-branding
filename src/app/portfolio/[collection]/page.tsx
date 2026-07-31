@@ -6,6 +6,7 @@ import { collectionPageJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { fetchCollection } from "@/lib/portfolio-collections";
 
 export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
+export const maxDuration = 60; // ~4 MB collection fetch on regen — avoid timeouts
 
 export async function generateMetadata({
   params,

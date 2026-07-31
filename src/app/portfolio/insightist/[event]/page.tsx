@@ -9,6 +9,9 @@ import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections"
 import { eventHasContent } from "@/lib/portfolio-sessions";
 
 export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
+// ~4 MB collection fetch on regen — give it room so a slow fetch can't time out
+// and fall back to the seed (no slug → false 404 that then gets cached).
+export const maxDuration = 60;
 
 /** Pre-render every event's detail page as static+ISR so the large collection
  *  JSONB is fetched once at build, not on every request. New events (added

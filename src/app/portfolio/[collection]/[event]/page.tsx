@@ -10,6 +10,7 @@ import { eventHasContent } from "@/lib/portfolio-sessions";
 import type { PortfolioCollection } from "@/lib/types";
 
 export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
+export const maxDuration = 60; // ~4 MB collection fetch on regen — avoid timeouts
 
 async function find(
   collectionSlug: string,

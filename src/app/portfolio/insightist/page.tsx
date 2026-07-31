@@ -8,6 +8,9 @@ import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections"
 // re-fetching + re-rendering on every request (avoids serverless timeouts).
 // Admin edits call revalidatePath; the 5-min window is a backstop.
 export const revalidate = 300;
+// The collection JSONB is ~4 MB; give ISR regeneration room so the fetch never
+// times out and falls back to the tiny seed (which lacks event slugs → 404).
+export const maxDuration = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const c =
