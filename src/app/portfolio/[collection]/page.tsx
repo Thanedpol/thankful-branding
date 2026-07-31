@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import CollectionView from "@/components/portfolio/CollectionView";
 import JsonLd from "@/components/JsonLd";
 import { collectionPageJsonLd, breadcrumbJsonLd } from "@/lib/seo";
-import { fetchCollection } from "@/lib/portfolio-collections";
+import { fetchCollectionStrict } from "@/lib/portfolio-collections";
 
 export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
 export const maxDuration = 60; // ~4 MB collection fetch on regen — avoid timeouts
@@ -14,7 +14,7 @@ export async function generateMetadata({
   params: Promise<{ collection: string }>;
 }): Promise<Metadata> {
   const { collection } = await params;
-  const c = await fetchCollection(decodeURIComponent(collection));
+  const c = await fetchCollectionStrict(decodeURIComponent(collection));
   if (!c) return { title: "ไม่พบผลงาน — Thank Thanedpol" };
   return {
     title: `${c.title} — Thank Thanedpol`,
@@ -29,7 +29,7 @@ export default async function CollectionPage({
   params: Promise<{ collection: string }>;
 }) {
   const { collection } = await params;
-  const c = await fetchCollection(decodeURIComponent(collection));
+  const c = await fetchCollectionStrict(decodeURIComponent(collection));
   if (!c) notFound();
   return (
     <>

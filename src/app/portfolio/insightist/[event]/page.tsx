@@ -5,7 +5,11 @@ import EventDetailView, {
 } from "@/components/portfolio/EventDetailView";
 import JsonLd from "@/components/JsonLd";
 import { creativeWorkJsonLd, breadcrumbJsonLd } from "@/lib/seo";
-import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
+import {
+  fetchCollection,
+  fetchCollectionStrict,
+  collectionDefault,
+} from "@/lib/portfolio-collections";
 import { eventHasContent } from "@/lib/portfolio-sessions";
 
 export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
@@ -28,8 +32,10 @@ export async function generateStaticParams() {
 }
 
 async function findEvent(slug: string): Promise<EventItem | null> {
+  // Strict fetch: a failed read throws (→ retryable 500) instead of returning
+  // the seed, which would make this event look missing and cache a sticky 404.
   const c =
-    (await fetchCollection("insightist")) ?? collectionDefault("insightist");
+    (await fetchCollectionStrict("insightist")) ?? collectionDefault("insightist");
   for (const group of c?.data.groups ?? []) {
     for (const e of group.events as EventItem[]) {
       if (e.slug === slug && eventHasContent(e)) return e;

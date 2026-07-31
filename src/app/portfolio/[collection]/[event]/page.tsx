@@ -5,7 +5,7 @@ import EventDetailView, {
 } from "@/components/portfolio/EventDetailView";
 import JsonLd from "@/components/JsonLd";
 import { creativeWorkJsonLd, breadcrumbJsonLd } from "@/lib/seo";
-import { fetchCollection } from "@/lib/portfolio-collections";
+import { fetchCollectionStrict } from "@/lib/portfolio-collections";
 import { eventHasContent } from "@/lib/portfolio-sessions";
 import type { PortfolioCollection } from "@/lib/types";
 
@@ -16,7 +16,9 @@ async function find(
   collectionSlug: string,
   eventSlug: string
 ): Promise<{ c: PortfolioCollection; e: EventItem } | null> {
-  const c = await fetchCollection(collectionSlug);
+  // Strict fetch: a failed read throws (→ retryable 500) rather than returning
+  // the seed, which would cache a sticky 404 for a real event.
+  const c = await fetchCollectionStrict(collectionSlug);
   if (!c) return null;
   for (const group of c.data.groups ?? []) {
     for (const e of group.events as EventItem[]) {

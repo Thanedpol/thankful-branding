@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CollectionView from "@/components/portfolio/CollectionView";
 import JsonLd from "@/components/JsonLd";
 import { collectionPageJsonLd, breadcrumbJsonLd } from "@/lib/seo";
-import { fetchCollection, collectionDefault } from "@/lib/portfolio-collections";
+import { fetchCollectionStrict, collectionDefault } from "@/lib/portfolio-collections";
 
 // ISR: the collection JSONB is large, so serve from cache instead of
 // re-fetching + re-rendering on every request (avoids serverless timeouts).
@@ -14,7 +14,7 @@ export const maxDuration = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const c =
-    (await fetchCollection("insightist")) ?? collectionDefault("insightist")!;
+    (await fetchCollectionStrict("insightist")) ?? collectionDefault("insightist")!;
   return {
     title: `${c.title} — AI & Tech News Coverage | Thank Thanedpol`,
     description: c.intro?.replace(/<[^>]*>/g, "").trim() || undefined,
@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function InsightistPage() {
   const c =
-    (await fetchCollection("insightist")) ?? collectionDefault("insightist")!;
+    (await fetchCollectionStrict("insightist")) ?? collectionDefault("insightist")!;
   return (
     <>
       <JsonLd

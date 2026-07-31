@@ -132,3 +132,26 @@ export async function fetchCollection(
     return collectionDefault(slug);
   }
 }
+
+/**
+ * Like fetchCollection, but THROWS on a query error instead of silently falling
+ * back to the tiny built-in seed. Pages that look up a specific event use this:
+ * on a transient fetch failure they render a retryable (uncached) error rather
+ * than returning the seed — whose missing event slugs would make findEvent hit
+ * notFound(), producing a 404 that Vercel caches per-edge and then serves to
+ * everyone until revalidation. A thrown error → 500 → next request retries.
+ * Returns the built-in default only when the row genuinely doesn't exist.
+ */
+export async function fetchCollectionStrict(
+  slug: string
+): Promise<PortfolioCollection | null> {
+  if (!isSupabaseConfigured()) return collectionDefault(slug);
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("portfolio_collections")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw new Error(`fetchCollectionStrict(${slug}): ${error.message}`);
+  return mergeCollection(slug, data as Partial<PortfolioCollection> | null);
+}
