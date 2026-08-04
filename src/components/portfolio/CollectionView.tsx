@@ -143,7 +143,10 @@ export default function CollectionView({ c }: { c: PortfolioCollection }) {
                         </>
                       );
 
-                      if (eventHasContent(e) && e.slug) {
+                      // Prefer the cached flag from the per-event row; fall back
+                      // to computing it for inline/legacy data.
+                      const hasPage = e.hasContent ?? eventHasContent(e);
+                      if (hasPage && e.slug) {
                         return (
                           <Link
                             key={e.slug + ei}

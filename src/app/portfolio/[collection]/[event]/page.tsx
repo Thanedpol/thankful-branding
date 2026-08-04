@@ -5,27 +5,17 @@ import EventDetailView, {
 } from "@/components/portfolio/EventDetailView";
 import JsonLd from "@/components/JsonLd";
 import { creativeWorkJsonLd, breadcrumbJsonLd } from "@/lib/seo";
-import { fetchCollectionStrict } from "@/lib/portfolio-collections";
-import { eventHasContent } from "@/lib/portfolio-sessions";
-import type { PortfolioCollection } from "@/lib/types";
+import { fetchCollectionEvent } from "@/lib/portfolio-collections";
 
 export const revalidate = 300; // ISR — see /portfolio/insightist/page.tsx
-export const maxDuration = 60; // ~4 MB collection fetch on regen — avoid timeouts
+export const maxDuration = 60; // headroom for regen (now a single-event read)
 
 async function find(
   collectionSlug: string,
   eventSlug: string
-): Promise<{ c: PortfolioCollection; e: EventItem } | null> {
-  // Strict fetch: a failed read throws (→ retryable 500) rather than returning
-  // the seed, which would cache a sticky 404 for a real event.
-  const c = await fetchCollectionStrict(collectionSlug);
-  if (!c) return null;
-  for (const group of c.data.groups ?? []) {
-    for (const e of group.events as EventItem[]) {
-      if (e.slug === eventSlug && eventHasContent(e)) return { c, e };
-    }
-  }
-  return null;
+): Promise<{ c: Omit<import("@/lib/types").PortfolioCollection, "data">; e: EventItem } | null> {
+  // Single-row read; throws on a query error (→ retryable 500, never a cached 404).
+  return fetchCollectionEvent(collectionSlug, eventSlug);
 }
 
 export async function generateMetadata({

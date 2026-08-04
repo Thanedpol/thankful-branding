@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasContent } from "@/lib/portfolio-sessions";
+import { buildEventRows, buildGroupMeta } from "@/lib/portfolio-events";
 import type { PortfolioCategory, PortfolioCollection } from "@/lib/types";
 
 /**
@@ -191,6 +192,48 @@ export async function deleteBlog(formData: FormData) {
 }
 
 // ─── Portfolio collections (Snobby Story, Insightist) ────────────────────────
+
+/**
+ * Mirror a grouped collection's events into the per-event `portfolio_events`
+ * rows that the public site reads. Upserts every current event first (so the
+ * read model never has a gap), then deletes rows for events that were removed.
+ * Returns an error message on failure (the blob save already succeeded, so the
+ * admin can just retry to reconcile). No-op shape reuse via buildEventRows keeps
+ * the slugs identical to the original migration.
+ */
+async function syncPortfolioEvents(
+  supabase: ReturnType<typeof createAdminClient>,
+  slug: string,
+  groups: NonNullable<PortfolioCollection["data"]["groups"]>
+): Promise<string | null> {
+  const rows = buildEventRows(slug, groups);
+  const keep = new Set(rows.map((r) => r.slug));
+  const BATCH = 50;
+  for (let i = 0; i < rows.length; i += BATCH) {
+    const { error } = await supabase
+      .from("portfolio_events")
+      .upsert(rows.slice(i, i + BATCH), { onConflict: "collection_slug,slug" });
+    if (error) return error.message;
+  }
+  const { data: existing, error: exErr } = await supabase
+    .from("portfolio_events")
+    .select("slug")
+    .eq("collection_slug", slug);
+  if (exErr) return exErr.message;
+  const stale = ((existing as { slug: string }[] | null) ?? [])
+    .map((r) => r.slug)
+    .filter((s) => !keep.has(s));
+  if (stale.length) {
+    const { error } = await supabase
+      .from("portfolio_events")
+      .delete()
+      .eq("collection_slug", slug)
+      .in("slug", stale);
+    if (error) return error.message;
+  }
+  return null;
+}
+
 export async function savePortfolioCollection(
   formData: FormData
 ): Promise<{ error?: string }> {
@@ -260,6 +303,14 @@ export async function savePortfolioCollection(
     );
   }
 
+  // Keep a light copy of group metadata inline (data->groups_meta) so the public
+  // listing can read group order + the ★popular flag without ever loading the
+  // multi-MB blob. The heavy `data.groups` stays for the admin editor.
+  const syncGroups = (p.data as Pick<PortfolioCollection["data"], "groups">)
+    ?.groups;
+  const dataToStore: Record<string, unknown> = { ...(p.data ?? {}) };
+  if (syncGroups) dataToStore.groups_meta = buildGroupMeta(syncGroups);
+
   const { error } = await supabase.from("portfolio_collections").upsert({
     slug,
     title: p.title || slug,
@@ -267,7 +318,7 @@ export async function savePortfolioCollection(
     intro: p.intro || null,
     category: p.category || null,
     tags: p.tags ?? [],
-    data: p.data ?? {},
+    data: dataToStore,
     updated_at: new Date().toISOString(),
   });
   if (error) {
@@ -279,6 +330,17 @@ export async function savePortfolioCollection(
         ? "ยังไม่ได้สร้างตาราง portfolio_collections — โปรดรัน migration add-portfolio-collections.sql ใน Supabase SQL Editor ก่อน แล้วลองอีกครั้ง"
         : `บันทึกไม่สำเร็จ: ${error.message}`,
     };
+  }
+
+  // Mirror events into the per-event rows the public site reads. If this fails
+  // the blob is still saved, so surface the error and let the admin retry (a
+  // retry reconciles both). Only grouped collections have event rows.
+  if (syncGroups) {
+    const syncErr = await syncPortfolioEvents(supabase, slug, syncGroups);
+    if (syncErr)
+      return {
+        error: `บันทึกหลักสำเร็จ แต่ซิงก์รายการงานไม่สำเร็จ (${syncErr}) — กด Save อีกครั้งเพื่อซิงก์ให้ครบ`,
+      };
   }
 
   // Optionally point a Portfolio card's "view" link at this collection.

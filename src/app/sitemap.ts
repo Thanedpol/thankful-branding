@@ -2,8 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured, demoBlogPreviews } from "@/lib/demo-data";
-import { COLLECTION_SLUGS, fetchCollection } from "@/lib/portfolio-collections";
-import { eventHasContent } from "@/lib/portfolio-sessions";
+import { COLLECTION_SLUGS, getCollectionEventSlugs } from "@/lib/portfolio-collections";
 import type { BlogPreview } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -25,19 +24,15 @@ async function getPosts(): Promise<BlogPreview[]> {
 async function getPortfolioEventRoutes(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = [];
   for (const slug of COLLECTION_SLUGS) {
-    const c = await fetchCollection(slug);
-    for (const g of c?.data.groups ?? []) {
-      for (const e of g.events) {
-        if (e.slug && eventHasContent(e)) {
-          routes.push({
-            // Percent-encode the (often Thai) event slug so every <loc> is a
-            // spec-compliant ASCII URL — some sitemap parsers reject raw UTF-8.
-            url: `${SITE_URL}/portfolio/${slug}/${encodeURIComponent(e.slug)}`,
-            changeFrequency: "monthly",
-            priority: 0.5,
-          });
-        }
-      }
+    const eventSlugs = await getCollectionEventSlugs(slug);
+    for (const eventSlug of eventSlugs) {
+      routes.push({
+        // Percent-encode the (often Thai) event slug so every <loc> is a
+        // spec-compliant ASCII URL — some sitemap parsers reject raw UTF-8.
+        url: `${SITE_URL}/portfolio/${slug}/${encodeURIComponent(eventSlug)}`,
+        changeFrequency: "monthly",
+        priority: 0.5,
+      });
     }
   }
   return routes;

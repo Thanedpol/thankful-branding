@@ -163,6 +163,9 @@ export interface PortfolioCollection {
         slug?: string;
         /** Social metrics (reactions/comments/shares/…) shown on the card. */
         metrics?: CollectionEventMetrics;
+        /** Cached eventHasContent() from the per-event row — lets the listing
+         *  decide "internal page vs Facebook link" without loading any body. */
+        hasContent?: boolean;
         /** Admin-only marker: this body was stripped for the editor and must be
          *  restored from the stored row on save. Never persisted. */
         _stripped?: boolean;
