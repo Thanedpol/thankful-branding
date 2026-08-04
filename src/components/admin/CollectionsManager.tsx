@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   savePortfolioCollection,
   deletePortfolioCollection,
-  getCollectionData,
+  getEventSessions,
+  saveEvent,
+  deleteEvent,
+  saveCollectionMeta,
 } from "@/app/admin/actions";
 import RichTextEditor from "./RichTextEditor";
 import AdminSearch from "./AdminSearch";
@@ -43,35 +47,54 @@ const numOrUndef = (s: string): number | undefined => {
 };
 
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
-type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string; _stripped?: boolean };
-type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; metrics?: CollectionEventMetrics; _stripped?: boolean; sessions: Sess[] };
+type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string };
+type Ev = {
+  _k: string;
+  title: string;
+  url: string;
+  image?: string;
+  body?: string;
+  slug?: string;
+  metrics?: CollectionEventMetrics;
+  sessions: Sess[];
+  // Editor-only bookkeeping (never persisted):
+  _new?: boolean; // added this session — has no DB row yet
+  _dirty?: boolean; // content edited — needs a saveEvent on Save
+  _loaded?: boolean; // its sessions have been fetched (or it's new)
+  _origSlug?: string; // slug at load time — to rename (drop old) on Save
+};
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
+/** True if a (new) event carries nothing worth persisting. */
+const isEmptyEvent = (e: Ev) =>
+  !e.title?.trim() &&
+  !e.url?.trim() &&
+  !e.image?.trim() &&
+  !(e.sessions ?? []).some(
+    (s) => hasContent(s.body) || !!s.image || !!(s.title && s.title.trim()) || !!s.url
+  );
+
 /** Build editor state (with stable _k keys) from stored group data, migrating a
- *  legacy single event body into one sub-session. When `orig` is passed, record
- *  each session's original body keyed by its _k, so an untouched session can be
- *  saved compactly (sent stripped, restored server-side). */
-function toGroupsState(
-  dataGroups: PortfolioCollection["data"]["groups"],
-  orig?: Map<string, string>
-): Grp[] {
+ *  legacy single event body into one sub-session. Events arrive LIGHT (no session
+ *  bodies) for existing collections — their sessions are lazy-loaded on expand. */
+function toGroupsState(dataGroups: PortfolioCollection["data"]["groups"]): Grp[] {
   return (dataGroups ?? []).map((g) => ({
     ...g,
     _k: key(),
-    events: g.events.map((e) => ({
-      ...e,
-      _k: key(),
-      sessions: (e.sessions?.length
+    events: g.events.map((e) => {
+      const inline = e.sessions?.length
         ? e.sessions
         : hasContent(e.body)
         ? [{ title: "", body: e.body }]
-        : []
-      ).map((s) => {
-        const sk = key();
-        if (orig) orig.set(sk, s.body ?? "");
-        return { ...s, _k: sk };
-      }),
-    })),
+        : [];
+      return {
+        ...e,
+        _k: key(),
+        _origSlug: e.slug,
+        _loaded: inline.length > 0, // light events (no inline sessions) load on expand
+        sessions: inline.map((s) => ({ ...s, _k: key() })),
+      };
+    }),
   }));
 }
 
@@ -183,6 +206,7 @@ function Editor({
   portfolios: PortfolioLink[];
   onClose: () => void;
 }) {
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   useScrollJumpGuard(scrollRef);
   const [slug, setSlug] = useState(collection.slug);
@@ -206,125 +230,157 @@ function Editor({
   );
   const [groups, setGroups] = useState<Grp[]>(() => toGroupsState(collection.data.groups));
 
-  // Large collections arrive with their session/event bodies stripped (for the
-  // list-view payload limit). Pull the full content on open so it's visible and
-  // editable, and remember each original body so an untouched session can be
-  // saved compactly (sent back stripped, restored server-side) instead of
-  // re-uploading the whole ~4 MB blob every save.
-  const wasStripped = useMemo(
-    () =>
-      (collection.data.groups ?? []).some((g) =>
-        g.events.some((e) => e._stripped || (e.sessions ?? []).some((s) => s._stripped))
-      ),
-    [collection]
-  );
-  const origBody = useRef<Map<string, string>>(new Map());
-  const [hydrating, setHydrating] = useState(wasStripped);
-  const [hydrateError, setHydrateError] = useState<string | null>(null);
+  // Existing grouped collections edit PER EVENT: the listing is loaded light
+  // (no session bodies), each event's sessions are fetched on expand, and Save
+  // writes one event at a time + the structure — so it scales to any size and
+  // never round-trips a multi-MB blob. New collections + stories still save whole
+  // (they're small).
+  const perEvent = kind === "groups" && !isNew;
 
-  useEffect(() => {
-    if (!wasStripped) return;
-    let cancelled = false;
-    getCollectionData(collection.slug)
-      .then((res) => {
-        if (cancelled) return;
-        if (res.error || !res.data?.groups) {
-          setHydrateError(res.error ?? "โหลดเนื้อหาไม่สำเร็จ");
-          setHydrating(false);
-          return;
-        }
-        const og = new Map<string, string>();
-        setGroups(toGroupsState(res.data.groups, og));
-        origBody.current = og;
-        setHydrating(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setHydrateError("โหลดเนื้อหาไม่สำเร็จ — ลองปิดแล้วเปิดใหม่");
-        setHydrating(false);
-      });
-    return () => {
-      cancelled = true;
+  /** Whole-collection payload — used for stories + brand-new collections only. */
+  function buildWholePayload() {
+    return {
+      title,
+      tagline: tagline || null,
+      intro: intro || null,
+      category: category || null,
+      tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+      data:
+        kind === "stories"
+          ? { stories: stories.map(({ _k, ...s }) => s) }
+          : {
+              groups: groups.map(({ _k, events, ...g }) => ({
+                ...g,
+                events: events
+                  .filter((e) => !isEmptyEvent(e))
+                  .map(
+                    ({ _k: _ek, _new, _dirty, _loaded, _origSlug, sessions, body: _b, ...e }) => ({
+                      ...e,
+                      sessions: (sessions ?? [])
+                        .map(({ _k: _sk, ...s }) => s)
+                        .filter(
+                          (s) =>
+                            hasContent(s.body) ||
+                            !!s.image ||
+                            !!(s.title && s.title.trim()) ||
+                            !!s.url
+                        ),
+                    })
+                  ),
+              })),
+            },
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
 
-  // Serialise (drop the internal _k keys).
-  const payload = {
-    title,
-    tagline: tagline || null,
-    intro: intro || null,
-    category: category || null,
-    tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-    data:
-      kind === "stories"
-        ? { stories: stories.map(({ _k, ...s }) => s) }
-        : {
-            groups: groups.map(({ _k, events, ...g }) => ({
-              ...g,
-              events: events.map(({ _k: _ek, sessions, body: _body, ...e }) => {
-                const cleaned = sessions
-                  .map(({ _k: _sk, ...s }) => {
-                    // Untouched session in a hydrated large collection → send it
-                    // stripped so the payload stays tiny; the server restores its
-                    // stored body. Edited/new sessions are sent with their body.
-                    if (wasStripped) {
-                      const orig = origBody.current.get(_sk);
-                      if (orig !== undefined && (s.body ?? "") === orig) {
-                        return { ...s, body: "", _stripped: true };
-                      }
-                    }
-                    return s;
-                  })
-                  .filter(
-                    (s) =>
-                      // Keep stripped sessions (body hidden but real — restored
-                      // server-side); drop only genuinely empty ones.
-                      s._stripped ||
-                      hasContent(s.body) ||
-                      !!s.image ||
-                      !!(s.title && s.title.trim()) ||
-                      !!s.url
-                  );
-                return cleaned.length ? { ...e, sessions: cleaned } : e;
-              }),
-            })),
-          },
-  };
+  async function saveWhole() {
+    const fd = new FormData();
+    fd.set("slug", slug);
+    fd.set("payload", JSON.stringify(buildWholePayload()));
+    fd.set("link_portfolio_id", linkId);
+    const res = await savePortfolioCollection(fd);
+    if (res?.error) {
+      setSaveError(res.error);
+      return false;
+    }
+    return true;
+  }
+
+  async function savePerEvent() {
+    // Work on a shallow copy so we can capture server-assigned slugs.
+    const working = groups.map((g) => ({ ...g, events: g.events.filter((e) => !isEmptyEvent(e)) }));
+
+    // 1) Save each new/edited event's content, one at a time.
+    for (const g of working) {
+      for (let i = 0; i < g.events.length; i++) {
+        const e = g.events[i];
+        if (!(e._new || e._dirty)) continue;
+        const fd = new FormData();
+        fd.set("collection_slug", slug);
+        fd.set(
+          "payload",
+          JSON.stringify({
+            origSlug: e._new ? null : e._origSlug ?? e.slug ?? null,
+            slug: e.slug || "",
+            group_name: g.name,
+            event_order: i,
+            title: e.title,
+            url: e.url || null,
+            image: e.image || null,
+            metrics: e.metrics ?? null,
+            sessions: (e.sessions ?? []).map(({ _k, ...s }) => s),
+          })
+        );
+        const res = await saveEvent(fd);
+        if (res.error || !res.slug) {
+          setSaveError(res.error ?? "บันทึกงานไม่สำเร็จ");
+          return false;
+        }
+        g.events[i] = { ...e, slug: res.slug, _origSlug: res.slug, _new: false, _dirty: false };
+      }
+    }
+
+    // 2) Save header + group metadata + event structure (group + order).
+    const fd = new FormData();
+    fd.set("slug", slug);
+    fd.set("link_portfolio_id", linkId);
+    fd.set(
+      "payload",
+      JSON.stringify({
+        title,
+        tagline: tagline || null,
+        intro: intro || null,
+        category: category || null,
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        groups: working.map((g) => ({
+          name: g.name,
+          popular: !!g.popular,
+          eventSlugs: g.events.map((e) => e.slug).filter(Boolean) as string[],
+        })),
+      })
+    );
+    const res = await saveCollectionMeta(fd);
+    if (res.error) {
+      setSaveError(res.error);
+      return false;
+    }
+    setGroups(working); // reflect server-assigned slugs / cleared dirty flags
+    return true;
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const ok = perEvent ? await savePerEvent() : await saveWhole();
+      if (ok) {
+        router.refresh();
+        onClose();
+      }
+    } catch (err) {
+      // A thrown action (timeout, network drop) would otherwise fail silently and
+      // look like "Save does nothing" — surface it instead.
+      setSaveError(
+        "บันทึกไม่สำเร็จ — อาจใช้เวลานานเกินไปหรือการเชื่อมต่อหลุด กรุณาลองอีกครั้ง" +
+          (err instanceof Error ? ` (${err.message})` : "")
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
-    <div ref={scrollRef} className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
+    <div
+      ref={scrollRef}
+      className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto p-4 sm:p-8"
+    >
       <div className="absolute inset-0 bg-space" onClick={onClose} />
       <form
-        action={async (fd) => {
-          setSaving(true);
-          setSaveError(null);
-          try {
-            const res = await savePortfolioCollection(fd);
-            if (res?.error) {
-              setSaveError(res.error);
-              return;
-            }
-            onClose();
-          } catch (err) {
-            // A thrown action (timeout, network drop) would otherwise fail
-            // silently and look like "Save does nothing" — surface it instead.
-            setSaveError(
-              "บันทึกไม่สำเร็จ — อาจใช้เวลานานเกินไปหรือการเชื่อมต่อหลุด กรุณาลองอีกครั้ง" +
-                (err instanceof Error ? ` (${err.message})` : "")
-            );
-          } finally {
-            setSaving(false);
-          }
-        }}
+        onSubmit={(e) => e.preventDefault()}
         className="glass relative z-10 my-4 w-full max-w-2xl space-y-4 bg-space-light p-6"
       >
         <h2 className="font-display text-xl font-bold">
           {isNew ? "สร้าง Collection ใหม่" : `แก้ไข: ${collection.title}`}
         </h2>
-        <input type="hidden" name="slug" value={slug} />
-        <input type="hidden" name="payload" value={JSON.stringify(payload)} />
-        <input type="hidden" name="link_portfolio_id" value={linkId} />
 
         {isNew && (
           <div className="grid grid-cols-2 gap-4">
@@ -337,7 +393,11 @@ function Editor({
               />
             </L>
             <L l="ประเภท">
-              <select value={kind} onChange={(e) => setKind(e.target.value as "stories" | "groups")} className={field}>
+              <select
+                value={kind}
+                onChange={(e) => setKind(e.target.value as "stories" | "groups")}
+                className={field}
+              >
                 <option value="stories" className="bg-space">รายการ (เหมือน Snobby)</option>
                 <option value="groups" className="bg-space">กลุ่ม+งาน (เหมือน Insightist)</option>
               </select>
@@ -349,7 +409,12 @@ function Editor({
           <input value={title} onChange={(e) => setTitle(e.target.value)} className={field} />
         </L>
         <L l="Tagline (บรรทัดสั้น ใต้ชื่อ)">
-          <textarea value={tagline} onChange={(e) => setTagline(e.target.value)} rows={2} className={`${field} resize-none`} />
+          <textarea
+            value={tagline}
+            onChange={(e) => setTagline(e.target.value)}
+            rows={2}
+            className={`${field} resize-none`}
+          />
         </L>
         <L l="Intro (rich text)">
           <RichTextEditor defaultValue={intro} onChange={setIntro} />
@@ -379,19 +444,21 @@ function Editor({
           </p>
         </div>
 
-        {hydrating ? (
-          <div className="rounded-lg border border-cyan/20 bg-cyan/[0.04] p-6 text-center font-mono text-sm text-cyan/80">
-            ⏳ กำลังโหลดเนื้อหาทั้งหมดของคอลเลกชันนี้… (ข้อมูลใหญ่ อาจใช้เวลาสองสามวินาที)
-          </div>
-        ) : kind === "stories" ? (
+        {perEvent && (
+          <p className="rounded-md border border-cyan/20 bg-cyan/[0.04] px-3 py-2 font-mono text-[10px] text-cyan/80">
+            💡 กางงานที่ต้องการแก้ (ระบบจะโหลดเนื้อหาเฉพาะงานนั้น) · กด Save เพื่อบันทึกงานที่แก้ + ลำดับ/กลุ่ม · ปุ่ม “ลบ” ในแต่ละงานจะลบทันที
+          </p>
+        )}
+
+        {kind === "stories" ? (
           <StoriesEditor stories={stories} setStories={setStories} />
         ) : (
-          <GroupsEditor groups={groups} setGroups={setGroups} />
-        )}
-        {hydrateError && (
-          <p className="rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-400">
-            ⚠ {hydrateError}
-          </p>
+          <GroupsEditor
+            groups={groups}
+            setGroups={setGroups}
+            perEvent={perEvent}
+            collectionSlug={slug}
+          />
         )}
 
         {saveError && (
@@ -401,8 +468,13 @@ function Editor({
         )}
 
         <div className="flex items-center gap-3 pt-2">
-          <button type="submit" disabled={saving || hydrating} className="btn-neon flex-1 disabled:opacity-60">
-            {saving ? "กำลังบันทึก…" : hydrating ? "กำลังโหลด…" : "Save"}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-neon flex-1 disabled:opacity-60"
+          >
+            {saving ? "กำลังบันทึก…" : "Save"}
           </button>
           <button type="button" onClick={onClose} disabled={saving} className="btn-ghost disabled:opacity-60">
             Cancel
@@ -415,6 +487,7 @@ function Editor({
                 const fd = new FormData();
                 fd.set("slug", collection.slug);
                 await deletePortfolioCollection(fd);
+                router.refresh();
                 onClose();
               }}
               className="font-mono text-xs uppercase tracking-wider text-red-400/70 hover:text-red-400"
@@ -471,9 +544,13 @@ function StoriesEditor({
 function GroupsEditor({
   groups,
   setGroups,
+  perEvent,
+  collectionSlug,
 }: {
   groups: Grp[];
   setGroups: React.Dispatch<React.SetStateAction<Grp[]>>;
+  perEvent: boolean;
+  collectionSlug: string;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const toggle = (k: string) =>
@@ -492,7 +569,15 @@ function GroupsEditor({
       g.map((x) => (x._k === k ? { ...x, ...(typeof p === "function" ? p(x) : p) } : x))
     );
   const addG = () => setGroups((g) => [...g, { _k: key(), name: "", events: [] }]);
-  const rmG = (k: string) => setGroups((g) => g.filter((x) => x._k !== k));
+  const rmG = (k: string) =>
+    setGroups((g) => {
+      const grp = g.find((x) => x._k === k);
+      if (grp && grp.events.length) {
+        window.alert("ลบกลุ่มไม่ได้ — ต้องย้ายหรือลบงานในกลุ่มนี้ให้หมดก่อน");
+        return g;
+      }
+      return g.filter((x) => x._k !== k);
+    });
   const moveG = (k: string, d: number) =>
     setGroups((g) => {
       const i = g.findIndex((x) => x._k === k);
@@ -539,6 +624,8 @@ function GroupsEditor({
           <EventsEditor
             events={g.events}
             updateEvents={(fn) => patchG(g._k, (grp) => ({ events: fn(grp.events) }))}
+            perEvent={perEvent}
+            collectionSlug={collectionSlug}
           />
         </Card>
       ))}
@@ -549,32 +636,73 @@ function GroupsEditor({
 function EventsEditor({
   events,
   updateEvents,
+  perEvent,
+  collectionSlug,
 }: {
   events: Ev[];
   // Functional updater so concurrent edits (typing while other editors fire
   // their own state updates) never clobber each other via a stale closure.
   updateEvents: (fn: (evs: Ev[]) => Ev[]) => void;
+  perEvent: boolean;
+  collectionSlug: string;
 }) {
   // Existing events start collapsed (compact title list); newly-added events
   // have fresh keys not in the set, so they open ready to edit.
   const [collapsed, setCollapsed] = useState<Set<string>>(
     () => new Set(events.map((e) => e._k))
   );
-  const toggle = (k: string) =>
-    setCollapsed((s) => {
-      const n = new Set(s);
-      if (n.has(k)) n.delete(k);
-      else n.add(k);
-      return n;
-    });
+  const [loadingKeys, setLoadingKeys] = useState<Set<string>>(new Set());
 
+  // Edit patch — marks the event dirty (needs saveEvent).
   const patch = (k: string, p: Partial<Ev> | ((e: Ev) => Partial<Ev>)) =>
     updateEvents((evs) =>
-      evs.map((x) => (x._k === k ? { ...x, ...(typeof p === "function" ? p(x) : p) } : x))
+      evs.map((x) => (x._k === k ? { ...x, ...(typeof p === "function" ? p(x) : p), _dirty: true } : x))
     );
+  // Raw patch — used for lazy-loading sessions; must NOT mark dirty.
+  const rawPatch = (k: string, p: Partial<Ev>) =>
+    updateEvents((evs) => evs.map((x) => (x._k === k ? { ...x, ...p } : x)));
+
+  async function openEvent(e: Ev) {
+    const wasCollapsed = collapsed.has(e._k);
+    setCollapsed((s) => {
+      const n = new Set(s);
+      if (n.has(e._k)) n.delete(e._k);
+      else n.add(e._k);
+      return n;
+    });
+    if (!wasCollapsed || !perEvent || e._new || e._loaded || loadingKeys.has(e._k)) return;
+    setLoadingKeys((s) => new Set(s).add(e._k));
+    const res = await getEventSessions(collectionSlug, e._origSlug ?? e.slug ?? "");
+    rawPatch(e._k, {
+      sessions: (res.sessions ?? []).map((s) => ({ ...s, _k: key() })),
+      _loaded: true,
+    });
+    setLoadingKeys((s) => {
+      const n = new Set(s);
+      n.delete(e._k);
+      return n;
+    });
+  }
+
   const add = () =>
-    updateEvents((evs) => [...evs, { _k: key(), title: "", url: "", image: "", sessions: [] }]);
-  const remove = (k: string) => updateEvents((evs) => evs.filter((x) => x._k !== k));
+    updateEvents((evs) => [
+      ...evs,
+      { _k: key(), title: "", url: "", image: "", sessions: [], _new: true, _loaded: true },
+    ]);
+
+  async function remove(k: string) {
+    const e = events.find((x) => x._k === k);
+    if (perEvent && e && !e._new && (e._origSlug || e.slug)) {
+      if (!window.confirm(`ลบงาน "${e.title || "(ยังไม่ตั้งชื่อ)"}" ? (ลบทันที กู้คืนไม่ได้)`)) return;
+      const res = await deleteEvent(collectionSlug, e._origSlug ?? e.slug ?? "");
+      if (res.error) {
+        window.alert("ลบไม่สำเร็จ: " + res.error);
+        return;
+      }
+    }
+    updateEvents((evs) => evs.filter((x) => x._k !== k));
+  }
+
   const move = (k: string, d: number) =>
     updateEvents((evs) => {
       const i = evs.findIndex((x) => x._k === k);
@@ -589,37 +717,41 @@ function EventsEditor({
     <div className="mt-3 space-y-2 border-l border-line/10 pl-3">
       {events.map((e, i) => {
         const isCollapsed = collapsed.has(e._k);
+        const isLoading = loadingKeys.has(e._k);
         return (
-        <div key={e._k} className="rounded-md border border-line/10 bg-surface/[0.02] p-2">
-          <div className="flex items-center justify-between font-mono text-[10px] text-muted">
-            <button type="button" onClick={() => toggle(e._k)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
-              <span className="text-cyan">{isCollapsed ? "▸" : "▾"}</span>
-              <span className="shrink-0">งานที่ {i + 1}</span>
-              {isCollapsed && <span className="truncate text-ink/70">{e.title || "(ยังไม่ตั้งชื่อ)"}</span>}
-            </button>
-            <span className="flex shrink-0 gap-1.5">
-              <button type="button" onClick={() => move(e._k, -1)} className="hover:text-cyan">↑</button>
-              <button type="button" onClick={() => move(e._k, 1)} className="hover:text-cyan">↓</button>
-              <button type="button" onClick={() => remove(e._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>
-            </span>
+          <div key={e._k} className="rounded-md border border-line/10 bg-surface/[0.02] p-2">
+            <div className="flex items-center justify-between font-mono text-[10px] text-muted">
+              <button type="button" onClick={() => openEvent(e)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
+                <span className="text-cyan">{isCollapsed ? "▸" : "▾"}</span>
+                <span className="shrink-0">งานที่ {i + 1}</span>
+                {isCollapsed && <span className="truncate text-ink/70">{e.title || "(ยังไม่ตั้งชื่อ)"}</span>}
+              </button>
+              <span className="flex shrink-0 gap-1.5">
+                <button type="button" onClick={() => move(e._k, -1)} className="hover:text-cyan">↑</button>
+                <button type="button" onClick={() => move(e._k, 1)} className="hover:text-cyan">↓</button>
+                <button type="button" onClick={() => remove(e._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>
+              </span>
+            </div>
+            {!isCollapsed &&
+              (isLoading ? (
+                <p className="mt-2 py-3 text-center font-mono text-[11px] text-cyan/70">⏳ กำลังโหลดเนื้อหางานนี้…</p>
+              ) : (
+                <div className="mt-2">
+                  <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
+                  <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
+                  <UploadImageField className="mt-1.5" value={e.image ?? ""} onChange={(url) => patch(e._k, { image: url })} />
+                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                    <input type="number" min="0" inputMode="numeric" placeholder="❤️ รีแอก" value={e.metrics?.reactions ?? ""}
+                      onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, reactions: numOrUndef(ev.target.value) } })} className={field} />
+                    <input type="number" min="0" inputMode="numeric" placeholder="💬 คอมเมนต์" value={e.metrics?.comments ?? ""}
+                      onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, comments: numOrUndef(ev.target.value) } })} className={field} />
+                    <input type="number" min="0" inputMode="numeric" placeholder="🔄 แชร์" value={e.metrics?.shares ?? ""}
+                      onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, shares: numOrUndef(ev.target.value) } })} className={field} />
+                  </div>
+                  <SubSessionsEditor event={e} patch={patch} />
+                </div>
+              ))}
           </div>
-          {!isCollapsed && (
-          <div className="mt-2">
-          <input placeholder="ชื่องาน" value={e.title} onChange={(ev) => patch(e._k, { title: ev.target.value })} className={field} />
-          <input placeholder="ลิงก์ Facebook (https://...)" value={e.url} onChange={(ev) => patch(e._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
-          <UploadImageField className="mt-1.5" value={e.image ?? ""} onChange={(url) => patch(e._k, { image: url })} />
-          <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-            <input type="number" min="0" inputMode="numeric" placeholder="❤️ รีแอก" value={e.metrics?.reactions ?? ""}
-              onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, reactions: numOrUndef(ev.target.value) } })} className={field} />
-            <input type="number" min="0" inputMode="numeric" placeholder="💬 คอมเมนต์" value={e.metrics?.comments ?? ""}
-              onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, comments: numOrUndef(ev.target.value) } })} className={field} />
-            <input type="number" min="0" inputMode="numeric" placeholder="🔄 แชร์" value={e.metrics?.shares ?? ""}
-              onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, shares: numOrUndef(ev.target.value) } })} className={field} />
-          </div>
-          <SubSessionsEditor event={e} patch={patch} />
-          </div>
-          )}
-        </div>
         );
       })}
       <button type="button" onClick={add} className="rounded-md border border-cyan/30 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-cyan/80 hover:bg-cyan/10">
