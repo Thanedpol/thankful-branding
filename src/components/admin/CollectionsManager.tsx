@@ -661,11 +661,38 @@ function SubSessionsEditor({
       return a;
     });
 
+  // Collapse individual sub-sessions (existing ones start collapsed → compact
+  // title list; newly-added ones have fresh keys, so they open ready to edit).
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    () => new Set(sessions.map((s) => s._k))
+  );
+  const toggle = (sk: string) =>
+    setCollapsed((c) => {
+      const n = new Set(c);
+      if (n.has(sk)) n.delete(sk);
+      else n.add(sk);
+      return n;
+    });
+  const allCollapsed = sessions.length > 0 && sessions.every((s) => collapsed.has(s._k));
+  const toggleAll = () =>
+    setCollapsed(allCollapsed ? new Set() : new Set(sessions.map((s) => s._k)));
+
   return (
     <div className="mt-2 rounded-md border border-cyan/15 bg-cyan/[0.03] p-2.5">
-      <span className="font-mono text-[10px] uppercase tracking-wider text-cyan/80">
-        Session ย่อย (Blog) — เลื่อนดูแบบ Carousel ในหน้างาน
-      </span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-cyan/80">
+          Session ย่อย (Blog) — เลื่อนดูแบบ Carousel ในหน้างาน
+        </span>
+        {sessions.length > 1 && (
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-muted hover:text-cyan"
+          >
+            {allCollapsed ? "▾ ขยายทุก session" : "▸ ย่อทุก session"}
+          </button>
+        )}
+      </div>
 
       {sessions.length > 0 && (
         <>
@@ -682,24 +709,35 @@ function SubSessionsEditor({
       )}
 
       <div className="mt-1 space-y-2">
-        {sessions.map((s, si) => (
+        {sessions.map((s, si) => {
+          const isCollapsed = collapsed.has(s._k);
+          return (
           <div key={s._k} className="rounded border border-line/10 bg-surface/[0.03] p-2">
-            <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-muted">
-              <span>Session ย่อยที่ {si + 1}</span>
-              <span className="flex gap-1.5">
+            <div className="flex items-center justify-between font-mono text-[10px] text-muted">
+              <button type="button" onClick={() => toggle(s._k)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
+                <span className="text-cyan">{isCollapsed ? "▸" : "▾"}</span>
+                <span className="shrink-0">Session ย่อยที่ {si + 1}</span>
+                {isCollapsed && <span className="truncate text-ink/70">{s.title || "(ไม่มีชื่อ)"}</span>}
+              </button>
+              <span className="flex shrink-0 gap-1.5">
                 <button type="button" onClick={() => moveS(s._k, -1)} className="hover:text-cyan">↑</button>
                 <button type="button" onClick={() => moveS(s._k, 1)} className="hover:text-cyan">↓</button>
                 <button type="button" onClick={() => rmS(s._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>
               </span>
             </div>
-            <input placeholder="ชื่อ session ย่อย" value={s.title ?? ""} onChange={(ev) => patchS(s._k, { title: ev.target.value })} className={field} />
-            <UploadImageField className="mt-1.5" value={s.image ?? ""} onChange={(url) => patchS(s._k, { image: url })} />
-            <input placeholder="ลิงก์ Facebook (ไม่บังคับ)" value={s.url ?? ""} onChange={(ev) => patchS(s._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
+            {!isCollapsed && (
             <div className="mt-1.5">
-              <RichTextEditor defaultValue={s.body} onChange={(html) => patchS(s._k, { body: html })} />
+              <input placeholder="ชื่อ session ย่อย" value={s.title ?? ""} onChange={(ev) => patchS(s._k, { title: ev.target.value })} className={field} />
+              <UploadImageField className="mt-1.5" value={s.image ?? ""} onChange={(url) => patchS(s._k, { image: url })} />
+              <input placeholder="ลิงก์ Facebook (ไม่บังคับ)" value={s.url ?? ""} onChange={(ev) => patchS(s._k, { url: ev.target.value })} className={`${field} mt-1.5`} />
+              <div className="mt-1.5">
+                <RichTextEditor defaultValue={s.body} onChange={(html) => patchS(s._k, { body: html })} />
+              </div>
             </div>
+            )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <button
