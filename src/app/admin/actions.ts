@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { hasContent, eventHasContent, type EventItem } from "@/lib/portfolio-sessions";
+import { hasContent } from "@/lib/portfolio-sessions";
 import { buildEventRows, buildGroupMeta } from "@/lib/portfolio-events";
-import { slugify as slugifyUnicode } from "@/lib/slugify";
 import type { PortfolioCategory, PortfolioCollection } from "@/lib/types";
 
 /**
@@ -64,17 +63,6 @@ function refreshPublic() {
   revalidatePath("/");
   revalidatePath("/blog");
   revalidatePath("/press-kit");
-}
-
-/** Revalidate every public surface that renders a portfolio collection + its
- *  event pages, after any collection/event write. */
-function revalidateCollection(slug: string) {
-  refreshPublic();
-  revalidatePath(`/portfolio/${slug}`);
-  revalidatePath("/portfolio/insightist/[event]", "page");
-  revalidatePath("/portfolio/[collection]/[event]", "page");
-  revalidatePath("/admin/collections");
-  revalidatePath("/admin/portfolio");
 }
 
 // ─── Portfolio ──────────────────────────────────────────────────────────────
@@ -385,215 +373,23 @@ export async function deletePortfolioCollection(formData: FormData) {
   revalidatePath("/admin/collections");
 }
 
-// ─── Portfolio collections: per-event editing (scalable) ─────────────────────
-// The admin editor loads a LIGHT structure (event fields, no session bodies) and
-// lazy-loads one event's sessions when it's expanded. On save it writes ONE event
-// at a time (saveEvent) plus the header/structure (saveCollectionMeta) — never a
-// multi-MB blob — so the editor scales with the number of events. Content and
-// structure are separate so a collapsed/unloaded event is never touched.
-
-/** Lazy-load one event's sessions when its editor card is expanded. */
-export async function getEventSessions(
-  collectionSlug: string,
-  eventSlug: string
-): Promise<{ sessions?: EventItem["sessions"]; error?: string }> {
+/**
+ * Full data (with every session/event body) for a single collection. The admin
+ * list strips bodies from large collections to stay under Vercel's page-response
+ * limit; the editor calls this on open to hydrate the real content so it can be
+ * viewed and edited. One collection's blob is well under the response limit.
+ */
+export async function getCollectionData(
+  slug: string
+): Promise<{ data?: PortfolioCollection["data"]; error?: string }> {
   const supabase = await assertAdmin();
   const { data, error } = await supabase
-    .from("portfolio_events")
-    .select("sessions")
-    .eq("collection_slug", collectionSlug)
-    .eq("slug", eventSlug)
-    .maybeSingle();
-  if (error) return { error: error.message };
-  return { sessions: (data?.sessions as EventItem["sessions"]) ?? [] };
-}
-
-/** A non-empty, unique event slug within a collection. */
-async function uniqueEventSlug(
-  supabase: ReturnType<typeof createAdminClient>,
-  collectionSlug: string,
-  base: string,
-  excludeSlug: string | null
-): Promise<string> {
-  const root = base || "event";
-  for (let i = 1; i <= 200; i++) {
-    const cand = i === 1 ? root : `${root}-${i}`;
-    if (cand === excludeSlug) return cand;
-    const { data } = await supabase
-      .from("portfolio_events")
-      .select("slug")
-      .eq("collection_slug", collectionSlug)
-      .eq("slug", cand)
-      .maybeSingle();
-    if (!data) return cand;
-  }
-  return `${root}-${Date.now().toString(36)}`;
-}
-
-/**
- * Save ONE event's content (title/url/image/metrics/sessions). Creates the row on
- * first save, renames (drops the old slug) when the slug changes. group + order
- * come from the payload for a new row; saveCollectionMeta is authoritative for
- * structure. Returns the (possibly de-duplicated) slug so the client can update.
- */
-export async function saveEvent(
-  formData: FormData
-): Promise<{ slug?: string; error?: string }> {
-  const supabase = await assertAdmin();
-  const collectionSlug = String(formData.get("collection_slug"));
-  if (!collectionSlug) return { error: "Missing collection_slug" };
-  let p: {
-    origSlug?: string | null;
-    slug?: string;
-    group_name?: string;
-    event_order?: number;
-    title?: string;
-    url?: string | null;
-    image?: string | null;
-    metrics?: EventItem["metrics"] | null;
-    sessions?: NonNullable<EventItem["sessions"]>;
-  };
-  try {
-    p = JSON.parse(String(formData.get("payload") ?? "{}"));
-  } catch {
-    return { error: "Invalid payload" };
-  }
-
-  const title = p.title ?? "";
-  const origSlug = p.origSlug || null;
-  const base = slugifyUnicode(p.slug || "") || slugifyUnicode(title);
-  const slug = await uniqueEventSlug(supabase, collectionSlug, base, origSlug);
-
-  const sessions = (p.sessions ?? []).map((s) => {
-    const { _stripped, _k, ...rest } = s as Record<string, unknown>;
-    void _stripped;
-    void _k;
-    return rest;
-  });
-  const has_content = eventHasContent({
-    title,
-    url: p.url ?? "",
-    sessions,
-  } as EventItem);
-
-  const { error } = await supabase.from("portfolio_events").upsert(
-    {
-      collection_slug: collectionSlug,
-      slug,
-      group_name: p.group_name ?? "",
-      event_order: p.event_order ?? 0,
-      title,
-      url: p.url || null,
-      image: p.image || null,
-      metrics: p.metrics ?? null,
-      sessions,
-      has_content,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "collection_slug,slug" }
-  );
-  if (error) return { error: error.message };
-
-  if (origSlug && origSlug !== slug) {
-    await supabase
-      .from("portfolio_events")
-      .delete()
-      .eq("collection_slug", collectionSlug)
-      .eq("slug", origSlug);
-  }
-
-  revalidateCollection(collectionSlug);
-  return { slug };
-}
-
-/** Delete one event (immediate; called from the editor's per-event ลบ button). */
-export async function deleteEvent(
-  collectionSlug: string,
-  eventSlug: string
-): Promise<{ error?: string }> {
-  const supabase = await assertAdmin();
-  const { error } = await supabase
-    .from("portfolio_events")
-    .delete()
-    .eq("collection_slug", collectionSlug)
-    .eq("slug", eventSlug);
-  if (error) return { error: error.message };
-  revalidateCollection(collectionSlug);
-  return {};
-}
-
-/**
- * Save a grouped collection's header + light group metadata, and reconcile each
- * event's group + order from the editor's structure. Never touches event content
- * (that's saveEvent), so collapsed/unloaded events stay intact. Does NOT delete —
- * removals go through deleteEvent — so an incomplete structure can't wipe events.
- */
-export async function saveCollectionMeta(
-  formData: FormData
-): Promise<{ error?: string }> {
-  const supabase = await assertAdmin();
-  const slug = String(formData.get("slug"));
-  if (!slug) return { error: "Missing slug" };
-  let p: {
-    title?: string;
-    tagline?: string | null;
-    intro?: string | null;
-    category?: string | null;
-    tags?: string[];
-    groups?: { name: string; popular?: boolean; eventSlugs: string[] }[];
-  };
-  try {
-    p = JSON.parse(String(formData.get("payload") ?? "{}"));
-  } catch {
-    return { error: "Invalid payload" };
-  }
-  const groups = p.groups ?? [];
-
-  // Upsert the collection row (header + light group meta). Preserve any other
-  // existing `data` keys; only (re)write groups_meta.
-  const { data: existing } = await supabase
     .from("portfolio_collections")
     .select("data")
     .eq("slug", slug)
     .maybeSingle();
-  const data = {
-    ...((existing?.data as Record<string, unknown>) ?? {}),
-    groups_meta: groups.map((g) => ({ name: g.name, popular: !!g.popular })),
-  };
-  const { error: upErr } = await supabase.from("portfolio_collections").upsert({
-    slug,
-    title: p.title || slug,
-    tagline: p.tagline || null,
-    intro: p.intro || null,
-    category: p.category || null,
-    tags: p.tags ?? [],
-    data,
-    updated_at: new Date().toISOString(),
-  });
-  if (upErr) return { error: upErr.message };
-
-  // Reconcile group + order for existing rows (no-ops on rows not yet created).
-  for (const g of groups) {
-    for (let i = 0; i < g.eventSlugs.length; i++) {
-      const { error } = await supabase
-        .from("portfolio_events")
-        .update({ group_name: g.name, event_order: i })
-        .eq("collection_slug", slug)
-        .eq("slug", g.eventSlugs[i]);
-      if (error) return { error: error.message };
-    }
-  }
-
-  const linkId = String(formData.get("link_portfolio_id") ?? "");
-  if (linkId) {
-    await supabase
-      .from("portfolio")
-      .update({ project_url: `/portfolio/${slug}` })
-      .eq("id", linkId);
-  }
-
-  revalidateCollection(slug);
-  return {};
+  if (error) return { error: error.message };
+  return { data: (data?.data as PortfolioCollection["data"]) ?? {} };
 }
 
 // ─── Site profile ───────────────────────────────────────────────────────────
