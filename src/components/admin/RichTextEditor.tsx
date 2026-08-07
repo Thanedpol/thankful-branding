@@ -11,6 +11,7 @@ import { Gallery } from "./gallery-extension";
 import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
 import { compressImage } from "@/lib/compress-image";
+import { uploadDirect } from "@/lib/upload-direct";
 import { inlineEmojiImages } from "@/lib/portfolio-sessions";
 
 interface Props {
@@ -130,13 +131,16 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   const [, setTick] = useState(0); // refresh toolbar active states on selection
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [videoPct, setVideoPct] = useState<number | null>(null); // video upload %
   const fileRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
   // Stable ids so the toolbar's <label> triggers can open these file inputs
   // natively (a programmatic input.click() is blocked by some browsers when a
   // re-render interrupts the gesture; a label's default action is not).
   const figureId = useId();
   const galleryId = useId();
+  const videoId = useId();
   // Keep the latest onChange so the editor's create/update callbacks (captured
   // once) always call the current prop.
   const onChangeRef = useRef(onChange);
@@ -260,6 +264,36 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       ]);
     }
     chain.run();
+  }
+
+  // Upload a video file and insert it as a captioned player block. Goes DIRECT
+  // to Supabase Storage (see uploadDirect) because a video easily exceeds the
+  // ~4.5 MB body limit of the proxied /api/admin-upload route. Not compressed —
+  // re-encoding video in the browser isn't practical, so oversized files are
+  // reported rather than silently mangled.
+  async function uploadVideo(file: File, pos?: number) {
+    const ed = editorRef.current;
+    if (!ed) return;
+    setErr(null);
+    setUploading(true);
+    setVideoPct(0);
+    try {
+      const publicUrl = await uploadDirect(file, "blog-images", setVideoPct);
+      const chain = ed.chain().focus();
+      if (typeof pos === "number") chain.setTextSelection(pos);
+      chain
+        .insertContent([
+          // provider "video" renders a native <video> player; the caption is the
+          // node's own content, so it can be typed right after inserting.
+          { type: "embed", attrs: { provider: "video", src: publicUrl, url: publicUrl } },
+          { type: "paragraph" },
+        ])
+        .run();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "อัปโหลดวิดีโอไม่สำเร็จ");
+    }
+    setVideoPct(null);
+    setUploading(false);
   }
 
   // Heal legacy "two paragraphs merged into one node via <br><br>" content so
@@ -403,6 +437,13 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     pendingPosRef.current = undefined;
   }
 
+  async function onVideoFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again later
+    if (file) await uploadVideo(file, pendingPosRef.current);
+    pendingPosRef.current = undefined;
+  }
+
   return (
     <div>
       {name && (
@@ -412,14 +453,19 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         <Toolbar
           editor={editor}
           uploading={uploading}
+          videoPct={videoPct}
           figureId={figureId}
           galleryId={galleryId}
+          videoId={videoId}
           // The <label> opens the picker natively; this just records the caret so
           // the uploaded image lands where the user was typing.
           onImage={() => {
             pendingPosRef.current = editorRef.current?.state.selection.from;
           }}
           onGallery={() => {
+            pendingPosRef.current = editorRef.current?.state.selection.from;
+          }}
+          onVideo={() => {
             pendingPosRef.current = editorRef.current?.state.selection.from;
           }}
         />
@@ -446,9 +492,31 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         onChange={onGalleryFile}
         className="hidden"
       />
+      <input
+        ref={videoRef}
+        id={videoId}
+        type="file"
+        accept="video/*"
+        onChange={onVideoFile}
+        className="hidden"
+      />
+      {videoPct !== null && (
+        <div className="mt-1.5">
+          <div className="h-1 overflow-hidden rounded bg-surface/[0.08]">
+            <div
+              className="h-full bg-cyan transition-[width] duration-200"
+              style={{ width: `${videoPct}%` }}
+            />
+          </div>
+          <p className="mt-1 font-mono text-[10px] text-cyan/80">
+            กำลังอัปโหลดวิดีโอ… {videoPct}%{" "}
+            {videoPct === 100 && "(กำลังประมวลผล…)"}
+          </p>
+        </div>
+      )}
       {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▦ แถวรูป (หลายรูปในแถวเดียว สูงสุด 5) · ▶ ฝังวิดีโอ/โซเชียล · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
+        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▦ แถวรูป (หลายรูปในแถวเดียว สูงสุด 5) · ▶ ฝังวิดีโอ/โซเชียล · 🎬 อัปวิดีโอ (ไฟล์จากเครื่อง) · วิดีโอที่ฝัง/อัปแล้ว พิมพ์คำอธิบายใต้คลิปได้เลย · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
       </p>
     </div>
   );
@@ -541,17 +609,23 @@ function FormatMenu({
 function Toolbar({
   editor,
   uploading,
+  videoPct,
   figureId,
   galleryId,
+  videoId,
   onImage,
   onGallery,
+  onVideo,
 }: {
   editor: Editor | null;
   uploading: boolean;
+  videoPct: number | null;
   figureId: string;
   galleryId: string;
+  videoId: string;
   onImage: () => void;
   onGallery: () => void;
+  onVideo: () => void;
 }) {
   if (!editor) return null;
 
@@ -690,6 +764,9 @@ function Toolbar({
           {uploading ? "⏳ …" : "▦ แถวรูป"}
         </FileLabel>
         <Btn title="ฝังวิดีโอ/โซเชียล/เว็บไซต์ (YouTube, Vimeo, Facebook, IG, TikTok, X, Loom, Google Drive, Canva, ไฟล์ .mp4 ฯลฯ)" onClick={insertEmbed} label="▶ ฝัง" />
+        <FileLabel htmlFor={videoId} onPick={onVideo} title="อัปโหลดวิดีโอจากเครื่อง (.mp4/.mov/.webm) + ใส่คำอธิบายใต้คลิปได้">
+          {videoPct !== null ? `⏳ ${videoPct}%` : "🎬 วิดีโอ"}
+        </FileLabel>
         <Btn
           title="แทรกตาราง 3×3"
           active={inTable}

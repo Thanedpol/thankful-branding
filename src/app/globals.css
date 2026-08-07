@@ -319,10 +319,15 @@ body {
 .prose-cyber figcaption:empty {
   display: none;
 }
-.ProseMirror figcaption:empty {
+/* An "empty" caption in the editor still holds ProseMirror's trailing <br>, so
+   :empty alone never matches there — match that shape too, or the hint never
+   shows while writing. */
+.ProseMirror figcaption:empty,
+.ProseMirror figcaption:has(> br.ProseMirror-trailingBreak:only-child) {
   display: block;
 }
-.ProseMirror figcaption:empty::before {
+.ProseMirror figcaption:empty::before,
+.ProseMirror figcaption:has(> br.ProseMirror-trailingBreak:only-child)::before {
   content: "เพิ่มคำอธิบายภาพ… (ไม่บังคับ)";
   color: rgb(var(--muted) / 0.7);
   pointer-events: none;
@@ -516,15 +521,33 @@ body {
 .prose-cyber .blog-embed-twitter iframe {
   height: 550px;
 }
+/* Embed + caption wrapper: the figure owns the vertical rhythm, the player sits
+   flush above its caption (same treatment as an image figure). */
+.prose-cyber .blog-embed-figure,
+.ProseMirror .blog-embed-figure {
+  margin: 1.75rem 0;
+}
+.prose-cyber .blog-embed-figure .blog-embed,
+.ProseMirror .blog-embed-figure .blog-embed {
+  margin: 0 auto 0.5rem;
+}
 /* Editor: keep embeds non-interactive so the block stays selectable/deletable */
 .ProseMirror .blog-embed iframe,
 .ProseMirror .blog-embed video {
   pointer-events: none;
 }
-.ProseMirror .blog-embed.ProseMirror-selectednode {
+.ProseMirror .blog-embed.ProseMirror-selectednode,
+.ProseMirror .blog-embed-figure.ProseMirror-selectednode {
   outline: 2px solid rgb(var(--accent));
   outline-offset: 3px;
   border-radius: 0.75rem;
+}
+/* Caption placeholder wording for media (the image one says "ภาพ") */
+.ProseMirror .blog-embed-figure figcaption:empty::before,
+.ProseMirror
+  .blog-embed-figure
+  figcaption:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: "เพิ่มคำอธิบายวิดีโอ… (ไม่บังคับ)";
 }
 
 /* ── Session carousel slide-in ─────────────────────────────────────────────*/
