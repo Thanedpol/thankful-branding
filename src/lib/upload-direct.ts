@@ -9,11 +9,32 @@
  *
  * Returns the file's public URL. Throws with a human-readable Thai message.
  */
+/**
+ * Supabase's per-file upload ceiling for this project (a plan-level setting —
+ * it can't be raised from a bucket, only in the dashboard on a paid plan).
+ * Verified empirically: 50 MB uploads, 55 MB is rejected with EntityTooLarge.
+ */
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+
+const mb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1);
+
+/** Why a file is too big + what to do about it — shown before and after upload. */
+export function tooLargeMessage(size: number) {
+  return (
+    `วิดีโอใหญ่เกินไป (${mb(size)}MB) — อัปโหลดได้สูงสุด 50MB\n` +
+    `• ทางที่ง่ายที่สุด: อัปคลิปขึ้น YouTube/Facebook แล้วใช้ปุ่ม “▶ ฝัง” วางลิงก์แทน (ไม่จำกัดขนาด เล่นลื่นกว่า)\n` +
+    `• หรือบีบอัดคลิปให้เล็กลงก่อน (เช่น ลดเป็น 1080p หรือตัดให้สั้นลง) แล้วอัปใหม่`
+  );
+}
+
 export async function uploadDirect(
   file: File,
   bucket: string,
   onProgress?: (pct: number) => void
 ): Promise<string> {
+  // Fail fast — no point pushing 200 MB up the wire just to be rejected.
+  if (file.size > MAX_UPLOAD_BYTES) throw new Error(tooLargeMessage(file.size));
+
   const res = await fetch("/api/admin-upload-url", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -48,12 +69,16 @@ export async function uploadDirect(
     };
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) return resolve();
-      const mb = (file.size / 1024 / 1024).toFixed(1);
+      // Storage reports "too large" as HTTP 400 with statusCode 413 in the body,
+      // so the raw status alone isn't enough to recognise it.
+      const body = xhr.responseText ?? "";
+      const tooLarge =
+        xhr.status === 413 || /"413"|EntityTooLarge|Payload too large/i.test(body);
       reject(
         new Error(
-          xhr.status === 413
-            ? `ไฟล์ใหญ่เกินที่ Supabase อนุญาต (${mb}MB) — กรุณาบีบอัดวิดีโอให้เล็กลงก่อน`
-            : `อัปโหลดไม่สำเร็จ (${xhr.status}) ${xhr.responseText?.slice(0, 120) ?? ""}`.trim()
+          tooLarge
+            ? tooLargeMessage(file.size)
+            : `อัปโหลดไม่สำเร็จ (${xhr.status}) ${body.slice(0, 120)}`.trim()
         )
       );
     };

@@ -514,9 +514,13 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
           </p>
         </div>
       )}
-      {err && <p className="mt-1 font-mono text-[11px] text-red-400">⚠ {err}</p>}
+      {err && (
+        <p className="mt-1 whitespace-pre-line font-mono text-[11px] leading-relaxed text-red-400">
+          ⚠ {err}
+        </p>
+      )}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▦ แถวรูป (หลายรูปในแถวเดียว สูงสุด 5) · ▶ ฝังวิดีโอ/โซเชียล · 🎬 อัปวิดีโอ (ไฟล์จากเครื่อง) · วิดีโอที่ฝัง/อัปแล้ว พิมพ์คำอธิบายใต้คลิปได้เลย · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
+        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▦ แถวรูป (หลายรูปในแถวเดียว สูงสุด 5) · ▶ ฝังวิดีโอ/โซเชียล (คลิปยาว/ไฟล์ใหญ่ แนะนำทางนี้) · 🎬 อัปวิดีโอ (ไฟล์จากเครื่อง สูงสุด 50MB) · วิดีโอที่ฝัง/อัปแล้ว พิมพ์คำอธิบายใต้คลิปได้เลย · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
       </p>
     </div>
   );
@@ -764,7 +768,11 @@ function Toolbar({
           {uploading ? "⏳ …" : "▦ แถวรูป"}
         </FileLabel>
         <Btn title="ฝังวิดีโอ/โซเชียล/เว็บไซต์ (YouTube, Vimeo, Facebook, IG, TikTok, X, Loom, Google Drive, Canva, ไฟล์ .mp4 ฯลฯ)" onClick={insertEmbed} label="▶ ฝัง" />
-        <FileLabel htmlFor={videoId} onPick={onVideo} title="อัปโหลดวิดีโอจากเครื่อง (.mp4/.mov/.webm) + ใส่คำอธิบายใต้คลิปได้">
+        <FileLabel
+          htmlFor={videoId}
+          onPick={onVideo}
+          title="อัปโหลดวิดีโอจากเครื่อง (.mp4/.mov/.webm) สูงสุด 50MB + ใส่คำอธิบายใต้คลิปได้ — คลิปยาว/ไฟล์ใหญ่กว่านี้ ให้อัปขึ้น YouTube แล้วใช้ปุ่ม ▶ ฝัง แทน"
+        >
           {videoPct !== null ? `⏳ ${videoPct}%` : "🎬 วิดีโอ"}
         </FileLabel>
         <Btn
