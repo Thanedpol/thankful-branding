@@ -12,7 +12,11 @@ import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
 import { compressImage } from "@/lib/compress-image";
 import { uploadDirect } from "@/lib/upload-direct";
-import { sanitizeImportedHtml, dataUrlToFile } from "@/lib/html-import";
+import {
+  sanitizeImportedHtml,
+  pruneEmptyBlocks,
+  dataUrlToFile,
+} from "@/lib/html-import";
 import { inlineEmojiImages } from "@/lib/portfolio-sessions";
 
 interface Props {
@@ -352,6 +356,11 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       }
       relativeImgs.forEach((img) => img.remove());
 
+      // Only now that every image is resolved: drop the source page's empty
+      // spacer blocks, which would otherwise import as blank paragraphs and
+      // leave big gaps between every line.
+      const blanks = pruneEmptyBlocks(container);
+
       const html = container.innerHTML.trim();
       if (!html) {
         setErr("ไฟล์นี้ไม่มีเนื้อหาที่นำเข้าได้");
@@ -362,6 +371,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
       chain.insertContent(html).run();
 
       const notes = [`นำเข้า “${file.name}” แล้ว`];
+      if (blanks) notes.push(`ตัดบรรทัดว่าง ${blanks} จุด`);
       if (uploaded) notes.push(`อัปโหลดรูปที่ฝังมา ${uploaded} รูป`);
       if (relativeImgs.length)
         notes.push(
