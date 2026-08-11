@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   savePortfolioCollection,
   deletePortfolioCollection,
-  getCollectionData,
+  getEventBodies,
 } from "@/app/admin/actions";
 import RichTextEditor from "./RichTextEditor";
 import AdminSearch from "./AdminSearch";
@@ -44,34 +44,42 @@ const numOrUndef = (s: string): number | undefined => {
 
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
 type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string; _stripped?: boolean };
-type Ev = { _k: string; title: string; url: string; image?: string; body?: string; slug?: string; metrics?: CollectionEventMetrics; _stripped?: boolean; sessions: Sess[] };
+type Ev = {
+  _k: string; title: string; url: string; image?: string; body?: string; slug?: string;
+  metrics?: CollectionEventMetrics; _stripped?: boolean; sessions: Sess[];
+  /** Where this event sits in the STORED structure. Bodies are fetched by these
+   *  coordinates, so reordering in the editor can't fetch the wrong event. */
+  _origGroup?: string;
+  _origOrder?: number;
+  /** Its session bodies are in hand (nothing stripped left to fetch). */
+  _loaded?: boolean;
+};
 type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
 
 /** Build editor state (with stable _k keys) from stored group data, migrating a
- *  legacy single event body into one sub-session. When `orig` is passed, record
- *  each session's original body keyed by its _k, so an untouched session can be
- *  saved compactly (sent stripped, restored server-side). */
-function toGroupsState(
-  dataGroups: PortfolioCollection["data"]["groups"],
-  orig?: Map<string, string>
-): Grp[] {
+ *  legacy single event body into one sub-session. Bodies of a large collection
+ *  arrive stripped; each event records where it came from so its content can be
+ *  fetched on demand. */
+function toGroupsState(dataGroups: PortfolioCollection["data"]["groups"]): Grp[] {
   return (dataGroups ?? []).map((g) => ({
     ...g,
     _k: key(),
-    events: g.events.map((e) => ({
-      ...e,
-      _k: key(),
-      sessions: (e.sessions?.length
+    events: g.events.map((e, ei) => {
+      const sessions = (e.sessions?.length
         ? e.sessions
         : hasContent(e.body)
         ? [{ title: "", body: e.body }]
         : []
-      ).map((s) => {
-        const sk = key();
-        if (orig) orig.set(sk, s.body ?? "");
-        return { ...s, _k: sk };
-      }),
-    })),
+      ).map((s) => ({ ...s, _k: key() }));
+      return {
+        ...e,
+        _k: key(),
+        sessions,
+        _origGroup: g.name,
+        _origOrder: ei,
+        _loaded: !sessions.some((s) => s._stripped),
+      };
+    }),
   }));
 }
 
@@ -206,11 +214,12 @@ function Editor({
   );
   const [groups, setGroups] = useState<Grp[]>(() => toGroupsState(collection.data.groups));
 
-  // Large collections arrive with their session/event bodies stripped (for the
-  // list-view payload limit). Pull the full content on open so it's visible and
-  // editable, and remember each original body so an untouched session can be
-  // saved compactly (sent back stripped, restored server-side) instead of
-  // re-uploading the whole ~4 MB blob every save.
+  // Large collections arrive with their session/event bodies stripped (the whole
+  // collection would blow past the response limit). Content is fetched ONE EVENT
+  // at a time, when that event is opened — so the editor stays fast and within
+  // limits however large the collection grows. Each fetched body is remembered
+  // here, so a session the author didn't touch is sent back stripped and
+  // restored server-side rather than re-uploaded.
   const wasStripped = useMemo(
     () =>
       (collection.data.groups ?? []).some((g) =>
@@ -219,35 +228,41 @@ function Editor({
     [collection]
   );
   const origBody = useRef<Map<string, string>>(new Map());
-  const [hydrating, setHydrating] = useState(wasStripped);
-  const [hydrateError, setHydrateError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!wasStripped) return;
-    let cancelled = false;
-    getCollectionData(collection.slug)
-      .then((res) => {
-        if (cancelled) return;
-        if (res.error || !res.data?.groups) {
-          setHydrateError(res.error ?? "โหลดเนื้อหาไม่สำเร็จ");
-          setHydrating(false);
-          return;
-        }
-        const og = new Map<string, string>();
-        setGroups(toGroupsState(res.data.groups, og));
-        origBody.current = og;
-        setHydrating(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setHydrateError("โหลดเนื้อหาไม่สำเร็จ — ลองปิดแล้วเปิดใหม่");
-        setHydrating(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  /** Fetch one event's session bodies and fill them into its editor state. */
+  async function loadEventBodies(ev: Ev) {
+    const res = await getEventBodies(
+      collection.slug,
+      ev._origGroup ?? "",
+      ev._origOrder ?? 0
+    );
+    if (res.error || !res.sessions) {
+      // Leave the event unloaded: its sessions stay stripped, so a save still
+      // restores the stored bodies untouched. Nothing is lost by a failed fetch.
+      throw new Error(res.error ?? "โหลดเนื้อหาไม่สำเร็จ");
+    }
+    const bodies = res.sessions;
+    ev.sessions.forEach((s, i) =>
+      origBody.current.set(s._k, bodies[i]?.body ?? s.body ?? "")
+    );
+    setGroups((prev) =>
+      prev.map((g) => ({
+        ...g,
+        events: g.events.map((x) =>
+          x._k !== ev._k
+            ? x
+            : {
+                ...x,
+                _loaded: true,
+                sessions: x.sessions.map((s, i) => ({
+                  ...s,
+                  body: bodies[i]?.body ?? s.body ?? "",
+                })),
+              }
+        ),
+      }))
+    );
+  }
 
   // Serialise (drop the internal _k keys).
   const payload = {
@@ -262,7 +277,15 @@ function Editor({
         : {
             groups: groups.map(({ _k, events, ...g }) => ({
               ...g,
-              events: events.map(({ _k: _ek, sessions, body: _body, ...e }) => {
+              events: events.map(({
+                _k: _ek,
+                sessions,
+                body: _body,
+                _origGroup: _og,
+                _origOrder: _oo,
+                _loaded: _ld,
+                ...e
+              }) => {
                 const cleaned = sessions
                   .map(({ _k: _sk, ...s }) => {
                     // Untouched session in a hydrated large collection → send it
@@ -379,19 +402,17 @@ function Editor({
           </p>
         </div>
 
-        {hydrating ? (
-          <div className="rounded-lg border border-cyan/20 bg-cyan/[0.04] p-6 text-center font-mono text-sm text-cyan/80">
-            ⏳ กำลังโหลดเนื้อหาทั้งหมดของคอลเลกชันนี้… (ข้อมูลใหญ่ อาจใช้เวลาสองสามวินาที)
-          </div>
-        ) : kind === "stories" ? (
+        {wasStripped && (
+          <p className="rounded-md border border-cyan/20 bg-cyan/[0.04] px-3 py-2 font-mono text-[10px] text-cyan/80">
+            💡 คอลเลกชันนี้ใหญ่ — เนื้อหาจะโหลดเฉพาะงานที่กางออกมา (กด ▸ ที่งานนั้น) ·
+            งานที่ไม่ได้กาง เนื้อหาเดิมจะถูกเก็บไว้ครบตอน Save
+          </p>
+        )}
+
+        {kind === "stories" ? (
           <StoriesEditor stories={stories} setStories={setStories} />
         ) : (
-          <GroupsEditor groups={groups} setGroups={setGroups} />
-        )}
-        {hydrateError && (
-          <p className="rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-400">
-            ⚠ {hydrateError}
-          </p>
+          <GroupsEditor groups={groups} setGroups={setGroups} onLoadEvent={loadEventBodies} />
         )}
 
         {saveError && (
@@ -401,8 +422,8 @@ function Editor({
         )}
 
         <div className="flex items-center gap-3 pt-2">
-          <button type="submit" disabled={saving || hydrating} className="btn-neon flex-1 disabled:opacity-60">
-            {saving ? "กำลังบันทึก…" : hydrating ? "กำลังโหลด…" : "Save"}
+          <button type="submit" disabled={saving} className="btn-neon flex-1 disabled:opacity-60">
+            {saving ? "กำลังบันทึก…" : "Save"}
           </button>
           <button type="button" onClick={onClose} disabled={saving} className="btn-ghost disabled:opacity-60">
             Cancel
@@ -471,9 +492,12 @@ function StoriesEditor({
 function GroupsEditor({
   groups,
   setGroups,
+  onLoadEvent,
 }: {
   groups: Grp[];
   setGroups: React.Dispatch<React.SetStateAction<Grp[]>>;
+  /** Fetch one event's session bodies (large collections load them on demand). */
+  onLoadEvent: (ev: Ev) => Promise<void>;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const toggle = (k: string) =>
@@ -539,6 +563,7 @@ function GroupsEditor({
           <EventsEditor
             events={g.events}
             updateEvents={(fn) => patchG(g._k, (grp) => ({ events: fn(grp.events) }))}
+            onLoadEvent={onLoadEvent}
           />
         </Card>
       ))}
@@ -549,24 +574,51 @@ function GroupsEditor({
 function EventsEditor({
   events,
   updateEvents,
+  onLoadEvent,
 }: {
   events: Ev[];
   // Functional updater so concurrent edits (typing while other editors fire
   // their own state updates) never clobber each other via a stale closure.
   updateEvents: (fn: (evs: Ev[]) => Ev[]) => void;
+  onLoadEvent: (ev: Ev) => Promise<void>;
 }) {
   // Existing events start collapsed (compact title list); newly-added events
   // have fresh keys not in the set, so they open ready to edit.
   const [collapsed, setCollapsed] = useState<Set<string>>(
     () => new Set(events.map((e) => e._k))
   );
-  const toggle = (k: string) =>
+  const [loading, setLoading] = useState<Set<string>>(new Set());
+  const [loadError, setLoadError] = useState<Record<string, string>>({});
+
+  /** Opening an event fetches its content the first time (large collections
+   *  ship the structure only). Closing never discards what was fetched. */
+  const toggle = (ev: Ev) => {
+    const opening = collapsed.has(ev._k);
     setCollapsed((s) => {
       const n = new Set(s);
-      if (n.has(k)) n.delete(k);
-      else n.add(k);
+      if (n.has(ev._k)) n.delete(ev._k);
+      else n.add(ev._k);
       return n;
     });
+    if (!opening || ev._loaded || loading.has(ev._k)) return;
+    setLoading((s) => new Set(s).add(ev._k));
+    setLoadError((e) => ({ ...e, [ev._k]: "" }));
+    onLoadEvent(ev)
+      .catch((err) =>
+        setLoadError((e) => ({
+          ...e,
+          [ev._k]:
+            err instanceof Error ? err.message : "โหลดเนื้อหาไม่สำเร็จ — ลองกดปิด/เปิดใหม่",
+        }))
+      )
+      .finally(() =>
+        setLoading((s) => {
+          const n = new Set(s);
+          n.delete(ev._k);
+          return n;
+        })
+      );
+  };
 
   const patch = (k: string, p: Partial<Ev> | ((e: Ev) => Partial<Ev>)) =>
     updateEvents((evs) =>
@@ -592,7 +644,7 @@ function EventsEditor({
         return (
         <div key={e._k} className="rounded-md border border-line/10 bg-surface/[0.02] p-2">
           <div className="flex items-center justify-between font-mono text-[10px] text-muted">
-            <button type="button" onClick={() => toggle(e._k)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
+            <button type="button" onClick={() => toggle(e)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
               <span className="text-cyan">{isCollapsed ? "▸" : "▾"}</span>
               <span className="shrink-0">งานที่ {i + 1}</span>
               {isCollapsed && <span className="truncate text-ink/70">{e.title || "(ยังไม่ตั้งชื่อ)"}</span>}
@@ -616,7 +668,20 @@ function EventsEditor({
             <input type="number" min="0" inputMode="numeric" placeholder="🔄 แชร์" value={e.metrics?.shares ?? ""}
               onChange={(ev) => patch(e._k, { metrics: { ...e.metrics, shares: numOrUndef(ev.target.value) } })} className={field} />
           </div>
-          <SubSessionsEditor event={e} patch={patch} />
+          {/* Sub-sessions render only once their bodies are in hand — the
+              rich-text editor takes its value on mount, so showing it before the
+              fetch lands would leave it permanently empty. */}
+          {loading.has(e._k) ? (
+            <p className="mt-2 py-3 text-center font-mono text-[11px] text-cyan/70">
+              ⏳ กำลังโหลดเนื้อหาของงานนี้…
+            </p>
+          ) : loadError[e._k] ? (
+            <p className="mt-2 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1.5 font-mono text-[10px] text-amber-400">
+              ⚠ {loadError[e._k]} (เนื้อหาเดิมยังอยู่ครบ — การ Save จะไม่ลบทิ้ง)
+            </p>
+          ) : (
+            <SubSessionsEditor event={e} patch={patch} />
+          )}
           </div>
           )}
         </div>

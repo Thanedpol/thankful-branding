@@ -374,22 +374,51 @@ export async function deletePortfolioCollection(formData: FormData) {
 }
 
 /**
- * Full data (with every session/event body) for a single collection. The admin
- * list strips bodies from large collections to stay under Vercel's page-response
- * limit; the editor calls this on open to hydrate the real content so it can be
- * viewed and edited. One collection's blob is well under the response limit.
+ * Session bodies for ONE event, addressed by its position (group + order) in the
+ * stored structure.
+ *
+ * The editor used to hydrate every body at once, which meant shipping the whole
+ * collection blob — now several MB — through a single response, right at
+ * Vercel's ~4.5 MB ceiling. Fetching one event at a time keeps every response
+ * small no matter how large the collection grows.
+ *
+ * Reads the per-event row (indexed on collection_slug, group_name, event_order),
+ * which savePortfolioCollection keeps in lockstep with the blob the editor's
+ * structure came from — so `sessions[i]` here is `sessions[i]` there. Falls back
+ * to the blob for a pre-sync collection that has no rows yet.
  */
-export async function getCollectionData(
-  slug: string
-): Promise<{ data?: PortfolioCollection["data"]; error?: string }> {
+export async function getEventBodies(
+  collectionSlug: string,
+  groupName: string,
+  eventOrder: number
+): Promise<{ sessions?: { body?: string }[]; error?: string }> {
   const supabase = await assertAdmin();
   const { data, error } = await supabase
-    .from("portfolio_collections")
-    .select("data")
-    .eq("slug", slug)
+    .from("portfolio_events")
+    .select("sessions")
+    .eq("collection_slug", collectionSlug)
+    .eq("group_name", groupName)
+    .eq("event_order", eventOrder)
     .maybeSingle();
   if (error) return { error: error.message };
-  return { data: (data?.data as PortfolioCollection["data"]) ?? {} };
+  if (data) return { sessions: (data.sessions as { body?: string }[]) ?? [] };
+
+  // No row (collection never synced): read just this event out of the blob.
+  const { data: coll, error: blobErr } = await supabase
+    .from("portfolio_collections")
+    .select("data")
+    .eq("slug", collectionSlug)
+    .maybeSingle();
+  if (blobErr) return { error: blobErr.message };
+  const groups = (coll?.data as PortfolioCollection["data"] | undefined)?.groups ?? [];
+  const event = groups.find((g) => g.name === groupName)?.events?.[eventOrder];
+  if (!event) return { error: "ไม่พบงานนี้ในข้อมูลที่บันทึกไว้" };
+  const sessions = event.sessions?.length
+    ? event.sessions
+    : event.body
+    ? [{ body: event.body }]
+    : [];
+  return { sessions: sessions.map((s) => ({ body: s.body })) };
 }
 
 // ─── Site profile ───────────────────────────────────────────────────────────
