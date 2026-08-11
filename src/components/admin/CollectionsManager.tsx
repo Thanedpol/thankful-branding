@@ -209,6 +209,10 @@ function Editor({
   const [tags, setTags] = useState((collection.tags ?? []).join(", "));
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // The row version this editor is working from. Sent with every save so the
+  // server can refuse to overwrite changes made after this page loaded; updated
+  // on each successful save so saving twice in a row still works.
+  const [baseUpdatedAt, setBaseUpdatedAt] = useState(collection.updated_at ?? "");
   const [stories, setStories] = useState<Story[]>(() =>
     (collection.data.stories ?? []).map((s) => ({ ...s, _k: key() }))
   );
@@ -324,6 +328,7 @@ function Editor({
           setSaveError(null);
           try {
             const res = await savePortfolioCollection(fd);
+            if (res?.updatedAt) setBaseUpdatedAt(res.updatedAt);
             if (res?.error) {
               setSaveError(res.error);
               return;
@@ -348,6 +353,7 @@ function Editor({
         <input type="hidden" name="slug" value={slug} />
         <input type="hidden" name="payload" value={JSON.stringify(payload)} />
         <input type="hidden" name="link_portfolio_id" value={linkId} />
+        <input type="hidden" name="base_updated_at" value={baseUpdatedAt} />
 
         {isNew && (
           <div className="grid grid-cols-2 gap-4">
@@ -416,7 +422,7 @@ function Editor({
         )}
 
         {saveError && (
-          <p className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+          <p className="whitespace-pre-line rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm leading-relaxed text-red-400">
             ⚠ {saveError}
           </p>
         )}

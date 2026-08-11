@@ -236,10 +236,32 @@ async function syncPortfolioEvents(
 
 export async function savePortfolioCollection(
   formData: FormData
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; updatedAt?: string }> {
   const supabase = await assertAdmin();
   const slug = String(formData.get("slug"));
   if (!slug) return { error: "Missing slug" };
+
+  // Refuse to overwrite work this page never saw. The editor sends the row's
+  // updated_at from when it loaded; if the stored row has moved on since (a tab
+  // left open, a second device, an import script), saving would write a stale
+  // structure — and syncPortfolioEvents would then delete every event missing
+  // from it. Blocking the write costs a refresh; not blocking it costs content.
+  const baseUpdatedAt = String(formData.get("base_updated_at") ?? "");
+  if (baseUpdatedAt) {
+    const { data: current } = await supabase
+      .from("portfolio_collections")
+      .select("updated_at")
+      .eq("slug", slug)
+      .maybeSingle();
+    const stored = (current as { updated_at?: string } | null)?.updated_at ?? "";
+    if (stored && stored !== baseUpdatedAt) {
+      return {
+        error:
+          "ข้อมูลชุดนี้ถูกแก้ไขจากที่อื่นหลังจากคุณเปิดหน้านี้ — ยังไม่ได้บันทึกเพื่อไม่ให้ทับของใหม่\n" +
+          "กรุณารีเฟรชหน้า (F5) แล้วแก้ไขอีกครั้ง",
+      };
+    }
+  }
 
   let p: {
     title?: string;
@@ -311,6 +333,9 @@ export async function savePortfolioCollection(
   const dataToStore: Record<string, unknown> = { ...(p.data ?? {}) };
   if (syncGroups) dataToStore.groups_meta = buildGroupMeta(syncGroups);
 
+  // Returned to the editor so a second save from the same page carries the new
+  // baseline instead of tripping the stale-write guard above.
+  const savedAt = new Date().toISOString();
   const { error } = await supabase.from("portfolio_collections").upsert({
     slug,
     title: p.title || slug,
@@ -319,7 +344,7 @@ export async function savePortfolioCollection(
     category: p.category || null,
     tags: p.tags ?? [],
     data: dataToStore,
-    updated_at: new Date().toISOString(),
+    updated_at: savedAt,
   });
   if (error) {
     const missing = /schema cache|does not exist|find the table|relation/i.test(
@@ -339,6 +364,7 @@ export async function savePortfolioCollection(
     const syncErr = await syncPortfolioEvents(supabase, slug, syncGroups);
     if (syncErr)
       return {
+        updatedAt: savedAt,
         error: `บันทึกหลักสำเร็จ แต่ซิงก์รายการงานไม่สำเร็จ (${syncErr}) — กด Save อีกครั้งเพื่อซิงก์ให้ครบ`,
       };
   }
@@ -361,7 +387,7 @@ export async function savePortfolioCollection(
   revalidatePath("/portfolio/[collection]/[event]", "page");
   revalidatePath("/admin/collections");
   revalidatePath("/admin/portfolio");
-  return {};
+  return { updatedAt: savedAt };
 }
 
 export async function deletePortfolioCollection(formData: FormData) {

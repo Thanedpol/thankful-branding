@@ -149,6 +149,10 @@ export interface PortfolioCollection {
   intro: string | null;
   category: string | null;
   tags: string[];
+  /** When the stored row last changed. The admin editor sends this back on save
+   *  so a page left open can't overwrite newer work. Absent on the built-in
+   *  defaults (nothing stored yet). */
+  updated_at?: string | null;
   data: {
     stories?: { title?: string; detail: string; youtubeUrl: string }[];
     groups?: {

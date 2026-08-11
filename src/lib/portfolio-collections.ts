@@ -108,6 +108,8 @@ export function mergeCollection(
     intro: row.intro ?? fallback?.intro ?? null,
     category: row.category ?? fallback?.category ?? null,
     tags: row.tags?.length ? row.tags : fallback?.tags ?? [],
+    // Carried so the admin editor can detect a stale save (see actions.ts).
+    updated_at: row.updated_at ?? null,
     data:
       row.data && Object.keys(row.data).length ? row.data : fallback?.data ?? {},
   };
