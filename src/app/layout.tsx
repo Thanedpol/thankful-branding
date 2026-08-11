@@ -78,6 +78,13 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   verification: { google: "qn8OHedMHOxPLuILt06k6oPP5n-y3ANMMAz6rypMtqM" },
+  // Browser-tab / bookmark / home-screen icon — the same round Thankful mark the
+  // header shows. Served from /public, so dropping in a new file updates both.
+  icons: {
+    icon: "/thankful-logo.png",
+    shortcut: "/thankful-logo.png",
+    apple: "/thankful-logo.png",
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,

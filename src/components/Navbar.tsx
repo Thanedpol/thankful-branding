@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +22,7 @@ export default function Navbar() {
   const [email, setEmail] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [logoOk, setLogoOk] = useState(true);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
@@ -51,10 +53,22 @@ export default function Navbar() {
       }`}
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="group flex items-center gap-2">
-          <span className="font-display text-lg font-bold tracking-tight">
-            <span className="text-gradient">TT</span>
-            <span className="text-ink/40">_</span>
+        <Link href="/" className="group flex items-center gap-2.5">
+          {/* Round brand mark. If the file is missing the wordmark stands alone
+              rather than rendering a broken image. */}
+          {logoOk && (
+            <Image
+              src="/thankful-logo.png"
+              alt="Thankful"
+              width={36}
+              height={36}
+              priority
+              onError={() => setLogoOk(false)}
+              className="h-9 w-9 shrink-0 rounded-full ring-1 ring-line/15 transition-transform duration-300 group-hover:scale-105"
+            />
+          )}
+          <span className="font-display text-lg font-bold tracking-tight text-gradient">
+            Thankful
           </span>
         </Link>
 
