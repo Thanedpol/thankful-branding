@@ -12,6 +12,7 @@ import { Embed } from "./embed-extension";
 import { parseEmbed } from "@/lib/embed";
 import { compressImage } from "@/lib/compress-image";
 import { uploadDirect } from "@/lib/upload-direct";
+import { sanitizeImportedHtml, dataUrlToFile } from "@/lib/html-import";
 import { inlineEmojiImages } from "@/lib/portfolio-sessions";
 
 interface Props {
@@ -114,6 +115,17 @@ function imageFromDataTransfer(dt: DataTransfer | null): File | null {
   return Array.from(files).find((f) => f.type.startsWith("image/")) ?? null;
 }
 
+/** First .html/.htm file in a drag payload (some OSes report an empty type). */
+function htmlFromDataTransfer(dt: DataTransfer | null): File | null {
+  const files = dt?.files;
+  if (!files || !files.length) return null;
+  return (
+    Array.from(files).find(
+      (f) => f.type === "text/html" || /\.html?$/i.test(f.name)
+    ) ?? null
+  );
+}
+
 /**
  * WYSIWYG body editor (TipTap). Paragraphs, H1–H6, bold/italic, lists, quote,
  * left/center/right alignment, links (wrap selected text), and images with an
@@ -132,15 +144,18 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [videoPct, setVideoPct] = useState<number | null>(null); // video upload %
+  const [notice, setNotice] = useState<string | null>(null); // import summary
   const fileRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
+  const htmlRef = useRef<HTMLInputElement>(null);
   // Stable ids so the toolbar's <label> triggers can open these file inputs
   // natively (a programmatic input.click() is blocked by some browsers when a
   // re-render interrupts the gesture; a label's default action is not).
   const figureId = useId();
   const galleryId = useId();
   const videoId = useId();
+  const htmlId = useId();
   // Keep the latest onChange so the editor's create/update callbacks (captured
   // once) always call the current prop.
   const onChangeRef = useRef(onChange);
@@ -296,6 +311,73 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     setUploading(false);
   }
 
+  /**
+   * Import a saved .html file at the caret. Only what the editor's schema knows
+   * survives (headings, text, lists, links, images, tables…) — this brings in the
+   * CONTENT, not the page's CSS layout.
+   *
+   * Embedded data: images are uploaded and rewritten to real URLs: leaving them
+   * inline would bake megabytes of base64 into the saved body. Images pointing at
+   * a local path can't be reached once published, so they're dropped and counted
+   * rather than left as broken pictures.
+   */
+  async function importHtml(file: File, pos?: number) {
+    const ed = editorRef.current;
+    if (!ed) return;
+    setErr(null);
+    setNotice(null);
+    setUploading(true);
+    try {
+      const { container, dataImgs, relativeImgs } = sanitizeImportedHtml(
+        await file.text()
+      );
+
+      let uploaded = 0;
+      let failed = 0;
+      for (const [i, img] of dataImgs.entries()) {
+        const asFile = dataUrlToFile(img.getAttribute("src") ?? "", `import-${i + 1}`);
+        if (!asFile) {
+          img.remove();
+          failed++;
+          continue;
+        }
+        try {
+          const small = await compressImage(asFile).catch(() => asFile);
+          img.setAttribute("src", await uploadDirect(small, "blog-images"));
+          uploaded++;
+        } catch {
+          img.remove();
+          failed++;
+        }
+      }
+      relativeImgs.forEach((img) => img.remove());
+
+      const html = container.innerHTML.trim();
+      if (!html) {
+        setErr("ไฟล์นี้ไม่มีเนื้อหาที่นำเข้าได้");
+        return;
+      }
+      const chain = ed.chain().focus();
+      if (typeof pos === "number") chain.setTextSelection(pos);
+      chain.insertContent(html).run();
+
+      const notes = [`นำเข้า “${file.name}” แล้ว`];
+      if (uploaded) notes.push(`อัปโหลดรูปที่ฝังมา ${uploaded} รูป`);
+      if (relativeImgs.length)
+        notes.push(
+          `ข้ามรูป ${relativeImgs.length} รูปที่อ้างอิงไฟล์ในเครื่อง (ต้องอัปโหลดเอง)`
+        );
+      if (failed) notes.push(`อัปโหลดรูปไม่สำเร็จ ${failed} รูป`);
+      notes.push("นำเข้าเฉพาะเนื้อหา — รูปแบบ/สีจากไฟล์ต้นฉบับจะไม่ติดมา");
+      setNotice(notes.join(" · "));
+    } catch (e) {
+      setErr(
+        "อ่านไฟล์ HTML ไม่สำเร็จ" + (e instanceof Error ? ` (${e.message})` : "")
+      );
+    }
+    setUploading(false);
+  }
+
   // Heal legacy "two paragraphs merged into one node via <br><br>" content so
   // each paragraph is an independent block (client-only; SSR passes it through).
   const initialHtml = useMemo(
@@ -355,12 +437,22 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         return true;
       },
       handleDrop: (view, event) => {
-        const img = imageFromDataTransfer(event.dataTransfer);
-        if (!img) return false;
-        event.preventDefault();
         const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
-        uploadImage(img, pos);
-        return true;
+        const img = imageFromDataTransfer(event.dataTransfer);
+        if (img) {
+          event.preventDefault();
+          uploadImage(img, pos);
+          return true;
+        }
+        // Drop a saved .html file to import its content. Without this the
+        // browser would navigate away from the editor to open the file.
+        const html = htmlFromDataTransfer(event.dataTransfer);
+        if (html) {
+          event.preventDefault();
+          importHtml(html, pos);
+          return true;
+        }
+        return false;
       },
       attributes: {
         class:
@@ -444,6 +536,13 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
     pendingPosRef.current = undefined;
   }
 
+  async function onHtmlFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again later
+    if (file) await importHtml(file, pendingPosRef.current);
+    pendingPosRef.current = undefined;
+  }
+
   return (
     <div>
       {name && (
@@ -457,6 +556,7 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
           figureId={figureId}
           galleryId={galleryId}
           videoId={videoId}
+          htmlId={htmlId}
           // The <label> opens the picker natively; this just records the caret so
           // the uploaded image lands where the user was typing.
           onImage={() => {
@@ -466,6 +566,9 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
             pendingPosRef.current = editorRef.current?.state.selection.from;
           }}
           onVideo={() => {
+            pendingPosRef.current = editorRef.current?.state.selection.from;
+          }}
+          onHtml={() => {
             pendingPosRef.current = editorRef.current?.state.selection.from;
           }}
         />
@@ -500,6 +603,14 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
         onChange={onVideoFile}
         className="hidden"
       />
+      <input
+        ref={htmlRef}
+        id={htmlId}
+        type="file"
+        accept=".html,.htm,text/html"
+        onChange={onHtmlFile}
+        className="hidden"
+      />
       {videoPct !== null && (
         <div className="mt-1.5">
           <div className="h-1 overflow-hidden rounded bg-surface/[0.08]">
@@ -514,13 +625,18 @@ export default function RichTextEditor({ name, defaultValue = "", onChange }: Pr
           </p>
         </div>
       )}
+      {notice && (
+        <p className="mt-1 whitespace-pre-line font-mono text-[11px] leading-relaxed text-cyan/80">
+          ✓ {notice}
+        </p>
+      )}
       {err && (
         <p className="mt-1 whitespace-pre-line font-mono text-[11px] leading-relaxed text-red-400">
           ⚠ {err}
         </p>
       )}
       <p className="mt-1 font-mono text-[10px] text-muted">
-        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▦ แถวรูป (หลายรูปในแถวเดียว สูงสุด 5) · ▶ ฝังวิดีโอ/โซเชียล (คลิปยาว/ไฟล์ใหญ่ แนะนำทางนี้) · 🎬 อัปวิดีโอ (ไฟล์จากเครื่อง สูงสุด 50MB) · วิดีโอที่ฝัง/อัปแล้ว พิมพ์คำอธิบายใต้คลิปได้เลย · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
+        🔗 แนบลิงก์ · จัดวางซ้าย/กลาง/ขวา · 🖼 รูป+คำอธิบาย (กดปุ่ม หรือวาง/ลากรูปมาวางได้) · ▦ แถวรูป (หลายรูปในแถวเดียว สูงสุด 5) · ▶ ฝังวิดีโอ/โซเชียล (คลิปยาว/ไฟล์ใหญ่ แนะนำทางนี้) · 🎬 อัปวิดีโอ (ไฟล์จากเครื่อง สูงสุด 50MB) · วิดีโอที่ฝัง/อัปแล้ว พิมพ์คำอธิบายใต้คลิปได้เลย · 📄 นำเข้า HTML (กดปุ่ม หรือลากไฟล์ .html มาวาง) · ▦ ตาราง (กดในตารางเพื่อเพิ่ม/ลบแถว-คอลัมน์ · ลากขอบเพื่อปรับกว้าง)
       </p>
     </div>
   );
@@ -617,9 +733,11 @@ function Toolbar({
   figureId,
   galleryId,
   videoId,
+  htmlId,
   onImage,
   onGallery,
   onVideo,
+  onHtml,
 }: {
   editor: Editor | null;
   uploading: boolean;
@@ -627,9 +745,11 @@ function Toolbar({
   figureId: string;
   galleryId: string;
   videoId: string;
+  htmlId: string;
   onImage: () => void;
   onGallery: () => void;
   onVideo: () => void;
+  onHtml: () => void;
 }) {
   if (!editor) return null;
 
@@ -774,6 +894,13 @@ function Toolbar({
           title="อัปโหลดวิดีโอจากเครื่อง (.mp4/.mov/.webm) สูงสุด 50MB + ใส่คำอธิบายใต้คลิปได้ — คลิปยาว/ไฟล์ใหญ่กว่านี้ ให้อัปขึ้น YouTube แล้วใช้ปุ่ม ▶ ฝัง แทน"
         >
           {videoPct !== null ? `⏳ ${videoPct}%` : "🎬 วิดีโอ"}
+        </FileLabel>
+        <FileLabel
+          htmlFor={htmlId}
+          onPick={onHtml}
+          title="นำเข้าเนื้อหาจากไฟล์ .html (หรือลากไฟล์มาวางในกล่องเขียนได้เลย) — ได้เฉพาะเนื้อหา ไม่ได้ดีไซน์/สีจากไฟล์"
+        >
+          {uploading ? "⏳ …" : "📄 นำเข้า HTML"}
         </FileLabel>
         <Btn
           title="แทรกตาราง 3×3"
