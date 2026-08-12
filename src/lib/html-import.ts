@@ -1,3 +1,5 @@
+import { parseEmbed } from "@/lib/embed";
+
 /**
  * Turn a saved .html file into content the rich-text editor can accept.
  *
@@ -18,9 +20,23 @@ export interface ImportedHtml {
   relativeImgs: HTMLImageElement[];
 }
 
-/** Tags that are content even with no text, so their block must be kept. */
-const MEDIA_SELECTOR =
-  "img, iframe, video, audio, table, hr, figure, canvas, svg, embed, object, source";
+/**
+ * Tags that are content even with no text — and, crucially, that the editor's
+ * schema actually keeps. Listing anything else (an <svg> chart, a <canvas>)
+ * would preserve the block wrapping it while the editor discards the contents,
+ * leaving an empty paragraph: the blank lines this prune exists to remove.
+ */
+const MEDIA_SELECTOR = "img, table, hr, .blog-embed";
+
+/**
+ * Elements the editor cannot represent and that leave nothing behind. Dropped
+ * up front so the prune sees the blocks around them as the empties they are.
+ * An <svg> chart also carries its axis labels as <text>, which would otherwise
+ * survive as a scatter of orphaned one-word lines.
+ */
+const UNSUPPORTED_SELECTOR =
+  "svg, canvas, object, embed, audio, source, track, map, area, param, " +
+  "form, input, textarea, select, button, label, progress, meter, dialog";
 
 /** Blocks that a designed page uses for spacing and that carry no meaning empty. */
 const BLOCK_SELECTOR =
@@ -52,7 +68,14 @@ const blockish = (n: ChildNode | null) =>
  *  must not hide the fact that they are neighbours. */
 function nearestSibling(node: ChildNode, dir: "previousSibling" | "nextSibling") {
   let n = node[dir];
-  while (n && n.nodeType === Node.TEXT_NODE && isBlank(n.textContent)) n = n[dir];
+  // Blank text and comments are both invisible — neither makes two blocks
+  // "non-adjacent", so look straight through them.
+  while (
+    n &&
+    (n.nodeType === Node.COMMENT_NODE ||
+      (n.nodeType === Node.TEXT_NODE && isBlank(n.textContent)))
+  )
+    n = n[dir];
   return n;
 }
 
@@ -126,7 +149,9 @@ export function pruneEmptyBlocks(root: HTMLElement): number {
     // 3. Blocks holding neither text nor media.
     root.querySelectorAll(BLOCK_SELECTOR).forEach((el) => {
       if (!el.isConnected) return;
-      if (el.querySelector(MEDIA_SELECTOR)) return;
+      // `matches` as well as `querySelector`: an embed wrapper IS the media, and
+      // holds no text of its own, so checking only descendants would delete it.
+      if (el.matches(MEDIA_SELECTOR) || el.querySelector(MEDIA_SELECTOR)) return;
       if (!isBlank(el.textContent)) return;
       el.remove();
       removed++;
@@ -151,6 +176,41 @@ export function sanitizeImportedHtml(raw: string): ImportedHtml {
   body
     .querySelectorAll("script, style, link, meta, noscript, template, base, title")
     .forEach((el) => el.remove());
+
+  // Section-divider comments (<!-- ===== TOC ===== -->) are invisible but very
+  // much present: the indentation on either side of one is no longer adjacent to
+  // a block, so it escapes the whitespace sweep and the editor turns it into an
+  // empty paragraph. Drop them first and the whitespace collapses normally.
+  const comments = doc.createTreeWalker(body, NodeFilter.SHOW_COMMENT);
+  const doomed: Comment[] = [];
+  while (comments.nextNode()) doomed.push(comments.currentNode as Comment);
+  doomed.forEach((c) => c.remove());
+
+  // A bare <iframe>/<video> is dropped by the editor unless it sits inside a
+  // .blog-embed wrapper, so give it one — an imported article keeps its videos
+  // instead of losing them to a blank line.
+  body.querySelectorAll("iframe, video").forEach((el) => {
+    if (el.closest(".blog-embed")) return;
+    const src = (el.getAttribute("src") ?? "").trim();
+    const parsed = src ? parseEmbed(src) : null;
+    if (!parsed) {
+      el.remove(); // nothing playable — don't leave an empty block behind
+      return;
+    }
+    const wrap = doc.createElement("div");
+    wrap.className = `blog-embed blog-embed-${parsed.provider}`;
+    wrap.setAttribute("data-provider", parsed.provider);
+    wrap.setAttribute("data-url", parsed.url);
+    const player = doc.createElement(parsed.provider === "video" ? "video" : "iframe");
+    player.setAttribute("src", parsed.src);
+    if (parsed.provider === "video") player.setAttribute("controls", "true");
+    wrap.appendChild(player);
+    el.replaceWith(wrap);
+  });
+
+  // Everything the editor has no node for. Removed before pruning so the blocks
+  // that held them are correctly seen as empty.
+  body.querySelectorAll(UNSUPPORTED_SELECTOR).forEach((el) => el.remove());
 
   // Inline handlers (onclick=…) and javascript: links.
   body.querySelectorAll("*").forEach((el) => {
