@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import BlogCard from "@/components/BlogCard";
 import Reveal from "@/components/Reveal";
 import { useT } from "@/components/providers/AppProvider";
@@ -103,11 +103,53 @@ export default function BlogList({
   withSidebar?: boolean;
 }) {
   const t = useT();
+
   const [active, setActive] = useState<string | null>(null); // category key, or null = all
   const [activeTool, setActiveTool] = useState<string | null>(null); // AI tool key
   const [query, setQuery] = useState("");
 
   const q = query.trim().toLowerCase();
+
+  // ── Filters ⇄ URL ────────────────────────────────────────────────────────
+  // Keeping them in the query string makes a search linkable, bookmarkable,
+  // survivable across a refresh, and visible in analytics.
+  //
+  // Read on mount from window.location rather than useSearchParams: that hook
+  // opts the whole subtree out of static rendering, which would strip every
+  // post card out of the prerendered HTML that Google (and the first paint) get.
+  const urlRead = useRef(false);
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const cat = p.get("cat");
+    const tool = p.get("tool");
+    const q0 = p.get("q");
+    if (q0) setQuery(q0);
+    if (tool) setActiveTool(tool);
+    // A shared ?tool= link implies the AI category — that's where the tool's
+    // chip lives, so without it the grid would filter with nothing saying why.
+    setActive(cat || (tool ? "ai" : null));
+    urlRead.current = true;
+  }, []);
+
+  // Write back, debounced so typing doesn't hammer the history API.
+  // replaceState (not router.replace) because this filtering is entirely
+  // client-side: it just relabels the address bar, with no RSC refetch, no
+  // re-render and no scroll jump. replace, not push, keeps the Back button
+  // pointing at the previous page rather than at every keystroke. Skipped when
+  // the URL already says this, so a shared link isn't rewritten on arrival.
+  useEffect(() => {
+    if (!urlRead.current) return;
+    const next = new URLSearchParams();
+    if (query.trim()) next.set("q", query.trim());
+    if (active) next.set("cat", active);
+    if (activeTool) next.set("tool", activeTool);
+    const qs = next.toString();
+    if (qs === window.location.search.replace(/^\?/, "")) return;
+    const id = setTimeout(() => {
+      window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+    }, 300);
+    return () => clearTimeout(id);
+  }, [query, active, activeTool]);
 
   // Post count per AI tool (across all posts, like the reference), newest-heavy
   // tools first. Only tools we've actually written about appear.
