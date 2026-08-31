@@ -36,6 +36,21 @@ const field =
 let uid = 0;
 const key = () => `k${++uid}`;
 
+/**
+ * A page left open across a deploy still holds the previous build's server-action
+ * ids, and Next.js regenerates those every build — so the call 404s with a raw
+ * "Server Action … was not found" that reads like data loss. Nothing is broken
+ * and nothing is lost; the page just needs reloading.
+ */
+const STALE_ACTION_RE = /Server Action|failed-to-find-server-action|was not found on the server/i;
+const isStaleAction = (msg: string) => STALE_ACTION_RE.test(msg);
+const STALE_ACTION_MSG =
+  "เว็บมีการอัปเดตหลังจากคุณเปิดหน้านี้ — กรุณารีเฟรชหน้า (F5) แล้วลองใหม่";
+/** True for the raw error AND for the message it gets translated into, so the
+ *  "refresh" button still shows once the text has been made readable. */
+const needsRefresh = (msg: string) =>
+  !!msg && (msg.startsWith(STALE_ACTION_MSG) || isStaleAction(msg));
+
 /** Parse a number input's text → integer, or undefined when blank/invalid. */
 const numOrUndef = (s: string): number | undefined => {
   const n = parseInt(s, 10);
@@ -337,9 +352,13 @@ function Editor({
           } catch (err) {
             // A thrown action (timeout, network drop) would otherwise fail
             // silently and look like "Save does nothing" — surface it instead.
+            const msg = err instanceof Error ? err.message : "";
             setSaveError(
-              "บันทึกไม่สำเร็จ — อาจใช้เวลานานเกินไปหรือการเชื่อมต่อหลุด กรุณาลองอีกครั้ง" +
-                (err instanceof Error ? ` (${err.message})` : "")
+              isStaleAction(msg)
+                ? `${STALE_ACTION_MSG}
+(ยังไม่ได้บันทึก — เปิดหน้าใหม่แล้วแก้อีกครั้ง)`
+                : "บันทึกไม่สำเร็จ — อาจใช้เวลานานเกินไปหรือการเชื่อมต่อหลุด กรุณาลองอีกครั้ง" +
+                    (msg ? ` (${msg})` : "")
             );
           } finally {
             setSaving(false);
@@ -422,9 +441,18 @@ function Editor({
         )}
 
         {saveError && (
-          <p className="whitespace-pre-line rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm leading-relaxed text-red-400">
-            ⚠ {saveError}
-          </p>
+          <div className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm leading-relaxed text-red-400">
+            <p className="whitespace-pre-line">⚠ {saveError}</p>
+            {needsRefresh(saveError) && (
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="mt-2 rounded border border-red-400/50 px-2 py-1 font-mono text-[11px] uppercase tracking-wider hover:bg-red-400/15"
+              >
+                🔄 รีเฟรชหน้า
+              </button>
+            )}
+          </div>
         )}
 
         <div className="flex items-center gap-3 pt-2">
@@ -614,7 +642,11 @@ function EventsEditor({
         setLoadError((e) => ({
           ...e,
           [ev._k]:
-            err instanceof Error ? err.message : "โหลดเนื้อหาไม่สำเร็จ — ลองกดปิด/เปิดใหม่",
+            err instanceof Error
+              ? isStaleAction(err.message)
+                ? STALE_ACTION_MSG
+                : err.message
+              : "โหลดเนื้อหาไม่สำเร็จ — ลองกดปิด/เปิดใหม่",
         }))
       )
       .finally(() =>
@@ -682,9 +714,18 @@ function EventsEditor({
               ⏳ กำลังโหลดเนื้อหาของงานนี้…
             </p>
           ) : loadError[e._k] ? (
-            <p className="mt-2 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1.5 font-mono text-[10px] text-amber-400">
-              ⚠ {loadError[e._k]} (เนื้อหาเดิมยังอยู่ครบ — การ Save จะไม่ลบทิ้ง)
-            </p>
+            <div className="mt-2 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1.5 font-mono text-[10px] text-amber-400">
+              <p>⚠ {loadError[e._k]} (เนื้อหาเดิมยังอยู่ครบ — การ Save จะไม่ลบทิ้ง)</p>
+              {needsRefresh(loadError[e._k]) && (
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="mt-1.5 rounded border border-amber-400/50 px-2 py-1 uppercase tracking-wider hover:bg-amber-400/15"
+                >
+                  🔄 รีเฟรชหน้า
+                </button>
+              )}
+            </div>
           ) : (
             <SubSessionsEditor event={e} patch={patch} />
           )}
