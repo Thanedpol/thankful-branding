@@ -603,6 +603,203 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:20px;}
   html{scroll-behavior:auto;}
   .reveal{opacity:1;transform:none;}
 }
+
+/* ============================================================
+   READING LAYOUT — identity rail + a single content column.
+   Appended last, so it wins over the rules above without
+   touching any of the component styles they define.
+   ============================================================ */
+:root{
+  /* Calmer than the original: less saturated accents, softer panels,
+     lower-contrast rules. Everything below reads off these. */
+  --space:#0b0f16;
+  --space-2:#111725;
+  --panel:rgba(255,255,255,.028);
+  --panel-2:rgba(255,255,255,.05);
+  --line:rgba(255,255,255,.075);
+  --line-strong:rgba(255,255,255,.13);
+  --ink:#e6ebf3;
+  --ink-soft:#c6d0de;
+  --muted:#8d9aad;
+  --cyan:#35c9dd;
+  --violet:#8d7cf0;
+  --radius:16px;
+  --grid-line:rgba(255,255,255,.03);
+  --hero-glow-1:rgba(53,201,221,.13);
+  --hero-glow-2:rgba(141,124,240,.13);
+  --rail-w:308px;
+}
+html{scroll-padding-top:28px;}
+body{font-size:16.5px;line-height:1.85;}
+
+/* The grid and orbs were competing with the text; quiet them right down. */
+.orb{filter:blur(120px);opacity:.5;}
+.orb-3{display:none;}
+
+/* ---------- Shell ---------- */
+.shell{
+  display:grid;
+  grid-template-columns:var(--rail-w) minmax(0,1fr);
+  gap:56px;
+  max-width:1280px;
+  margin:0 auto;
+  padding:36px 32px 132px;
+  align-items:start;
+}
+.col{min-width:0;}
+/* Every section carries its own .wrap. Inside the column it must not
+   re-center or pad, or each block would sit in a box within a box. */
+.col .wrap{max-width:none;padding:0;}
+.col section{padding:74px 0;scroll-margin-top:24px;}
+.col section:first-child{padding-top:8px;}
+
+/* ---------- Identity rail ---------- */
+.rail{position:sticky;top:28px;display:flex;flex-direction:column;gap:18px;}
+.rail-card{
+  border:1px solid var(--line);border-radius:20px;background:var(--panel);
+  padding:22px;text-align:center;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.rail-photo{
+  width:132px;height:132px;margin:0 auto 16px;border-radius:22px;overflow:hidden;
+  border:1px solid var(--line-strong);background:var(--space-2);
+}
+.rail-photo img{width:100%;height:100%;object-fit:cover;}
+.rail-name{font-size:19px;font-weight:700;line-height:1.35;margin:0 0 4px;letter-spacing:-.01em;}
+.rail-name span{
+  display:block;font-family:'JetBrains Mono',monospace;font-weight:400;
+  font-size:12.5px;letter-spacing:.06em;color:var(--cyan);margin-top:4px;
+}
+.rail-role{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 14px;}
+.rail-card .status{margin:0;font-size:11.5px;padding:6px 12px;}
+
+.rail-facts{
+  border:1px solid var(--line);border-radius:16px;background:var(--panel);
+  padding:6px 16px;display:block;margin:0;
+}
+.rail-facts > div{display:grid;gap:2px;padding:12px 0;border-bottom:1px solid var(--line);}
+.rail-facts > div:last-child{border-bottom:0;}
+.rail-facts dt{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);
+}
+.rail-facts dd{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.55;word-break:break-word;}
+.rail-facts dd a{color:var(--cyan);}
+.rail-facts dd a:hover{text-decoration:underline;}
+.rail-facts dd .accent{display:block;color:var(--cyan);font-size:12.5px;}
+.rail-cta{width:100%;justify-content:center;}
+.rail-socials{justify-content:center;}
+
+/* ---------- Section headings: readable, not gradient-washed ---------- */
+.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px;}
+.path{
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);
+  letter-spacing:.08em;white-space:nowrap;padding-top:6px;
+}
+.path::before{content:"PATH: ";opacity:.55;}
+.col .sec-title{
+  background:none;-webkit-background-clip:initial;background-clip:initial;
+  color:var(--ink);
+  font-size:clamp(26px,3.2vw,38px);line-height:1.28;
+  margin-bottom:0;padding-bottom:0;
+}
+.col .eyebrow{color:var(--cyan);margin-bottom:10px;}
+/* A short accent rule under each heading — orientation without shouting. */
+.col .sec-title::after{
+  content:"";display:block;width:56px;height:3px;border-radius:3px;margin-top:16px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet));
+}
+.col .sec-sub{font-size:16px;max-width:68ch;margin-bottom:34px;color:var(--muted);}
+
+/* ---------- About screen ---------- */
+.lead p{font-size:19px;line-height:1.75;color:var(--ink-soft);max-width:64ch;margin-bottom:22px;}
+.about-body p{max-width:68ch;margin-bottom:16px;color:var(--ink-soft);}
+.about-body b{color:var(--ink);font-weight:600;}
+.facts{display:grid;gap:8px;margin:22px 0 24px;padding:0;}
+.facts li{position:relative;padding-left:24px;color:var(--muted);font-size:15px;max-width:64ch;}
+.facts li::before{content:"\25C8";position:absolute;left:0;top:0;color:var(--cyan);font-size:12px;}
+.s-about .pill-row{margin-bottom:26px;}
+.s-about .hero-cta{margin-bottom:38px;}
+
+/* ---------- Bottom dock ---------- */
+.nav{
+  position:fixed;top:auto;bottom:20px;left:50%;right:auto;
+  transform:translateX(-50%);
+  width:max-content;max-width:calc(100vw - 32px);
+  border:1px solid var(--line-strong);border-radius:18px;
+  background:color-mix(in srgb,var(--space-2) 88%,transparent);
+  box-shadow:0 20px 50px -18px rgba(0,0,0,.8);
+  padding:7px 10px;
+  display:flex;align-items:center;gap:8px;
+}
+.nav.scrolled{border-bottom-color:var(--line-strong);}
+.nav .brand{display:none;}
+.nav-links{display:flex;align-items:center;gap:2px;overflow-x:auto;scrollbar-width:none;}
+.nav-links::-webkit-scrollbar{display:none;}
+.nav-links a{
+  padding:8px 13px;border-radius:11px;font-size:13.5px;color:var(--muted);
+  white-space:nowrap;transition:background .2s,color .2s;
+}
+.nav-links a:hover{color:var(--ink);background:var(--panel-2);}
+.nav-links a.active{color:var(--space);background:var(--cyan);font-weight:600;}
+.nav-actions{display:flex;gap:6px;padding-left:8px;border-left:1px solid var(--line);}
+.nav .burger{display:none;}
+.totop{bottom:96px;}
+
+/* ---------- Print ---------- */
+@media print{
+  .shell{display:block;padding:0;}
+  .rail{position:static;}
+  .nav,.totop,.bg-fx{display:none !important;}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1080px){
+  .shell{grid-template-columns:1fr;gap:32px;padding:24px 22px 120px;}
+  .rail{position:static;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+  .rail-card{grid-column:1/-1;}
+  .rail-cta,.rail-socials{grid-column:1/-1;}
+  .col section{padding:56px 0;}
+}
+@media (max-width:620px){
+  body{font-size:16px;}
+  .shell{padding:18px 16px 112px;gap:24px;}
+  .rail{grid-template-columns:1fr;}
+  .sec-head{flex-direction:column;gap:6px;}
+  .path{padding-top:0;}
+  .lead p{font-size:17px;}
+  .nav{bottom:12px;padding:6px;border-radius:16px;}
+  .nav-links a{padding:8px 11px;font-size:13px;}
+  .totop{bottom:82px;}
+}
+@media (prefers-reduced-motion:reduce){
+  .orb{animation:none;}
+}
+
+/* ---------- Fail-safe reveal ----------
+   The animation hides every block until the observer fires. If the script
+   never runs — an error, a blocked file, a very old browser — that leaves the
+   whole page blank. So content is visible by default, and the script opts in
+   to animating it by marking the document first. */
+.reveal{opacity:1;transform:none;}
+html.js-anim .reveal{opacity:0;transform:translateY(26px);}
+html.js-anim .reveal.in{opacity:1;transform:none;}
+
+/* The old stylesheet turns .nav-links into a slide-down panel below a burger on
+   small screens. The dock replaces that entirely, so keep the links inline and
+   let them scroll sideways instead. Specificity beats the rule above, so this
+   holds whatever the source order. */
+@media (max-width:980px){
+  .nav{max-width:calc(100vw - 24px);}
+  .nav .nav-links{
+    position:static;flex-direction:row;align-items:center;gap:2px;
+    background:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+    border:0;padding:0;transform:none;
+    overflow-x:auto;max-width:100%;
+  }
+  .nav .nav-links a{padding:8px 12px;font-size:13px;}
+  .nav .burger{display:none;}
+}
 </style>
 </head>
 <body>
@@ -614,77 +811,98 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:20px;}
   <div class="orb orb-3"></div>
 </div>
 
-<!-- ==================== NAV ==================== -->
-<nav class="nav" id="nav">
-  <div class="wrap nav-inner">
-    <a href="#top" class="brand">
-      <span class="brand-mark">◈</span>
-      <span>Thank Thanedpol<small>AI · BUSINESS · SCI &amp; TECH</small></span>
-    </a>
-    <div class="nav-links" id="navLinks">
-      <a href="#about">เกี่ยวกับ</a>
-      <a href="#portfolio">ผลงาน</a>
-      <a href="#impact">ผลลัพธ์</a>
-      <a href="#award">รางวัล</a>
-      <a href="#experience">ประสบการณ์</a>
-      <a href="#skills">ทักษะ</a>
-      <a href="#articles">บทความ</a>
-      <a href="#contact">ติดต่อ</a>
+<div class="shell">
+
+<!-- ==================== IDENTITY RAIL ==================== -->
+<aside class="rail" id="rail">
+  <div class="rail-card">
+    <div class="rail-photo">
+      <img src="https://izbuvhonlucynhzsrhfd.supabase.co/storage/v1/object/public/avatars/9cbf0bd4-0df7-415c-b27e-e742f6632f21-20260621-135619.png" alt="ธเนศพล เดชาดวงสกุล" loading="eager">
     </div>
-    <div class="nav-actions">
-      <button class="icon-btn" id="themeBtn" aria-label="สลับธีมสว่าง/มืด" title="สลับธีม">◐</button>
-      <button class="icon-btn burger" id="burger" aria-label="เมนู">☰</button>
-    </div>
+    <h1 class="rail-name">ธเนศพล เดชาดวงสกุล<span>Thank Thanedpol</span></h1>
+    <p class="rail-role">Content Creator — AI, Business &amp; Technology</p>
+    <div class="status"><span class="dot"></span> เปิดรับงาน Content &amp; AI News</div>
   </div>
-</nav>
 
-<!-- ==================== HERO ==================== -->
-<header class="hero" id="top">
+  <dl class="rail-facts">
+    <div><dt>อีเมล</dt><dd><a href="mailto:thank.2643@gmail.com">thank.2643@gmail.com</a></dd></div>
+    <div><dt>โทรศัพท์</dt><dd><a href="tel:+66959535732">+66 95 953 5732</a></dd></div>
+    <div><dt>ที่ตั้ง</dt><dd>บางนา, กรุงเทพฯ 10260</dd></div>
+    <div><dt>การศึกษา</dt><dd>B.Sc. Applied Mathematics<span class="accent">Thammasat University</span></dd></div>
+    <div><dt>ตำแหน่งปัจจุบัน</dt><dd>Content Creator<span class="accent">Insightist AI Transformation</span></dd></div>
+    <div><dt>เว็บไซต์</dt><dd><a href="https://thankful-branding.vercel.app" target="_blank" rel="noopener noreferrer">thankful-branding.vercel.app</a></dd></div>
+  </dl>
+
+  <a href="#contact" class="btn btn-primary rail-cta">ติดต่อร่วมงาน <span>→</span></a>
+
+  <div class="socials rail-socials">
+    <a class="social" href="https://www.tiktok.com/@thankful63" target="_blank" rel="noopener noreferrer" title="TikTok" aria-label="TikTok">
+      <svg viewBox="0 0 24 24"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.59 2.59 0 0 1 0-5.18c.27 0 .52.04.76.12v-3.2a5.8 5.8 0 0 0-.76-.05A5.72 5.72 0 1 0 15.6 15.4V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.3 4.3 0 0 1-3.3-1.48z"/></svg>
+    </a>
+    <a class="social" href="https://www.facebook.com/Thankhuge2016" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Facebook">
+      <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/></svg>
+    </a>
+    <a class="social" href="https://www.linkedin.com/in/thanedpol-dechaduangsakul-64b9b5137/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn">
+      <svg viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.64h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.5 4.78 5.76V21h-4v-5.66c0-1.35-.03-3.08-1.95-3.08-1.96 0-2.26 1.46-2.26 2.98V21h-4V9z"/></svg>
+    </a>
+    <a class="social" href="https://github.com/Thanedpol" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+    </a>
+    <a class="social" href="mailto:thank.2643@gmail.com" title="Email" aria-label="Email">
+      <svg viewBox="0 0 24 24"><path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6zm2.2.4L12 12l7.8-5.6H4.2z"/></svg>
+    </a>
+  </div>
+</aside>
+
+<main class="col">
+
+<!-- ==================== ABOUT ==================== -->
+<section id="top" class="s-about">
   <div class="wrap">
-    <div class="hero-grid">
-      <div class="reveal">
-        <div class="status"><span class="dot"></span> เปิดรับงาน Content &amp; AI News</div>
-        <h1>ธเนศพล เดชาดวงสกุล<br><span class="grad">Thank Thanedpol</span></h1>
-        <p class="hero-role">// CONTENT CREATOR — AI, BUSINESS &amp; TECHNOLOGY NEWS</p>
-        <p class="hero-desc">
-          ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องวิทยาศาสตร์ เทคโนโลยี และความเคลื่อนไหวทางธุรกิจ
-          ทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง
-        </p>
-        <div class="hero-meta">
-          <span>◈ พื้นฐาน Applied Mathematics — ธรรมศาสตร์</span>
-          <span>◈ ลงพื้นที่ทำข่าวสัมมนา/นิทรรศการ 23+ งาน</span>
-        </div>
-        <div class="hero-cta">
-          <a href="#portfolio" class="btn btn-primary">ดูผลงาน <span>→</span></a>
-          <a href="https://izbuvhonlucynhzsrhfd.supabase.co/storage/v1/object/public/avatars/2ebc3f97-7a22-4090-a500-99d95dca21c7-Resume_1_Photo.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">Resume (ภาษาไทย)</a>
-          <a href="https://thankful-branding.vercel.app/cv/cv-en.html" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">Resume (English)</a>
-        </div>
-        <div class="socials">
-          <a class="social" href="https://www.tiktok.com/@thankful63" target="_blank" rel="noopener noreferrer" title="TikTok" aria-label="TikTok">
-            <svg viewBox="0 0 24 24"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.59 2.59 0 0 1 0-5.18c.27 0 .52.04.76.12v-3.2a5.8 5.8 0 0 0-.76-.05A5.72 5.72 0 1 0 15.6 15.4V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.3 4.3 0 0 1-3.3-1.48z"/></svg>
-          </a>
-          <a class="social" href="https://www.facebook.com/Thankhuge2016" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Facebook">
-            <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/></svg>
-          </a>
-          <a class="social" href="https://www.linkedin.com/in/thanedpol-dechaduangsakul-64b9b5137/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn">
-            <svg viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.64h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.5 4.78 5.76V21h-4v-5.66c0-1.35-.03-3.08-1.95-3.08-1.96 0-2.26 1.46-2.26 2.98V21h-4V9z"/></svg>
-          </a>
-          <a class="social" href="https://github.com/Thanedpol" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub">
-            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
-          </a>
-          <a class="social" href="mailto:thank.2643@gmail.com" title="Email" aria-label="Email">
-            <svg viewBox="0 0 24 24"><path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6zm2.2.4L12 12l7.8-5.6H4.2z"/></svg>
-          </a>
-        </div>
+    <div class="sec-head reveal">
+      <div>
+        <span class="eyebrow">// เกี่ยวกับ</span>
+        <h2 class="sec-title">เล่าเรื่อง AI &amp; ธุรกิจ<br>ให้คนทั่วไปเข้าใจได้</h2>
       </div>
+      <span class="path">~/about</span>
+    </div>
 
-      <aside class="hero-card reveal" style="transition-delay:.12s">
-        <p class="hc-title">// PROFILE SNAPSHOT</p>
-        <div class="hc-row"><span class="hc-k">ตำแหน่งปัจจุบัน</span><span class="hc-v">Content Creator<br><span class="accent">Insightist AI Transformation</span></span></div>
-        <div class="hc-row"><span class="hc-k">ความเชี่ยวชาญ</span><span class="hc-v">AI News · Copywriting<br>Fact-checking · Video</span></div>
-        <div class="hc-row"><span class="hc-k">การศึกษา</span><span class="hc-v">B.Sc. Applied Mathematics<br><span class="accent">Thammasat University</span></span></div>
-        <div class="hc-row"><span class="hc-k">อีเมล</span><span class="hc-v"><a href="mailto:thank.2643@gmail.com" style="color:var(--cyan)">thank.2643@gmail.com</a></span></div>
-      </aside>
+    <div class="lead reveal">
+      <p>
+        ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องวิทยาศาสตร์ เทคโนโลยี และความเคลื่อนไหวทางธุรกิจ
+        ทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง
+      </p>
+    </div>
+
+    <div class="about-body reveal">
+      <p>
+        ผมเป็น <b>Technology &amp; AI Content Specialist</b> พื้นฐานคณิตศาสตร์ประยุกต์จากธรรมศาสตร์
+        ช่วยให้อ่านตัวเลข ตรวจสอบข้อมูล และแยกข่าวจริงจากข่าวปลอมได้เร็ว — ทักษะสำคัญในยุคที่ข่าว AI ออกมาวันละหลายร้อยชิ้น
+      </p>
+      <p>
+        ปัจจุบันดูแลกระบวนการผลิตข่าวครบวงจรให้ <b>Insightist AI Transformation Thailand</b>
+        ตั้งแต่ดึงข้อมูล สรุปประเด็น ตั้งพาดหัว ทำ Artwork จนถึง Fact-checking และเผยแพร่หลายแพลตฟอร์ม
+        พร้อมออกแบบ AI Workflow และเขียน <b>Skills.md</b> เป็นมาตรฐานกลางขององค์กร
+      </p>
+    </div>
+
+    <ul class="facts reveal">
+      <li>พื้นฐาน Applied Mathematics — ธรรมศาสตร์</li>
+      <li>ลงพื้นที่ทำข่าวสัมมนา/นิทรรศการ 23+ งาน</li>
+    </ul>
+
+    <div class="pill-row reveal">
+      <span class="pill">AI News Reporting</span>
+      <span class="pill">Copywriting &amp; Headline</span>
+      <span class="pill">Fact-checking</span>
+      <span class="pill">AI Workflow Design</span>
+      <span class="pill">Video Production</span>
+    </div>
+
+    <div class="hero-cta reveal">
+      <a href="#portfolio" class="btn btn-primary">ดูผลงาน <span>→</span></a>
+      <a href="https://izbuvhonlucynhzsrhfd.supabase.co/storage/v1/object/public/avatars/2ebc3f97-7a22-4090-a500-99d95dca21c7-Resume_1_Photo.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">Resume (ภาษาไทย)</a>
+      <a href="https://thankful-branding.vercel.app/cv/cv-en.html" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">Resume (English)</a>
     </div>
 
     <div class="stats">
@@ -692,44 +910,6 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:20px;}
       <div class="stat reveal" style="transition-delay:.08s"><div class="stat-num" data-count="198">0</div><div class="stat-label">ชิ้นงานคอนเทนต์ที่ผลิตและเผยแพร่</div></div>
       <div class="stat reveal" style="transition-delay:.16s"><div class="stat-num" data-count="60">0</div><div class="stat-label">AI Tools / Products ที่รีวิวและทดลองใช้</div></div>
       <div class="stat reveal" style="transition-delay:.24s"><div class="stat-num" data-count="11">0</div><div class="stat-label">ประกาศนียบัตรด้าน AI &amp; Creative</div></div>
-    </div>
-  </div>
-</header>
-
-<!-- ==================== ABOUT ==================== -->
-<section id="about">
-  <div class="wrap">
-    <div class="reveal">
-      <span class="eyebrow">// เกี่ยวกับ</span>
-      <h2 class="sec-title">เล่าเรื่อง AI &amp; ธุรกิจ ให้คนทั่วไปเข้าใจได้</h2>
-    </div>
-    <div class="about-grid">
-      <div class="about-body reveal">
-        <p>
-          ผมเป็น <b>Technology &amp; AI Content Specialist</b> พื้นฐานคณิตศาสตร์ประยุกต์จากธรรมศาสตร์
-          ช่วยให้อ่านตัวเลข ตรวจสอบข้อมูล และแยกข่าวจริงจากข่าวปลอมได้เร็ว — ทักษะสำคัญในยุคที่ข่าว AI ออกมาวันละหลายร้อยชิ้น
-        </p>
-        <p>
-          ปัจจุบันดูแลกระบวนการผลิตข่าวครบวงจรให้ <b>Insightist AI Transformation Thailand</b>
-          ตั้งแต่ดึงข้อมูล สรุปประเด็น ตั้งพาดหัว ทำ Artwork จนถึง Fact-checking และเผยแพร่หลายแพลตฟอร์ม
-          พร้อมออกแบบ AI Workflow และเขียน <b>Skills.md</b> เป็นมาตรฐานกลางขององค์กร
-        </p>
-        <div class="pill-row">
-          <span class="pill">AI News Reporting</span>
-          <span class="pill">Copywriting &amp; Headline</span>
-          <span class="pill">Fact-checking</span>
-          <span class="pill">AI Workflow Design</span>
-          <span class="pill">Video Production</span>
-        </div>
-      </div>
-
-      <div class="card reveal" style="transition-delay:.1s">
-        <h4>ช่องทางติดต่อ</h4>
-        <div class="kv"><span>อีเมล</span><span><a href="mailto:thank.2643@gmail.com" style="color:var(--cyan)">thank.2643@gmail.com</a></span></div>
-        <div class="kv"><span>โทรศัพท์</span><span><a href="tel:+66959535732" style="color:var(--cyan)">+66 95 953 5732</a></span></div>
-        <div class="kv"><span>ที่ตั้ง</span><span>บางนา, กรุงเทพฯ 10260</span></div>
-        <div class="kv"><span>เว็บไซต์</span><span><a href="https://thankful-branding.vercel.app" target="_blank" rel="noopener noreferrer" style="color:var(--cyan)">thankful-branding.vercel.app</a></span></div>
-      </div>
     </div>
   </div>
 </section>
@@ -1164,6 +1344,32 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:20px;}
   </div>
 </footer>
 
+</main>
+</div><!-- /shell -->
+
+<!-- ==================== DOCK NAV ==================== -->
+<nav class="nav" id="nav" aria-label="เมนูหลัก">
+  <a href="#top" class="brand">
+    <span class="brand-mark">◈</span>
+    <span>Thank Thanedpol<small>AI · BUSINESS · SCI &amp; TECH</small></span>
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="#top">เกี่ยวกับ</a>
+    <a href="#portfolio">ผลงาน</a>
+    <a href="#impact">ผลลัพธ์</a>
+    <a href="#award">รางวัล</a>
+    <a href="#experience">ประสบการณ์</a>
+    <a href="#skills">ทักษะ</a>
+    <a href="#articles">บทความ</a>
+    <a href="#contact">ติดต่อ</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn" id="themeBtn" aria-label="สลับธีมสว่าง/มืด" title="สลับธีม">◐</button>
+    <button class="icon-btn burger" id="burger" aria-label="เมนู">☰</button>
+  </div>
+</nav>
+
+
 <div class="totop" id="toTop" title="กลับขึ้นบนสุด">↑</div>
 <div class="copied" id="toast">คัดลอกอีเมลแล้ว ✓</div>
 
@@ -1241,8 +1447,10 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:20px;}
       }
       io.unobserve(en.target);
     });
-  }, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+  }, {threshold:0});
 
+  // Only now that the observer exists is it safe to hide anything.
+  document.documentElement.classList.add('js-anim');
   document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
 
   /* ---------- Count up ---------- */
