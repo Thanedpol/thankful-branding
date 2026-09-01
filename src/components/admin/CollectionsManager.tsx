@@ -51,6 +51,29 @@ const STALE_ACTION_MSG =
 const needsRefresh = (msg: string) =>
   !!msg && (msg.startsWith(STALE_ACTION_MSG) || isStaleAction(msg));
 
+/** Show / hide toggle. The eye reflects the CURRENT state: open = on the site. */
+function EyeToggle({
+  on,
+  onClick,
+  what,
+}: {
+  on: boolean;
+  onClick: () => void;
+  what: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={on ? `แสดงอยู่ — กดเพื่อซ่อน${what}` : `ซ่อนอยู่ — กดเพื่อแสดง${what}`}
+      aria-pressed={!on}
+      className={on ? "hover:text-cyan" : "text-amber-400 hover:text-amber-300"}
+    >
+      {on ? "👁" : "🚫"}
+    </button>
+  );
+}
+
 /** Parse a number input's text → integer, or undefined when blank/invalid. */
 const numOrUndef = (s: string): number | undefined => {
   const n = parseInt(s, 10);
@@ -58,10 +81,10 @@ const numOrUndef = (s: string): number | undefined => {
 };
 
 type Story = { _k: string; title?: string; detail: string; youtubeUrl: string };
-type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string; _stripped?: boolean };
+type Sess = { _k: string; title?: string; image?: string; body?: string; url?: string; hidden?: boolean; _stripped?: boolean };
 type Ev = {
   _k: string; title: string; url: string; image?: string; body?: string; slug?: string;
-  metrics?: CollectionEventMetrics; _stripped?: boolean; sessions: Sess[];
+  metrics?: CollectionEventMetrics; hidden?: boolean; _stripped?: boolean; sessions: Sess[];
   /** Where this event sits in the STORED structure. Bodies are fetched by these
    *  coordinates, so reordering in the editor can't fetch the wrong event. */
   _origGroup?: string;
@@ -680,14 +703,29 @@ function EventsEditor({
       {events.map((e, i) => {
         const isCollapsed = collapsed.has(e._k);
         return (
-        <div key={e._k} className="rounded-md border border-line/10 bg-surface/[0.02] p-2">
+        <div
+          key={e._k}
+          className={`rounded-md border p-2 ${
+            e.hidden
+              ? "border-amber-400/25 bg-amber-400/[0.04] opacity-70"
+              : "border-line/10 bg-surface/[0.02]"
+          }`}
+        >
           <div className="flex items-center justify-between font-mono text-[10px] text-muted">
             <button type="button" onClick={() => toggle(e)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
               <span className="text-cyan">{isCollapsed ? "▸" : "▾"}</span>
               <span className="shrink-0">งานที่ {i + 1}</span>
               {isCollapsed && <span className="truncate text-ink/70">{e.title || "(ยังไม่ตั้งชื่อ)"}</span>}
+              {e.hidden && (
+                <span className="shrink-0 rounded bg-amber-400/15 px-1.5 text-amber-400">ซ่อน</span>
+              )}
             </button>
-            <span className="flex shrink-0 gap-1.5">
+            <span className="flex shrink-0 items-center gap-1.5">
+              <EyeToggle
+                on={!e.hidden}
+                what="งานนี้"
+                onClick={() => patch(e._k, (ev) => ({ hidden: !ev.hidden }))}
+              />
               <button type="button" onClick={() => move(e._k, -1)} className="hover:text-cyan">↑</button>
               <button type="button" onClick={() => move(e._k, 1)} className="hover:text-cyan">↓</button>
               <button type="button" onClick={() => remove(e._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>
@@ -824,14 +862,29 @@ function SubSessionsEditor({
         {sessions.map((s, si) => {
           const isCollapsed = collapsed.has(s._k);
           return (
-          <div key={s._k} className="rounded border border-line/10 bg-surface/[0.03] p-2">
+          <div
+            key={s._k}
+            className={`rounded border p-2 ${
+              s.hidden
+                ? "border-amber-400/25 bg-amber-400/[0.04] opacity-70"
+                : "border-line/10 bg-surface/[0.03]"
+            }`}
+          >
             <div className="flex items-center justify-between font-mono text-[10px] text-muted">
               <button type="button" onClick={() => toggle(s._k)} className="flex min-w-0 items-center gap-1.5 hover:text-cyan">
                 <span className="text-cyan">{isCollapsed ? "▸" : "▾"}</span>
                 <span className="shrink-0">Session ย่อยที่ {si + 1}</span>
                 {isCollapsed && <span className="truncate text-ink/70">{s.title || "(ไม่มีชื่อ)"}</span>}
+                {s.hidden && (
+                  <span className="shrink-0 rounded bg-amber-400/15 px-1.5 text-amber-400">ซ่อน</span>
+                )}
               </button>
-              <span className="flex shrink-0 gap-1.5">
+              <span className="flex shrink-0 items-center gap-1.5">
+                <EyeToggle
+                  on={!s.hidden}
+                  what="session นี้"
+                  onClick={() => patchS(s._k, { hidden: !s.hidden })}
+                />
                 <button type="button" onClick={() => moveS(s._k, -1)} className="hover:text-cyan">↑</button>
                 <button type="button" onClick={() => moveS(s._k, 1)} className="hover:text-cyan">↓</button>
                 <button type="button" onClick={() => rmS(s._k)} className="text-red-400/70 hover:text-red-400">− ลบ</button>

@@ -45,7 +45,7 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
           {/* Full portfolio as a standalone page — a static export in /public,
               so it opens instantly and stays readable on its own. */}
           <a
-            href="/cv/portfolio.html"
+            href={profile?.portfolio_url || "/cv/portfolio.html"}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-neon mb-6 inline-flex !px-4 !py-2 text-xs"

@@ -126,6 +126,8 @@ export interface SiteProfile {
   /** "View CV" targets — blank falls back to the built-in /cv/*.html pages. */
   cv_th_url?: string | null;
   cv_en_url?: string | null;
+  /** Standalone portfolio page shown by the About button. */
+  portfolio_url?: string | null;
 }
 
 /** Social metrics for a collection event (e.g. a Facebook post's numbers).
@@ -170,6 +172,9 @@ export interface PortfolioCollection {
         /** Cached eventHasContent() from the per-event row — lets the listing
          *  decide "internal page vs Facebook link" without loading any body. */
         hasContent?: boolean;
+        /** Kept out of the public site: no card, no page, no sitemap entry.
+         *  Still fully editable in the admin. */
+        hidden?: boolean;
         /** Admin-only marker: this body was stripped for the editor and must be
          *  restored from the stored row on save. Never persisted. */
         _stripped?: boolean;
@@ -179,6 +184,8 @@ export interface PortfolioCollection {
           image?: string;
           body?: string;
           url?: string;
+          /** Kept out of the event page's carousel; still editable in the admin. */
+          hidden?: boolean;
           /** Social metrics for this session (e.g. its own Facebook post). */
           metrics?: CollectionEventMetrics;
           /** Admin-only marker: body stripped for the editor, restored on save.

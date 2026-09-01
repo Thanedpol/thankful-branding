@@ -16,6 +16,9 @@ export interface EventRow {
   metrics: unknown | null;
   sessions: unknown[];
   has_content: boolean;
+  /** Author switched this event off — kept in the row so the public reads can
+   *  skip it, while the admin still sees and edits it. */
+  hidden: boolean;
 }
 
 /** Light group metadata kept inline on the collection (`data.groups_meta`) so
@@ -58,6 +61,7 @@ export function buildEventRows(collectionSlug: string, groups: Grp[]): EventRow[
         metrics: e.metrics ?? null,
         sessions,
         has_content: eventHasContent(e),
+        hidden: !!e.hidden,
       });
     });
   });

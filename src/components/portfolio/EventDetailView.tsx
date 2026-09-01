@@ -3,7 +3,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SessionCarousel from "./SessionCarousel";
-import { eventSessions, type EventItem } from "@/lib/portfolio-sessions";
+import { visibleSessions, type EventItem } from "@/lib/portfolio-sessions";
 
 export type { EventItem };
 
@@ -18,7 +18,7 @@ export default function EventDetailView({
   backHref: string;
   backLabel: string;
 }) {
-  const sessions = eventSessions(event);
+  const sessions = visibleSessions(event);
 
   return (
     <>

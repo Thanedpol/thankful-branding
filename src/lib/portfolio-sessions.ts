@@ -48,9 +48,21 @@ export function eventSessions(e: EventItem): EventSession[] {
   return [];
 }
 
-/** True if the event has any detail content worth its own page. */
+/**
+ * The sub-sessions a visitor should actually see. `eventSessions` keeps the full
+ * list because the admin edits it and the stored rows must stay index-aligned
+ * with it; anything the author switched off is dropped here instead, at the
+ * point of display.
+ */
+export function visibleSessions(e: EventItem): EventSession[] {
+  return eventSessions(e).filter((s) => !s.hidden);
+}
+
+/** True if the event has any detail content worth its own page. Hidden
+ *  sub-sessions don't count — an event whose content is all switched off has
+ *  nothing to show, so its card links out instead of opening an empty page. */
 export function eventHasContent(e: EventItem): boolean {
-  return eventSessions(e).some(
+  return visibleSessions(e).some(
     (s) => hasContent(s.body) || !!s.image || !!(s.title && s.title.trim())
   );
 }

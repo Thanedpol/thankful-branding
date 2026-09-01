@@ -57,6 +57,13 @@ export default async function AdminProfilePage() {
           hint="วางลิงก์ (PDF / เว็บ / Google Drive) หรืออัปโหลดไฟล์ · เว้นว่าง = ใช้ค่าเริ่มต้น /cv/cv-th.html"
         />
         <PublicFileUpload
+          name="portfolio_url"
+          defaultValue={p?.portfolio_url ?? ""}
+          label="Portfolio (HTML)"
+          accept=".pdf,.html,.doc,.docx,image/*"
+          hint="ปุ่ม “ดูพอร์ตโฟลิโอ” ใต้หัวข้อหมวดเกี่ยวกับ · เว้นว่าง = ใช้ไฟล์ที่มากับเว็บ /cv/portfolio.html"
+        />
+        <PublicFileUpload
           name="cv_en_url"
           defaultValue={p?.cv_en_url ?? ""}
           label="Resume (English)"

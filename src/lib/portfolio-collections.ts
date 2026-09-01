@@ -147,9 +147,42 @@ type EventLightRow = {
   image: string | null;
   metrics: EventItem["metrics"] | null;
   has_content: boolean;
+  hidden?: boolean;
 };
 
 type EventPage = { c: Omit<PortfolioCollection, "data">; e: EventItem };
+
+const EVENT_LIGHT_COLS =
+  "slug,group_name,event_order,title,url,image,metrics,has_content";
+
+/**
+ * Light event rows for a collection, visible ones only.
+ *
+ * `hidden` arrived after the table did, so a database that hasn't run
+ * add-visibility-and-portfolio-url.sql yet would fail the whole query on an
+ * unknown column — and take every portfolio page down with it. Ask for the
+ * column, and if it isn't there, read without it and treat everything as
+ * visible.
+ */
+async function fetchVisibleEventRows(
+  supabase: ReturnType<typeof createPublicClient>,
+  slug: string,
+  extraCols = ""
+): Promise<{ rows: EventLightRow[] | null; error: { message: string } | null }> {
+  const cols = EVENT_LIGHT_COLS + extraCols;
+  const run = (withHidden: boolean) =>
+    supabase
+      .from("portfolio_events")
+      .select(withHidden ? `${cols},hidden` : cols)
+      .eq("collection_slug", slug)
+      .order("event_order", { ascending: true });
+
+  let res = await run(true);
+  if (res.error && /hidden/i.test(res.error.message)) res = await run(false);
+  if (res.error) return { rows: null, error: res.error };
+  const rows = (res.data as unknown as EventLightRow[]) ?? [];
+  return { rows: rows.filter((r) => !r.hidden), error: null };
+}
 
 /** Collection header (no `data`) from a projected row, defaults filling blanks. */
 function headerCollection(
@@ -237,16 +270,12 @@ async function loadCollection(
 
   // Grouped collection (Insightist) — assemble from per-event rows.
   if (row.groups_meta) {
-    const { data: evRaw, error: evErr } = await supabase
-      .from("portfolio_events")
-      .select("slug,group_name,event_order,title,url,image,metrics,has_content")
-      .eq("collection_slug", slug)
-      .order("event_order", { ascending: true });
+    const { rows: evRows, error: evErr } = await fetchVisibleEventRows(supabase, slug);
     if (evErr) {
       if (strict) throw new Error(`fetchCollection(${slug}) events: ${evErr.message}`);
       return collectionDefault(slug);
     }
-    const groups = groupsFromRows(row.groups_meta, (evRaw as EventLightRow[]) ?? []);
+    const groups = groupsFromRows(row.groups_meta, evRows ?? []);
     return { ...headerCollection(slug, row), data: { groups } };
   }
 
@@ -311,6 +340,7 @@ export async function fetchCollectionEvent(
     );
   if (!ev) return fetchEventFromFull(collectionSlug, eventSlug); // pre-migration safety
   const row = ev as EventRow;
+  if (row.hidden) return null; // switched off by the author — 404, like a deletion
   if (!row.has_content) return null; // known link-only event — no detail page
 
   const { data: head } = await supabase
@@ -365,11 +395,7 @@ export async function getCollectionEventSlugs(slug: string): Promise<string[]> {
     return out;
   }
   const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("portfolio_events")
-    .select("slug")
-    .eq("collection_slug", slug)
-    .eq("has_content", true);
-  if (error || !data) return [];
-  return (data as { slug: string }[]).map((r) => r.slug);
+  const { rows, error } = await fetchVisibleEventRows(supabase, slug);
+  if (error || !rows) return [];
+  return rows.filter((r) => r.has_content).map((r) => r.slug);
 }

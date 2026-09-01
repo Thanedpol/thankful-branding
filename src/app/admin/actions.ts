@@ -210,9 +210,19 @@ async function syncPortfolioEvents(
   const keep = new Set(rows.map((r) => r.slug));
   const BATCH = 50;
   for (let i = 0; i < rows.length; i += BATCH) {
-    const { error } = await supabase
+    const chunk = rows.slice(i, i + BATCH);
+    let { error } = await supabase
       .from("portfolio_events")
-      .upsert(rows.slice(i, i + BATCH), { onConflict: "collection_slug,slug" });
+      .upsert(chunk, { onConflict: "collection_slug,slug" });
+    // `hidden` needs add-visibility-and-portfolio-url.sql. Until that has run,
+    // save everything else rather than failing the whole write — visibility just
+    // has nowhere to be stored yet.
+    if (error && /hidden/i.test(error.message)) {
+      const withoutHidden = chunk.map(({ hidden: _hidden, ...r }) => r);
+      ({ error } = await supabase
+        .from("portfolio_events")
+        .upsert(withoutHidden, { onConflict: "collection_slug,slug" }));
+    }
     if (error) return error.message;
   }
   const { data: existing, error: exErr } = await supabase
@@ -477,9 +487,10 @@ export async function saveProfile(formData: FormData) {
     .update({
       cv_th_url: String(formData.get("cv_th_url") ?? "") || null,
       cv_en_url: String(formData.get("cv_en_url") ?? "") || null,
+      portfolio_url: String(formData.get("portfolio_url") ?? "") || null,
     })
     .eq("id", 1);
-  if (cvErr) console.error("[saveProfile] CV columns not migrated?", cvErr.message);
+  if (cvErr) console.error("[saveProfile] CV/portfolio columns not migrated?", cvErr.message);
 
   refreshPublic();
   revalidatePath("/admin/profile");
