@@ -209,9 +209,22 @@ create policy "contact admin upd"  on public.contact_messages for update
   using (public.is_admin()) with check (public.is_admin());
 
 -- ─── blog_previews view ───────────────────────────────────────────────────────
--- A SECURITY DEFINER view (default) that exposes ONLY non-body columns of
--- published posts. This lets anonymous visitors see the excerpt/teaser of a
--- locked (member-only) post without ever receiving its body.
+-- A SECURITY DEFINER view (Postgres' default) that exposes ONLY non-body
+-- columns of published posts, so an anonymous visitor can see the title and
+-- excerpt of a locked (member-only) post without ever receiving its body.
+--
+-- Supabase's advisor flags every SECURITY DEFINER view. Here it is deliberate,
+-- and switching it to security_invoker would BREAK the member gate: RLS on
+-- blog_posts hides member-only rows from anon (verified — a draft and an
+-- is_public=false post are both unreadable), so under invoker rights those
+-- posts would vanish from the blog index and their pages would 404 instead of
+-- showing the sign-in gate.
+--
+-- Safety here comes from the view's own shape, not from RLS: it is a fixed
+-- column projection with no body/member_body, filtered to published posts.
+-- Keep it that way — anything added to the select list is world-readable.
+-- Column-level grants can't replace it either: they are per-role, and "body is
+-- visible on public posts but not member-only ones" is a per-row rule.
 create view public.blog_previews as
   select id, slug, title, excerpt, cover_image_url, tags, is_public,
          published_at, created_at, has_member_content
