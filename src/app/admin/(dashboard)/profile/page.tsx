@@ -47,19 +47,19 @@ export default async function AdminProfilePage() {
         </L>
 
         <p className="pt-2 font-mono text-[11px] uppercase tracking-wider text-cyan/70">
-          CV / Resume — ปุ่ม “ดู CV” หน้าแรก
+          Resume — ปุ่ม “ดู Resume” หน้าแรก
         </p>
         <PublicFileUpload
           name="cv_th_url"
           defaultValue={p?.cv_th_url ?? ""}
-          label="CV (ภาษาไทย)"
+          label="Resume (ภาษาไทย)"
           accept=".pdf,.html,.doc,.docx,image/*"
           hint="วางลิงก์ (PDF / เว็บ / Google Drive) หรืออัปโหลดไฟล์ · เว้นว่าง = ใช้ค่าเริ่มต้น /cv/cv-th.html"
         />
         <PublicFileUpload
           name="cv_en_url"
           defaultValue={p?.cv_en_url ?? ""}
-          label="CV (English)"
+          label="Resume (English)"
           accept=".pdf,.html,.doc,.docx,image/*"
           hint="Paste a link or upload a file · blank = built-in /cv/cv-en.html"
         />

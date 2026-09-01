@@ -16,9 +16,9 @@ export const dict: Record<Locale, Dict> = {
     "nav.portfolio": "ผลงาน",
     "nav.blog": "บทความ",
     "nav.pressKit": "Press Kit",
-    "nav.cv": "ดู CV",
-    "cv.th": "CV (ภาษาไทย)",
-    "cv.en": "CV (English)",
+    "nav.cv": "ดู Resume",
+    "cv.th": "Resume (ภาษาไทย)",
+    "cv.en": "Resume (English)",
     "nav.login": "เข้าสู่ระบบ",
     "nav.logout": "ออกจากระบบ",
 
@@ -28,6 +28,7 @@ export const dict: Record<Locale, Dict> = {
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// เกี่ยวกับ",
+    "about.portfolio": "ดูพอร์ตโฟลิโอ",
     "about.heading": "เล่าเรื่อง AI & ธุรกิจ",
     "about.bio":
       "ครีเอเตอร์สายข่าว AI และธุรกิจ เล่าเรื่องวิทยาศาสตร์ เทคโนโลยีและความเคลื่อนไหวทางธุรกิจทั้งในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง",
@@ -103,9 +104,9 @@ export const dict: Record<Locale, Dict> = {
     "nav.portfolio": "Portfolio",
     "nav.blog": "Blog",
     "nav.pressKit": "Press Kit",
-    "nav.cv": "View CV",
-    "cv.th": "CV (Thai)",
-    "cv.en": "CV (English)",
+    "nav.cv": "View Resume",
+    "cv.th": "Resume (Thai)",
+    "cv.en": "Resume (English)",
     "nav.login": "Login",
     "nav.logout": "Logout",
 
@@ -115,6 +116,7 @@ export const dict: Record<Locale, Dict> = {
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// About",
+    "about.portfolio": "View Portfolio",
     "about.heading": "Telling the story of AI & Business",
     "about.bio":
       "A content creator covering AI and business — turning science, technology and market moves in Thailand and around the world into clear, timely, useful stories.",
@@ -202,6 +204,7 @@ export const dict: Record<Locale, Dict> = {
     "hero.pressKit": "媒体资料",
 
     "about.eyebrow": "// 关于",
+    "about.portfolio": "查看作品集",
     "about.heading": "讲述 AI 与商业的故事",
     "about.bio":
       "专注 AI 与商业领域的内容创作者，把泰国与全球的科学、科技和商业动态，转化为清晰、及时、实用的内容。",

@@ -39,9 +39,19 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
 
         <Reveal delay={120}>
           <p className="eyebrow">{t("about.eyebrow")}</p>
-          <h2 className="mb-6 font-display text-3xl font-bold md:text-4xl">
+          <h2 className="mb-4 font-display text-3xl font-bold md:text-4xl">
             {t("about.heading")}
           </h2>
+          {/* Full portfolio as a standalone page — a static export in /public,
+              so it opens instantly and stays readable on its own. */}
+          <a
+            href="/cv/portfolio.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-neon mb-6 inline-flex !px-4 !py-2 text-xs"
+          >
+            {t("about.portfolio")} →
+          </a>
           <p className="whitespace-pre-line text-lg leading-relaxed text-muted">
             {t("about.bio")}
           </p>
