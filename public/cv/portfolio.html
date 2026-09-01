@@ -821,6 +821,28 @@ html.js-anim .reveal.in{opacity:1;transform:none;}
   .nav .nav-links a{padding:8px 12px;font-size:13px;}
   .nav .burger{display:none;}
 }
+
+/* Rail facts as icon + value. The label survives as a tooltip and for screen
+   readers, so dropping it visually costs no meaning — it just buys the value
+   the full width of a narrow column. */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+.rail-facts > div{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--line);
+}
+.rail-facts dt{display:block;flex:none;}
+.fact-ico{
+  width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  background:var(--panel-2);border:1px solid var(--line);color:var(--cyan);
+}
+.fact-ico svg{
+  width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.rail-facts dd{flex:1;min-width:0;padding-top:3px;}
 </style>
 </head>
 <body>
@@ -846,12 +868,12 @@ html.js-anim .reveal.in{opacity:1;transform:none;}
   </div>
 
   <dl class="rail-facts">
-    <div><dt>อีเมล</dt><dd><a href="mailto:thank.2643@gmail.com">thank.2643@gmail.com</a></dd></div>
-    <div><dt>โทรศัพท์</dt><dd><a href="tel:+66959535732">+66 95 953 5732</a></dd></div>
-    <div><dt>ที่ตั้ง</dt><dd>บางนา, กรุงเทพฯ 10260</dd></div>
-    <div><dt>การศึกษา</dt><dd>B.Sc. Applied Mathematics<span class="accent">Thammasat University</span></dd></div>
-    <div><dt>ตำแหน่งปัจจุบัน</dt><dd>Content Creator<span class="accent">Insightist AI Transformation</span></dd></div>
-    <div><dt>เว็บไซต์</dt><dd><a href="https://thankful-branding.vercel.app" target="_blank" rel="noopener noreferrer">thankful-branding.vercel.app</a></dd></div>
+    <div title="อีเมล"><dt><span class="fact-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg></span><span class="sr-only">อีเมล</span></dt><dd><a href="mailto:thank.2643@gmail.com">thank.2643@gmail.com</a></dd></div>
+    <div title="โทรศัพท์"><dt><span class="fact-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h3l2 5-2.5 1.5a12 12 0 0 0 5 5L16 12l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3z"/></svg></span><span class="sr-only">โทรศัพท์</span></dt><dd><a href="tel:+66959535732">+66 95 953 5732</a></dd></div>
+    <div title="ที่ตั้ง"><dt><span class="fact-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span><span class="sr-only">ที่ตั้ง</span></dt><dd>บางนา, กรุงเทพฯ 10260</dd></div>
+    <div title="การศึกษา"><dt><span class="fact-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 9 4.5-9 4.5-9-4.5L12 4z"/><path d="M6.5 11v4.2c0 1.6 2.5 2.8 5.5 2.8s5.5-1.2 5.5-2.8V11"/></svg></span><span class="sr-only">การศึกษา</span></dt><dd>B.Sc. Applied Mathematics<span class="accent">Thammasat University</span></dd></div>
+    <div title="ตำแหน่งปัจจุบัน"><dt><span class="fact-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7.5" width="18" height="12" rx="2"/><path d="M9 7.5V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1.5"/><path d="M3 12.5h18"/></svg></span><span class="sr-only">ตำแหน่งปัจจุบัน</span></dt><dd>Content Creator<span class="accent">Insightist AI Transformation Thailand</span></dd></div>
+    <div title="เว็บไซต์"><dt><span class="fact-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.4 3.6 5.3 3.6 8.5S14.4 18.1 12 20.5c-2.4-2.4-3.6-5.3-3.6-8.5S9.6 5.9 12 3.5z"/></svg></span><span class="sr-only">เว็บไซต์</span></dt><dd><a href="https://thankful-branding.vercel.app" target="_blank" rel="noopener noreferrer">thankful-branding.vercel.app</a></dd></div>
   </dl>
 
   <a href="#contact" class="btn btn-primary rail-cta">ติดต่อร่วมงาน <span>→</span></a>
