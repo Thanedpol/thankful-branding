@@ -92,7 +92,7 @@ type Ev = {
   /** Its session bodies are in hand (nothing stripped left to fetch). */
   _loaded?: boolean;
 };
-type Grp = { _k: string; name: string; popular?: boolean; events: Ev[] };
+type Grp = { _k: string; name: string; popular?: boolean; hidden?: boolean; events: Ev[] };
 
 /** Build editor state (with stable _k keys) from stored group data, migrating a
  *  legacy single event body into one sub-session. Bodies of a large collection
@@ -608,6 +608,9 @@ function GroupsEditor({
           count={groups.length}
           onMove={(d) => moveG(g._k, d)}
           onRemove={() => rmG(g._k)}
+          hidden={!!g.hidden}
+          hiddenWhat="กลุ่มนี้ (ทุกงานข้างใน)"
+          onToggleHidden={() => patchG(g._k, (grp) => ({ hidden: !grp.hidden }))}
           collapsed={collapsed.has(g._k)}
           onToggle={() => toggle(g._k)}
           summary={`${g.name || "(ยังไม่ตั้งชื่อกลุ่ม)"} · ${g.events.length} งาน`}
@@ -953,6 +956,9 @@ function Card({
   collapsed,
   onToggle,
   summary,
+  hidden,
+  onToggleHidden,
+  hiddenWhat = "",
 }: {
   index: number;
   count: number;
@@ -962,9 +968,19 @@ function Card({
   collapsed?: boolean;
   onToggle?: () => void;
   summary?: string;
+  /** Pass both to get a show/hide eye; omitted for cards that can't be hidden. */
+  hidden?: boolean;
+  onToggleHidden?: () => void;
+  hiddenWhat?: string;
 }) {
   return (
-    <div className="rounded-lg border border-line/10 bg-surface/[0.03] p-3">
+    <div
+      className={`rounded-lg border p-3 ${
+        hidden
+          ? "border-amber-400/25 bg-amber-400/[0.04] opacity-70"
+          : "border-line/10 bg-surface/[0.03]"
+      }`}
+    >
       <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted">
         {onToggle ? (
           <button type="button" onClick={onToggle} className="flex min-w-0 items-center gap-2 hover:text-cyan">
@@ -973,11 +989,19 @@ function Card({
             {collapsed && summary && (
               <span className="truncate normal-case tracking-normal text-ink/70">{summary}</span>
             )}
+            {hidden && (
+              <span className="shrink-0 rounded bg-amber-400/15 px-1.5 normal-case text-amber-400">
+                ซ่อน
+              </span>
+            )}
           </button>
         ) : (
           <span>#{index + 1}</span>
         )}
-        <span className="flex shrink-0 gap-2">
+        <span className="flex shrink-0 items-center gap-2">
+          {onToggleHidden && (
+            <EyeToggle on={!hidden} what={hiddenWhat} onClick={onToggleHidden} />
+          )}
           <button type="button" onClick={() => onMove(-1)} disabled={index === 0} className="disabled:opacity-30 hover:text-cyan">↑</button>
           <button type="button" onClick={() => onMove(1)} disabled={index === count - 1} className="disabled:opacity-30 hover:text-cyan">↓</button>
           <button type="button" onClick={onRemove} className="text-red-400/70 hover:text-red-400">− ลบ</button>

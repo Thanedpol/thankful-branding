@@ -134,7 +134,7 @@ type LightRow = {
   intro: string | null;
   category: string | null;
   tags: string[] | null;
-  groups_meta: { name: string; popular?: boolean }[] | null;
+  groups_meta: { name: string; popular?: boolean; hidden?: boolean }[] | null;
   stories: PortfolioCollection["data"]["stories"] | null;
 };
 
@@ -202,9 +202,13 @@ function headerCollection(
 
 /** Grouped-events structure (light — no bodies) from group metadata + rows. */
 function groupsFromRows(
-  meta: { name: string; popular?: boolean }[],
+  meta: { name: string; popular?: boolean; hidden?: boolean }[],
   rows: EventLightRow[]
 ): NonNullable<PortfolioCollection["data"]["groups"]> {
+  // A switched-off group leaves no heading behind. Its events are already
+  // absent (their rows carry the group's hidden flag), so this only stops an
+  // empty title rendering.
+  meta = meta.filter((m) => !m.hidden);
   const byGroup = new Map<string, EventItem[]>();
   for (const row of rows) {
     const item: EventItem = {

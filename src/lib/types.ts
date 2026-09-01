@@ -160,6 +160,8 @@ export interface PortfolioCollection {
     groups?: {
       name: string;
       popular?: boolean;
+      /** Whole group kept off the public site — heading and every event in it. */
+      hidden?: boolean;
       events: {
         title: string;
         url: string;

@@ -27,6 +27,7 @@ export interface EventRow {
 export interface GroupMeta {
   name: string;
   popular: boolean;
+  hidden?: boolean;
 }
 
 /**
@@ -61,7 +62,11 @@ export function buildEventRows(collectionSlug: string, groups: Grp[]): EventRow[
         metrics: e.metrics ?? null,
         sessions,
         has_content: eventHasContent(e),
-        hidden: !!e.hidden,
+        // A hidden group takes its events with it. Stored per row so every
+        // public read (listing, event page, sitemap) needs no group lookup;
+        // the event's own flag stays untouched in the blob, so un-hiding the
+        // group restores exactly what was visible before.
+        hidden: !!g.hidden || !!e.hidden,
       });
     });
   });
@@ -70,5 +75,9 @@ export function buildEventRows(collectionSlug: string, groups: Grp[]): EventRow[
 
 /** Light `data.groups_meta` for a collection's groups (order + popular flag). */
 export function buildGroupMeta(groups: Grp[]): GroupMeta[] {
-  return groups.map((g) => ({ name: g.name ?? "", popular: !!g.popular }));
+  return groups.map((g) => ({
+    name: g.name ?? "",
+    popular: !!g.popular,
+    ...(g.hidden ? { hidden: true } : {}),
+  }));
 }
