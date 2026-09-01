@@ -628,8 +628,9 @@ footer{border-top:1px solid var(--line);padding:38px 0;margin-top:20px;}
   --hero-glow-1:rgba(53,201,221,.13);
   --hero-glow-2:rgba(141,124,240,.13);
   --rail-w:308px;
+  --nav-h:62px;
 }
-html{scroll-padding-top:28px;}
+html{scroll-padding-top:calc(var(--nav-h) + 20px);}
 body{font-size:16.5px;line-height:1.85;}
 
 /* The grid and orbs were competing with the text; quiet them right down. */
@@ -643,25 +644,37 @@ body{font-size:16.5px;line-height:1.85;}
   gap:56px;
   max-width:1280px;
   margin:0 auto;
-  padding:36px 32px 132px;
+  padding:calc(var(--nav-h) + 30px) 32px 96px;
   align-items:start;
 }
 .col{min-width:0;}
 /* Every section carries its own .wrap. Inside the column it must not
    re-center or pad, or each block would sit in a box within a box. */
 .col .wrap{max-width:none;padding:0;}
-.col section{padding:74px 0;scroll-margin-top:24px;}
+.col section{padding:74px 0;scroll-margin-top:calc(var(--nav-h) + 20px);}
 .col section:first-child{padding-top:8px;}
 
 /* ---------- Identity rail ---------- */
-.rail{position:sticky;top:28px;display:flex;flex-direction:column;gap:18px;}
+.rail{
+  position:sticky;top:calc(var(--nav-h) + 22px);
+  display:flex;flex-direction:column;gap:12px;
+  /* Never taller than the space under the header: otherwise the button and
+     socials at its foot are stuck off-screen while the reader scrolls. */
+  max-height:calc(100vh - var(--nav-h) - 44px);
+  overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent;
+  padding-right:4px;margin-right:-4px;
+}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:99px;}
+.rail::-webkit-scrollbar-track{background:transparent;}
 .rail-card{
   border:1px solid var(--line);border-radius:20px;background:var(--panel);
-  padding:22px;text-align:center;
+  padding:16px;text-align:center;
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
 }
 .rail-photo{
-  width:132px;height:132px;margin:0 auto 16px;border-radius:22px;overflow:hidden;
+  width:108px;height:108px;margin:0 auto 12px;border-radius:20px;overflow:hidden;
   border:1px solid var(--line-strong);background:var(--space-2);
 }
 .rail-photo img{width:100%;height:100%;object-fit:cover;}
@@ -670,14 +683,14 @@ body{font-size:16.5px;line-height:1.85;}
   display:block;font-family:'JetBrains Mono',monospace;font-weight:400;
   font-size:12.5px;letter-spacing:.06em;color:var(--cyan);margin-top:4px;
 }
-.rail-role{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 14px;}
+.rail-role{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 12px;}
 .rail-card .status{margin:0;font-size:11.5px;padding:6px 12px;}
 
 .rail-facts{
   border:1px solid var(--line);border-radius:16px;background:var(--panel);
-  padding:6px 16px;display:block;margin:0;
+  padding:4px 14px;display:block;margin:0;
 }
-.rail-facts > div{display:grid;gap:2px;padding:12px 0;border-bottom:1px solid var(--line);}
+.rail-facts > div{display:grid;gap:1px;padding:8px 0;border-bottom:1px solid var(--line);}
 .rail-facts > div:last-child{border-bottom:0;}
 .rail-facts dt{
   font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;
@@ -721,19 +734,25 @@ body{font-size:16.5px;line-height:1.85;}
 .s-about .pill-row{margin-bottom:26px;}
 .s-about .hero-cta{margin-bottom:38px;}
 
-/* ---------- Bottom dock ---------- */
+/* ---------- Fixed header ---------- */
 .nav{
-  position:fixed;top:auto;bottom:20px;left:50%;right:auto;
-  transform:translateX(-50%);
-  width:max-content;max-width:calc(100vw - 32px);
-  border:1px solid var(--line-strong);border-radius:18px;
-  background:color-mix(in srgb,var(--space-2) 88%,transparent);
-  box-shadow:0 20px 50px -18px rgba(0,0,0,.8);
-  padding:7px 10px;
-  display:flex;align-items:center;gap:8px;
+  position:fixed;top:0;left:0;right:0;bottom:auto;transform:none;
+  width:auto;max-width:none;border-radius:0;
+  border:0;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--space) 82%,transparent);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:none;
+  padding:0 28px;
+  display:flex;align-items:center;gap:18px;
+  height:var(--nav-h);
 }
-.nav.scrolled{border-bottom-color:var(--line-strong);}
-.nav .brand{display:none;}
+/* Only once the page has moved does the bar need to separate itself. */
+.nav.scrolled{
+  border-bottom-color:var(--line-strong);
+  box-shadow:0 12px 30px -22px rgba(0,0,0,.9);
+}
+.nav .brand{display:flex;margin-right:auto;}
+.nav-links{margin:0 auto;}
 .nav-links{display:flex;align-items:center;gap:2px;overflow-x:auto;scrollbar-width:none;}
 .nav-links::-webkit-scrollbar{display:none;}
 .nav-links a{
@@ -744,7 +763,7 @@ body{font-size:16.5px;line-height:1.85;}
 .nav-links a.active{color:var(--space);background:var(--cyan);font-weight:600;}
 .nav-actions{display:flex;gap:6px;padding-left:8px;border-left:1px solid var(--line);}
 .nav .burger{display:none;}
-.totop{bottom:96px;}
+.totop{bottom:26px;}
 
 /* ---------- Print ---------- */
 @media print{
@@ -755,22 +774,24 @@ body{font-size:16.5px;line-height:1.85;}
 
 /* ---------- Responsive ---------- */
 @media (max-width:1080px){
-  .shell{grid-template-columns:1fr;gap:32px;padding:24px 22px 120px;}
-  .rail{position:static;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+  .shell{grid-template-columns:1fr;gap:32px;padding:calc(var(--nav-h) + 22px) 22px 80px;}
+  .rail{position:static;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;
+    max-height:none;overflow:visible;padding-right:0;margin-right:0;}
   .rail-card{grid-column:1/-1;}
   .rail-cta,.rail-socials{grid-column:1/-1;}
   .col section{padding:56px 0;}
 }
 @media (max-width:620px){
   body{font-size:16px;}
-  .shell{padding:18px 16px 112px;gap:24px;}
+  .shell{padding:calc(var(--nav-h) + 16px) 16px 72px;gap:24px;}
   .rail{grid-template-columns:1fr;}
   .sec-head{flex-direction:column;gap:6px;}
   .path{padding-top:0;}
   .lead p{font-size:17px;}
-  .nav{bottom:12px;padding:6px;border-radius:16px;}
+  .nav{padding:0 14px;gap:10px;}
+  .nav .brand{display:none;}
   .nav-links a{padding:8px 11px;font-size:13px;}
-  .totop{bottom:82px;}
+  .totop{bottom:18px;}
 }
 @media (prefers-reduced-motion:reduce){
   .orb{animation:none;}
@@ -790,7 +811,7 @@ html.js-anim .reveal.in{opacity:1;transform:none;}
    let them scroll sideways instead. Specificity beats the rule above, so this
    holds whatever the source order. */
 @media (max-width:980px){
-  .nav{max-width:calc(100vw - 24px);}
+  .nav{padding:0 16px;}
   .nav .nav-links{
     position:static;flex-direction:row;align-items:center;gap:2px;
     background:none;backdrop-filter:none;-webkit-backdrop-filter:none;
