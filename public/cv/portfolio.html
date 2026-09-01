@@ -843,6 +843,13 @@ html.js-anim .reveal.in{opacity:1;transform:none;}
   stroke-linecap:round;stroke-linejoin:round;
 }
 .rail-facts dd{flex:1;min-width:0;padding-top:3px;}
+
+/* Two chips per row inside the year cards. The grid stretches both cards to the
+   taller one, so a card whose chips fit on a single line was left with a block
+   of dead space under them; at two per row the 2025 and 2026 cards fill to the
+   same depth. An odd last chip grows into the full width rather than leaving a
+   hole beside it. */
+.growth-card .chip{flex:1 1 calc(50% - 4px);}
 </style>
 </head>
 <body>
