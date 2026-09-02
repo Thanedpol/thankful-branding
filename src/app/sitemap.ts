@@ -3,6 +3,7 @@ import { SITE_URL } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured, demoBlogPreviews } from "@/lib/demo-data";
 import { COLLECTION_SLUGS, getCollectionEventSlugs } from "@/lib/portfolio-collections";
+import { listPublishedProducts } from "@/lib/shop-queries";
 import type { BlogPreview } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -42,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${SITE_URL}/shop`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/press-kit`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/portfolio/snobby-story`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/portfolio/insightist`, changeFrequency: "monthly", priority: 0.6 },
@@ -55,7 +57,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  const products = await listPublishedProducts();
+  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
+    url: `${SITE_URL}/shop/${p.slug}`,
+    lastModified: new Date(p.updated_at),
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
   const eventRoutes = await getPortfolioEventRoutes();
 
-  return [...staticRoutes, ...postRoutes, ...eventRoutes];
+  return [...staticRoutes, ...postRoutes, ...productRoutes, ...eventRoutes];
 }

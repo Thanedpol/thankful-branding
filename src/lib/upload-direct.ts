@@ -7,7 +7,7 @@
  * fetch — reports upload progress, so a large video shows a live percentage
  * instead of an indefinite spinner.
  *
- * Returns the file's public URL. Throws with a human-readable Thai message.
+ * Throws with a human-readable Thai message.
  */
 /**
  * Supabase's per-file upload ceiling for this project (a plan-level setting —
@@ -18,20 +18,28 @@ export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
 const mb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1);
 
-/** Why a file is too big + what to do about it — shown before and after upload. */
-export function tooLargeMessage(size: number) {
-  return (
-    `วิดีโอใหญ่เกินไป (${mb(size)}MB) — อัปโหลดได้สูงสุด 50MB\n` +
-    `• ทางที่ง่ายที่สุด: อัปคลิปขึ้น YouTube/Facebook แล้วใช้ปุ่ม “▶ ฝัง” วางลิงก์แทน (ไม่จำกัดขนาด เล่นลื่นกว่า)\n` +
-    `• หรือบีบอัดคลิปให้เล็กลงก่อน (เช่น ลดเป็น 1080p หรือตัดให้สั้นลง) แล้วอัปใหม่`
-  );
+/** Why a file is too big + what to do about it — shown before and after upload.
+ *  The advice differs by kind: a video can go to YouTube instead, a product
+ *  file can only be split or compressed. */
+export function tooLargeMessage(size: number, kind: "video" | "file" = "video") {
+  const head = `${kind === "video" ? "วิดีโอ" : "ไฟล์"}ใหญ่เกินไป (${mb(size)}MB) — อัปโหลดได้สูงสุด 50MB`;
+  return kind === "video"
+    ? `${head}\n` +
+        `• ทางที่ง่ายที่สุด: อัปคลิปขึ้น YouTube/Facebook แล้วใช้ปุ่ม “▶ ฝัง” วางลิงก์แทน (ไม่จำกัดขนาด เล่นลื่นกว่า)\n` +
+        `• หรือบีบอัดคลิปให้เล็กลงก่อน (เช่น ลดเป็น 1080p หรือตัดให้สั้นลง) แล้วอัปใหม่`
+    : `${head}\n` +
+        `• บีบอัดเป็น .zip ก่อน หรือแยกเป็นหลายไฟล์\n` +
+        `• ถ้าเป็นวิดีโอคอร์ส แนะนำฝากไว้บน YouTube (ไม่เป็นสาธารณะ) แล้วขายเป็นลิงก์แทน`;
 }
 
-export async function uploadDirect(
+/** Upload and return BOTH the object path and the public URL (null for a
+ *  private bucket, which has no public URL — the caller stores the path and
+ *  reads it back through a short-lived signed URL). */
+export async function uploadDirectResult(
   file: File,
   bucket: string,
   onProgress?: (pct: number) => void
-): Promise<string> {
+): Promise<{ path: string; publicUrl: string | null }> {
   // Fail fast — no point pushing 200 MB up the wire just to be rejected.
   if (file.size > MAX_UPLOAD_BYTES) throw new Error(tooLargeMessage(file.size));
 
@@ -87,5 +95,15 @@ export async function uploadDirect(
     xhr.send(form);
   });
 
-  return info.publicUrl as string;
+  return { path: info.path as string, publicUrl: (info.publicUrl ?? null) as string | null };
+}
+
+/** Public-bucket convenience wrapper — the shape every existing caller uses. */
+export async function uploadDirect(
+  file: File,
+  bucket: string,
+  onProgress?: (pct: number) => void
+): Promise<string> {
+  const { publicUrl } = await uploadDirectResult(file, bucket, onProgress);
+  return publicUrl ?? "";
 }

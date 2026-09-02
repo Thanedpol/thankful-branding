@@ -224,3 +224,82 @@ export interface ContactMessage {
   received_at: string;
   is_read: boolean;
 }
+
+// ─── Shop (digital downloads + services, paid via Stripe Checkout) ───────────
+
+/** 'digital' auto-delivers a file after payment; 'service' is fulfilled by hand. */
+export type ShopProductKind = "digital" | "service";
+/** 'one_time' → Stripe mode=payment. 'month'/'year' → mode=subscription. */
+export type ShopBilling = "one_time" | "month" | "year";
+export type ShopProductStatus = "draft" | "published";
+export type ShopOrderStatus =
+  | "pending"
+  | "paid"
+  | "fulfilled"
+  | "cancelled"
+  | "refunded";
+
+/** A sellable item. All money fields are in the currency's smallest unit
+ *  (satang for THB) — the same unit Stripe bills in. */
+export interface ShopProduct {
+  id: string;
+  slug: string;
+  kind: ShopProductKind;
+  title: string;
+  tagline: string | null;
+  /** Rich HTML from the admin editor. */
+  description: string | null;
+  features: string[];
+  cover_image_url: string | null;
+  gallery: string[];
+  price: number;
+  /** Shown struck through above `price` when set and higher. */
+  compare_at_price: number | null;
+  currency: string;
+  billing: ShopBilling;
+  /** Object path in the private `shop-files` bucket (digital products). */
+  file_path: string | null;
+  /** Sell somewhere else instead — the card links out and skips Checkout. */
+  external_url: string | null;
+  badge: string | null;
+  /** null = unlimited, 0 = sold out. */
+  stock: number | null;
+  sold_count: number;
+  delivery_note: string | null;
+  status: ShopProductStatus;
+  featured: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** One purchase. Product fields are snapshots so the order still reads
+ *  correctly after the product is renamed, repriced, or deleted. */
+export interface ShopOrder {
+  id: string;
+  order_no: string;
+  product_id: string | null;
+  product_title: string;
+  product_kind: ShopProductKind;
+  unit_price: number;
+  quantity: number;
+  amount_total: number;
+  currency: string;
+  buyer_name: string | null;
+  buyer_email: string;
+  buyer_phone: string | null;
+  note: string | null;
+  status: ShopOrderStatus;
+  stripe_session_id: string | null;
+  stripe_payment_intent: string | null;
+  stripe_subscription_id: string | null;
+  download_token: string | null;
+  download_count: number;
+  download_limit: number;
+  download_expires_at: string | null;
+  paid_at: string | null;
+  fulfilled_at: string | null;
+  admin_note: string | null;
+  created_at: string;
+  updated_at: string;
+}

@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/#about", key: "nav.about" },
   { href: "/#portfolio", key: "nav.portfolio" },
   { href: "/blog", key: "nav.blog" },
+  { href: "/shop", key: "nav.shop" },
   { href: "/press-kit", key: "nav.pressKit" },
 ];
 

@@ -35,8 +35,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Public buckets return a usable URL; private (press-assets) returns null.
-  const isPublic = ["portfolio-images", "blog-images", "avatars"].includes(bucket);
+  // Public buckets return a usable URL; private (press-assets, shop-files) null.
+  const isPublic = ["portfolio-images", "blog-images", "avatars", "shop-images"].includes(bucket);
   const publicUrl = isPublic
     ? admin.storage.from(bucket).getPublicUrl(path).data.publicUrl
     : null;

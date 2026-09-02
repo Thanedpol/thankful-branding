@@ -24,8 +24,13 @@ export async function POST(request: Request) {
   }
 
   const bucket = String(body.bucket ?? "");
-  // Public buckets only — a signed upload URL is handed to the browser.
-  if (!["portfolio-images", "blog-images", "avatars"].includes(bucket)) {
+  const PUBLIC_BUCKETS = ["portfolio-images", "blog-images", "avatars", "shop-images"];
+  // shop-files holds paid downloads, so it stays private: the upload token is
+  // fine to hand out (this route is admin-gated), but there is no public URL to
+  // return — the caller stores the object path and reads it back through a
+  // short-lived signed URL.
+  const PRIVATE_BUCKETS = ["shop-files"];
+  if (![...PUBLIC_BUCKETS, ...PRIVATE_BUCKETS].includes(bucket)) {
     return NextResponse.json({ error: "Invalid bucket" }, { status: 400 });
   }
 
@@ -44,6 +49,8 @@ export async function POST(request: Request) {
   return NextResponse.json({
     path: data.path,
     token: data.token,
-    publicUrl: admin.storage.from(bucket).getPublicUrl(path).data.publicUrl,
+    publicUrl: PUBLIC_BUCKETS.includes(bucket)
+      ? admin.storage.from(bucket).getPublicUrl(path).data.publicUrl
+      : null,
   });
 }

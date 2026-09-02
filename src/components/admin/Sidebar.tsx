@@ -8,6 +8,8 @@ const NAV = [
   { href: "/admin/portfolio", label: "Portfolio", icon: "▦" },
   { href: "/admin/collections", label: "Collections", icon: "❏" },
   { href: "/admin/blog", label: "Blog", icon: "✎" },
+  { href: "/admin/shop", label: "Shop", icon: "▣" },
+  { href: "/admin/shop/orders", label: "Orders", icon: "✇" },
   { href: "/admin/analytics", label: "Analytics", icon: "▤" },
   { href: "/admin/press-kit", label: "Press Kit", icon: "⬡" },
   { href: "/admin/profile", label: "Profile", icon: "◉" },
@@ -17,6 +19,15 @@ const NAV = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+
+  const current = NAV.reduce(
+    (best, item) =>
+      (pathname === item.href || pathname.startsWith(`${item.href}/`)) &&
+      item.href.length > best.length
+        ? item.href
+        : best,
+    ""
+  );
 
   async function signOut() {
     await fetch("/api/admin-logout", { method: "POST" });
@@ -37,10 +48,9 @@ export default function Sidebar() {
 
       <nav className="flex-1 space-y-1">
         {NAV.map((item) => {
-          const active =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
+          // Longest match wins, so /admin/shop/orders lights Orders alone rather
+          // than Shop as well — and /admin only lights Overview.
+          const active = item.href === current;
           return (
             <Link
               key={item.href}
