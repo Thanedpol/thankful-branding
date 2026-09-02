@@ -704,7 +704,9 @@ body{font-size:16.5px;line-height:1.85;}
 .rail-socials{justify-content:center;}
 
 /* ---------- Section headings: readable, not gradient-washed ---------- */
-.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px;}
+.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:26px;}
+/* The wrapper owns the gap here, so the title must not add a second one. */
+.sec-head .sec-title{margin-bottom:0;}
 .path{
   font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);
   letter-spacing:.08em;white-space:nowrap;padding-top:6px;
@@ -714,12 +716,12 @@ body{font-size:16.5px;line-height:1.85;}
   background:none;-webkit-background-clip:initial;background-clip:initial;
   color:var(--ink);
   font-size:clamp(26px,3.2vw,38px);line-height:1.28;
-  margin-bottom:0;padding-bottom:0;
+  margin-bottom:26px;padding-bottom:0;
 }
 .col .eyebrow{color:var(--cyan);margin-bottom:10px;}
 /* A short accent rule under each heading — orientation without shouting. */
 .col .sec-title::after{
-  content:"";display:block;width:56px;height:3px;border-radius:3px;margin-top:16px;
+  content:"";display:block;width:56px;height:3px;border-radius:3px;margin-top:18px;
   background:linear-gradient(90deg,var(--cyan),var(--violet));
 }
 .col .sec-sub{font-size:16px;max-width:68ch;margin-bottom:34px;color:var(--muted);}
