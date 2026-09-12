@@ -244,6 +244,22 @@ async function syncPortfolioEvents(
   return null;
 }
 
+/**
+ * Do two timestamps name the same moment?
+ *
+ * They must be compared as instants, never as strings. Postgres hands
+ * `timestamptz` back as "2026-09-12T02:10:04.071+00:00" while
+ * `new Date().toISOString()` produces "…071Z", and Postgres also trims trailing
+ * zeros from the fraction (".75", not ".750"). Three ways for two identical
+ * moments to render as different text — enough to make a string compare report
+ * a conflict on every save after the first.
+ */
+function sameInstant(a: string, b: string): boolean {
+  const ta = Date.parse(a);
+  const tb = Date.parse(b);
+  return Number.isFinite(ta) && Number.isFinite(tb) && ta === tb;
+}
+
 export async function savePortfolioCollection(
   formData: FormData
 ): Promise<{ error?: string; updatedAt?: string }> {
@@ -264,7 +280,7 @@ export async function savePortfolioCollection(
       .eq("slug", slug)
       .maybeSingle();
     const stored = (current as { updated_at?: string } | null)?.updated_at ?? "";
-    if (stored && stored !== baseUpdatedAt) {
+    if (stored && !sameInstant(stored, baseUpdatedAt)) {
       return {
         error:
           "ข้อมูลชุดนี้ถูกแก้ไขจากที่อื่นหลังจากคุณเปิดหน้านี้ — ยังไม่ได้บันทึกเพื่อไม่ให้ทับของใหม่\n" +
@@ -344,18 +360,25 @@ export async function savePortfolioCollection(
   if (syncGroups) dataToStore.groups_meta = buildGroupMeta(syncGroups);
 
   // Returned to the editor so a second save from the same page carries the new
-  // baseline instead of tripping the stale-write guard above.
-  const savedAt = new Date().toISOString();
-  const { error } = await supabase.from("portfolio_collections").upsert({
-    slug,
-    title: p.title || slug,
-    tagline: p.tagline || null,
-    intro: p.intro || null,
-    category: p.category || null,
-    tags: p.tags ?? [],
-    data: dataToStore,
-    updated_at: savedAt,
-  });
+  // baseline instead of tripping the stale-write guard above. Read the value
+  // back out of the row rather than reusing the string we sent: the guard then
+  // compares the database's own rendering against itself.
+  const writtenAt = new Date().toISOString();
+  const { data: saved, error } = await supabase
+    .from("portfolio_collections")
+    .upsert({
+      slug,
+      title: p.title || slug,
+      tagline: p.tagline || null,
+      intro: p.intro || null,
+      category: p.category || null,
+      tags: p.tags ?? [],
+      data: dataToStore,
+      updated_at: writtenAt,
+    })
+    .select("updated_at")
+    .maybeSingle();
+  const savedAt = (saved as { updated_at?: string } | null)?.updated_at ?? writtenAt;
   if (error) {
     const missing = /schema cache|does not exist|find the table|relation/i.test(
       error.message
