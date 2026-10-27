@@ -26,6 +26,7 @@ export const dict: Record<Locale, Dict> = {
     "hero.status": "◢ กำลังเชื่อมต่อโหนดส่วนตัว // สถานะ: ออนไลน์",
     "hero.tagline": "Content Creator ทำข่าว AI & Business ทั้งไทยและต่างประเทศ · SCI & Technology",
     "hero.viewWork": "ดูผลงาน →",
+    "hero.explore": "สำรวจเรื่องราว",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// เกี่ยวกับ",
@@ -115,6 +116,7 @@ export const dict: Record<Locale, Dict> = {
     "hero.status": "◢ Initializing personal node // status: online",
     "hero.tagline": "Content Creator — AI & Business news, Thailand & worldwide · SCI & Technology",
     "hero.viewWork": "View Work →",
+    "hero.explore": "Explore Stories",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// About",
@@ -204,6 +206,7 @@ export const dict: Record<Locale, Dict> = {
     "hero.status": "◢ 正在初始化个人节点 // 状态：在线",
     "hero.tagline": "内容创作者 — 报道泰国及全球的 AI 与商业新闻 · 科学与科技",
     "hero.viewWork": "查看作品 →",
+    "hero.explore": "探索故事",
     "hero.pressKit": "媒体资料",
 
     "about.eyebrow": "// 关于",

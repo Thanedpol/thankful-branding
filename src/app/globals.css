@@ -595,3 +595,31 @@ body {
     transform: none !important;
   }
 }
+
+/* ── Space hero motion ─────────────────────────────────────────────────────── */
+@keyframes space-spin { to { transform: rotate(360deg); } }
+@keyframes space-pulse {
+  0%, 100% { opacity: 0.75; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.06); }
+}
+@keyframes space-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+@keyframes space-flare {
+  0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
+}
+@keyframes space-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+.space-spin  { animation: space-spin var(--dur, 120s) linear infinite; }
+.space-pulse { animation: space-pulse 7s ease-in-out infinite; }
+.space-float { animation: space-float 10s ease-in-out infinite; }
+.space-flare { animation: space-flare 5s ease-in-out infinite; }
+.space-rise  { animation: space-rise 0.9s cubic-bezier(.2,.7,.2,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .space-spin, .space-pulse, .space-float, .space-flare, .space-rise { animation: none; }
+}
