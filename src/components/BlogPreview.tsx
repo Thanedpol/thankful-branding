@@ -11,8 +11,8 @@ export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
   return (
     <section id="blog" className="section-pad scroll-mt-20">
       <Reveal>
-        <div className="mb-12 flex items-end justify-between">
-          <div>
+        <div className="mb-12 flex items-end justify-between gap-4">
+          <div className="space-plate">
             <p className="eyebrow">{t("blog.eyebrow")}</p>
             <h2 className="font-display text-3xl font-bold md:text-4xl text-gradient">
               {t("blog.heading")}
@@ -20,7 +20,7 @@ export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
           </div>
           <Link
             href="/blog"
-            className="hidden font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink sm:block"
+            className="hidden rounded-full border border-cyan/30 bg-[#050a18]/80 px-4 py-2 font-mono text-xs uppercase tracking-wider text-cyan backdrop-blur-md hover:text-ink sm:block"
           >
             {t("blog.all")}
           </Link>
@@ -28,7 +28,7 @@ export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
       </Reveal>
 
       {posts.length === 0 ? (
-        <p className="font-mono text-sm text-muted">{t("blog.empty")}</p>
+        <p className="space-plate inline-block font-mono text-sm text-muted">{t("blog.empty")}</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, i) => (

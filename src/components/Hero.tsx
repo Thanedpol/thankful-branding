@@ -1,42 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import StarField from "./space/StarField";
-import OrbitSystem from "./space/OrbitSystem";
+import dynamic from "next/dynamic";
+import EarthPlaceholder from "./space/EarthPlaceholder";
 import { useT } from "@/components/providers/AppProvider";
 import type { SiteProfile } from "@/lib/types";
 
 const PILLARS = ["AI", "SCIENCE", "BUSINESS", "TECHNOLOGY"];
 
+// three.js only runs in the browser and is heavy; load it after the copy so
+// the headline paints first, with a glowing placeholder in its place.
+const EarthScene = dynamic(() => import("./space/EarthScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="relative aspect-square w-full">
+      <EarthPlaceholder />
+    </div>
+  ),
+});
+
 /**
- * Space-themed hero: a live starfield, a rotating Earth in golden orbits, and
- * the curve of the planet glowing along the bottom edge.
- *
- * The hero keeps one deliberate dark look in both site themes — it is a scene,
- * not a surface — so its colours are set explicitly rather than from theme
- * tokens. It only fades into the theme background at the very bottom.
+ * Space-themed hero: a 3D Earth in golden orbits and the curve of the planet
+ * glowing along the bottom edge. The starfield itself is the page-wide
+ * SpaceBackdrop, so the hero is transparent and the sky runs on unbroken
+ * into the sections below.
  */
 export default function Hero({ profile }: { profile: SiteProfile | null }) {
   const t = useT();
   const name = profile?.name ?? "Thank Thanedpol";
 
   return (
-    <section className="relative isolate flex min-h-screen items-center overflow-hidden bg-[#03060f] pb-24 pt-28 text-white md:pt-24">
-      {/* deep-space nebula washes */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 78% 30%, rgba(40,80,200,0.30), transparent 70%)," +
-            "radial-gradient(ellipse 45% 40% at 18% 20%, rgba(90,60,200,0.20), transparent 70%)," +
-            "radial-gradient(ellipse 50% 35% at 50% 100%, rgba(30,90,220,0.25), transparent 70%)",
-        }}
-      />
-      <div aria-hidden className="absolute inset-0 -z-10">
-        <StarField />
-      </div>
-
+    <section className="relative isolate flex min-h-screen items-center overflow-hidden pb-24 pt-28 text-white md:pt-24">
       {/* a far galaxy, turning very slowly — squashed on the outer box so the
           spin on the inner one doesn't overwrite the tilt */}
       <div
@@ -78,8 +72,16 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
       </div>
 
       <div className="relative mx-auto grid w-full max-w-7xl items-center gap-6 px-6 md:grid-cols-[1.05fr_1fr] md:gap-4">
-        {/* copy */}
-        <div className="order-2 md:order-1">
+        {/* copy — on a feathered dark plate so it never sinks into the stars */}
+        <div className="relative order-2 md:order-1">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-10 -inset-y-12 -z-10 rounded-[3rem]"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 62% at 42% 50%, rgba(3,6,15,0.78) 0%, rgba(3,6,15,0.55) 55%, transparent 100%)",
+            }}
+          />
           <p className="space-rise font-mono text-xs uppercase tracking-[0.55em] text-[#f5c45e] sm:text-sm">
             Thankful
           </p>
@@ -110,7 +112,7 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
           </p>
 
           <p
-            className="space-rise mt-5 max-w-xl text-sm leading-relaxed text-white/60 sm:text-base"
+            className="space-rise mt-5 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base"
             style={{ animationDelay: "0.22s" }}
           >
             {t("hero.tagline")}
@@ -130,7 +132,7 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
             </Link>
             <Link
               href="/#portfolio"
-              className="inline-flex items-center gap-2 rounded-full border border-white/70 px-7 py-3.5 font-semibold text-white transition-colors hover:border-white hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-[#050a18]/80 px-7 py-3.5 font-semibold text-white backdrop-blur-md transition-colors hover:border-white hover:bg-[#0b1530]/90"
             >
               {t("hero.viewWork")}
             </Link>
@@ -138,12 +140,11 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
         </div>
 
         {/* the solar system */}
-        <div className="order-1 mx-auto w-[min(88vw,420px)] md:order-2 md:w-full md:max-w-[620px]">
-          <OrbitSystem />
+        <div className="order-1 mx-auto w-[min(92vw,440px)] md:order-2 md:w-full md:max-w-[680px]">
+          <EarthScene />
         </div>
       </div>
 
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-space" />
     </section>
   );
 }

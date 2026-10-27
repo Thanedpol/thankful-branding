@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import SpaceBackdrop from "@/components/space/SpaceBackdrop";
 import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
@@ -54,7 +55,10 @@ export default async function HomePage() {
     <>
       <JsonLd data={[websiteJsonLd(), personJsonLd(profile), faqJsonLd()]} />
       <Navbar />
-      <main>
+      <SpaceBackdrop />
+      {/* Content floats over deep space in either site theme, so it takes the
+          dark tokens; header and footer keep the visitor's chosen theme. */}
+      <main data-theme="dark" className="space-scope relative text-ink">
         <Hero profile={profile} />
         <About profile={profile} />
         <PortfolioSection

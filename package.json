@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
+    "@react-three/fiber": "^9.8.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "@tiptap/extension-image": "^3.27.1",
@@ -22,13 +23,15 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "resend": "^4.0.1",
-    "stripe": "^22.6.1"
+    "stripe": "^22.6.1",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.186.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",

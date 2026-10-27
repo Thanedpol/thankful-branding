@@ -36,7 +36,7 @@ export default function PortfolioSection({
 
   return (
     <section id="portfolio" className="section-pad scroll-mt-20">
-      <Reveal>
+      <Reveal className="space-plate mb-12 inline-block">
         <div className="mb-8 flex flex-wrap items-center gap-3">
           <span className="font-mono text-xs uppercase tracking-wider text-muted">
             {t("nav.cv")}:
@@ -59,13 +59,13 @@ export default function PortfolioSection({
           </a>
         </div>
         <p className="eyebrow">{t("portfolio.eyebrow")}</p>
-        <h2 className="mb-12 font-display text-3xl font-bold md:text-4xl text-gradient">
+        <h2 className="font-display text-3xl font-bold md:text-4xl text-gradient">
           {t("portfolio.heading")}
         </h2>
       </Reveal>
 
       {items.length === 0 ? (
-        <p className="font-mono text-sm text-muted">{t("portfolio.empty")}</p>
+        <p className="space-plate inline-block font-mono text-sm text-muted">{t("portfolio.empty")}</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((p, i) => {

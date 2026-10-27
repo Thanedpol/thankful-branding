@@ -37,7 +37,7 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
           </div>
         </Reveal>
 
-        <Reveal delay={120}>
+        <Reveal delay={120} className="space-plate">
           <p className="eyebrow">{t("about.eyebrow")}</p>
           <h2 className="mb-4 font-display text-3xl font-bold md:text-4xl">
             {t("about.heading")}

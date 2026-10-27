@@ -623,3 +623,46 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .space-spin, .space-pulse, .space-float, .space-flare, .space-rise { animation: none; }
 }
+
+/* ── Home: content floating over the space backdrop ────────────────────────
+   Unlayered on purpose, so these win over the component-layer theme rules
+   (e.g. the light-mode .btn-neon recolour) inside the home page's <main>. */
+
+/* Cards keep a solid surface: portfolio and blog cards should read as panels,
+   not as windows onto the stars behind them. */
+.space-scope .glass {
+  background: rgba(8, 12, 26, 0.9);
+  border-color: rgba(140, 180, 255, 0.14);
+}
+
+/* Buttons get their own fill so their labels never sit straight on the sky. */
+.space-scope .btn-neon {
+  color: rgb(var(--accent));
+  background: rgba(3, 26, 36, 0.85);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.space-scope .btn-ghost {
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(6, 10, 22, 0.8);
+  border-color: rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.space-scope .btn-ghost:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.space-scope .tag {
+  color: rgb(var(--accent));
+}
+
+/* A dark, slightly frosted backing for headings and copy over the stars. */
+.space-plate {
+  border-radius: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  background: rgba(4, 8, 20, 0.7);
+  border: 1px solid rgba(140, 180, 255, 0.12);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
