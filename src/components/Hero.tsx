@@ -4,6 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import EarthPlaceholder from "./space/EarthPlaceholder";
 import { useT } from "@/components/providers/AppProvider";
+import { YT_CHANNEL_URL } from "@/lib/youtube";
 import type { SiteProfile } from "@/lib/types";
 
 const PILLARS = ["AI", "SCIENCE", "BUSINESS", "TECHNOLOGY"];
@@ -130,12 +131,19 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
               </span>
               {t("hero.explore")}
             </Link>
-            <Link
-              href="/#portfolio"
-              className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-[#050a18]/80 px-7 py-3.5 font-semibold text-white backdrop-blur-md transition-colors hover:border-white hover:bg-[#0b1530]/90"
+            <a
+              href={YT_CHANNEL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 rounded-full border border-white/70 bg-[#050a18]/80 px-6 py-3.5 font-semibold text-white backdrop-blur-md transition-colors hover:border-white hover:bg-[#0b1530]/90"
             >
-              {t("hero.viewWork")}
-            </Link>
+              <span className="flex h-5 w-7 items-center justify-center rounded-md bg-[#ff0033]">
+                <svg viewBox="0 0 24 24" className="ml-0.5 h-3 w-3 fill-white" aria-hidden>
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+              {t("hero.youtube")}
+            </a>
           </div>
         </div>
 

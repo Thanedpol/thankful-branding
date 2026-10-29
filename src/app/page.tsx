@@ -1,6 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SpaceBackdrop from "@/components/space/SpaceBackdrop";
+import YouTubeNetwork from "@/components/YouTubeNetwork";
+import { getSeriesFeeds } from "@/lib/youtube";
 import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
@@ -25,6 +27,8 @@ export default async function HomePage() {
   let profile: SiteProfile | null;
   let portfolios: Portfolio[];
   let posts: BlogPreviewType[];
+  // Fetched alongside the database reads; cached an hour, never fatal.
+  const feedsPromise = getSeriesFeeds();
 
   if (isSupabaseConfigured()) {
     const supabase = createPublicClient();
@@ -51,6 +55,8 @@ export default async function HomePage() {
     posts = demoBlogPreviews;
   }
 
+  const feeds = await feedsPromise;
+
   return (
     <>
       <JsonLd data={[websiteJsonLd(), personJsonLd(profile), faqJsonLd()]} />
@@ -60,6 +66,7 @@ export default async function HomePage() {
           dark tokens; header and footer keep the visitor's chosen theme. */}
       <main data-theme="dark" className="space-scope relative text-ink">
         <Hero profile={profile} />
+        <YouTubeNetwork series={feeds.series} shared={feeds.shared} />
         <About profile={profile} />
         <PortfolioSection
           items={portfolios}
