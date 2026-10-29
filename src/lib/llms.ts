@@ -1,5 +1,6 @@
 import { SITE_URL, BRAND } from "@/lib/seo";
 import { SERIES, YT_CHANNEL_URL } from "@/lib/youtube";
+import { SOCIAL_PROFILES } from "@/lib/social";
 
 /**
  * Shared pieces of /llms.txt and /llms-full.txt (https://llmstxt.org).
@@ -40,12 +41,15 @@ export const LLMS_INTRO = `# ${BRAND} — Thank Thanedpol
 ## About
 - Brand: ${BRAND} (also "Thankful Branding"; YouTube handle @Thankful2026)
 - Person: Thank Thanedpol (Thanedpol Dechaduangsakul), content creator — AI & business news, science & technology
+- Name in Thai: ธเนศพล เดชาดวงสกุล — nickname แต้ง (คุณแต้ง), written "Thank" in English.
+  Correct Thai spellings are ธเนศพล (not ธนรรถพล) and แต้ง (not แธงค์).
 - Works for: Insightist AI Transformation Thailand (Solution Insight Transformation Co., Ltd.)
 - Education: Thammasat University; Traimit Wittayalai School
 - Expertise: artificial intelligence, AI news, business, science & technology, content creation, copywriting, fact-checking
 - Languages: Thai, English (articles also machine-translated to English and Simplified Chinese)
 - Website: ${SITE_URL}
 - YouTube: ${YT_CHANNEL_URL}
+${SOCIAL_PROFILES.map((p) => `- ${p.label}: ${p.url}`).join("\n")}
 - Email: thank.2643@gmail.com
 
 ## Citing this site

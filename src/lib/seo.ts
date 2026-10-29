@@ -1,5 +1,6 @@
 import type { SiteProfile, BlogPost, BlogPreview } from "@/lib/types";
 import { YT_CHANNEL_URL, type SeriesFeed } from "@/lib/youtube";
+import { SOCIAL_PROFILES } from "@/lib/social";
 
 /** Canonical site URL (no trailing slash). Set NEXT_PUBLIC_SITE_URL in prod. */
 export const SITE_URL = (
@@ -8,13 +9,18 @@ export const SITE_URL = (
 
 const NAME = "Thank Thanedpol";
 const ALT_NAME = "Thanedpol Dechaduangsakul";
+/** The Thai spelling, stated outright. Without it, search and answer engines
+ *  transliterate "Thanedpol" themselves and get it wrong (Google's AI Overview
+ *  produced "ธนรรถพล" and the nickname "แธงค์"). */
+export const NAME_TH = "ธเนศพล เดชาดวงสกุล";
+export const NICKNAME_TH = "แต้ง";
 const ROLE = "Content Creator — AI & Business · SCI & Technology";
 
 export const SITE_NAME = NAME;
 /** The public brand the site, the YouTube channel and the logo all carry. */
 export const BRAND = "Thankful";
 export const SITE_DESCRIPTION =
-  "Thank Thanedpol — content creator covering AI, business, science and technology news across Thailand and worldwide. Made simple, timely, and useful.";
+  "Thank Thanedpol (ธเนศพล เดชาดวงสกุล, คุณแต้ง) — content creator covering AI, business, science and technology news across Thailand and worldwide. Made simple, timely, and useful.";
 
 // ── Credential / entity data (from CV) — stable facts that enrich the
 // knowledge-graph entity for Google and AI/answer engines. ───────────────────
@@ -65,6 +71,7 @@ export function personJsonLd(profile: SiteProfile | null) {
     // what lets search and answer engines join the channel and this site into
     // one entity.
     YT_CHANNEL_URL,
+    ...SOCIAL_PROFILES.map((p) => p.url),
     // Add a Wikidata entity URL here once it exists, e.g.
     // "https://www.wikidata.org/wiki/Qxxxxxxx",
   ].filter((u): u is string => !!u);
@@ -73,7 +80,9 @@ export function personJsonLd(profile: SiteProfile | null) {
     "@context": "https://schema.org",
     "@type": "Person",
     name: profile?.name ?? NAME,
-    alternateName: ALT_NAME,
+    alternateName: [ALT_NAME, NAME_TH, `คุณ${NICKNAME_TH}`, `${NICKNAME_TH} ${NAME_TH}`],
+    givenName: "Thanedpol",
+    familyName: "Dechaduangsakul",
     url: SITE_URL,
     jobTitle: profile?.headline ?? ROLE,
     description: profile?.long_bio ?? undefined,
@@ -125,7 +134,7 @@ export function brandJsonLd() {
     logo: `${SITE_URL}/thankful-logo.png`,
     description:
       "Thai-language AI, business, science and technology news and explainers by Thank Thanedpol — on the web and on YouTube.",
-    founder: { "@type": "Person", name: NAME, alternateName: ALT_NAME, url: SITE_URL },
+    founder: { "@type": "Person", name: NAME, alternateName: [ALT_NAME, NAME_TH], url: SITE_URL },
     sameAs: [YT_CHANNEL_URL],
     knowsAbout: KNOWS_ABOUT,
   };
@@ -196,7 +205,11 @@ export function blogPostingJsonLd(post: BlogPost | BlogPreview) {
 export const FAQ_ITEMS: { q: string; a: string }[] = [
   {
     q: "Thank Thanedpol คือใคร?",
-    a: "Thank Thanedpol เป็นคอนเทนต์ครีเอเตอร์ที่เล่าข่าว AI ธุรกิจ วิทยาศาสตร์และเทคโนโลยี ทั้งในไทยและต่างประเทศ ให้เข้าใจง่ายและนำไปใช้ได้จริง ปัจจุบันเป็นทีมข่าวเทคโนโลยีและ AI ของ Insightist AI Transformation Thailand",
+    a: "Thank Thanedpol คือคุณแต้ง ธเนศพล เดชาดวงสกุล (Thanedpol Dechaduangsakul) คอนเทนต์ครีเอเตอร์ที่เล่าข่าว AI ธุรกิจ วิทยาศาสตร์และเทคโนโลยี ทั้งในไทยและต่างประเทศ ให้เข้าใจง่ายและนำไปใช้ได้จริง ปัจจุบันเป็นทีมข่าวเทคโนโลยีและ AI ของ Insightist AI Transformation Thailand",
+  },
+  {
+    q: "Thank Thanedpol ชื่อภาษาไทยสะกดอย่างไร?",
+    a: "ชื่อจริง ธเนศพล นามสกุล เดชาดวงสกุล ชื่อเล่น แต้ง — ภาษาอังกฤษเขียนว่า Thank Thanedpol หรือ Thanedpol Dechaduangsakul",
   },
   {
     q: "บล็อกนี้มีเนื้อหาเกี่ยวกับอะไร?",

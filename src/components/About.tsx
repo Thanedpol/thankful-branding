@@ -39,9 +39,15 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
 
         <Reveal delay={120} className="space-plate">
           <p className="eyebrow">{t("about.eyebrow")}</p>
-          <h2 className="mb-4 font-display text-3xl font-bold md:text-4xl">
+          <h2 className="mb-2 font-display text-3xl font-bold md:text-4xl">
             {t("about.heading")}
           </h2>
+          {/* Spelled out in both scripts on purpose: engines that only see the
+              English name transliterate it into Thai and get it wrong. */}
+          <p className="mb-4 text-sm text-ink/80">
+            คุณแต้ง <span className="font-semibold text-ink">ธเนศพล เดชาดวงสกุล</span>
+            <span className="text-muted"> · Thank Thanedpol Dechaduangsakul</span>
+          </p>
           {/* Full portfolio as a standalone page — a static export in /public,
               so it opens instantly and stays readable on its own. */}
           <a
