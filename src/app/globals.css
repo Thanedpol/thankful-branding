@@ -678,3 +678,214 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .yt-flow, .space-pulse-soft { animation: none; }
 }
+
+/* ── Social pop-up book ──────────────────────────────────────────────────────
+   The spread lies tilted back 58°; each phone is hinged at its bottom edge
+   and folds up by −54°, so it ends nearly upright, facing the viewer. */
+.popbook-scene {
+  position: relative;
+  aspect-ratio: 16 / 10.5;
+  perspective: 1100px;
+  perspective-origin: 50% 15%;
+}
+.popbook {
+  position: absolute;
+  left: 6%;
+  width: 88%;
+  top: 44%;
+  height: 48%;
+  transform-style: preserve-3d;
+  transform: rotateX(64deg) scale(0.86);
+  transition: transform 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.is-open .popbook { transform: rotateX(58deg) scale(1); }
+
+.popbook-page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  border: 1px solid rgba(120, 190, 255, 0.35);
+  background:
+    linear-gradient(rgba(80, 180, 255, 0.09) 1px, transparent 1px) 0 0 / 100% 12%,
+    linear-gradient(90deg, rgba(80, 180, 255, 0.09) 1px, transparent 1px) 0 0 / 9% 100%,
+    linear-gradient(160deg, #0d1a3a 0%, #070d22 60%, #050918 100%);
+  box-shadow: 0 0 30px rgba(60, 140, 255, 0.35), inset 0 0 40px rgba(60, 140, 255, 0.18);
+  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  backface-visibility: hidden;
+}
+.popbook-page--left {
+  left: 0;
+  border-radius: 10px 2px 2px 10px;
+  transform-origin: right center;
+  transform: rotateY(172deg); /* folded over the right page until it opens */
+}
+.popbook-page--right {
+  right: 0;
+  border-radius: 2px 10px 10px 2px;
+  transform-origin: left center;
+  transform: rotateY(-8deg);
+}
+.is-open .popbook-page--left { transform: rotateY(8deg); }
+.popbook-spine {
+  position: absolute;
+  left: calc(50% - 1px);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(transparent, #7fd0ff, transparent);
+  box-shadow: 0 0 12px #4fb4ff;
+}
+
+.popbook-phones {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 4%;
+  padding-bottom: 16%; /* the fold line sits a little in from the near edge */
+  transform-style: preserve-3d;
+}
+.popbook-phone {
+  --lift: 0deg;
+  --fan: calc((var(--i) - 1.5) * -9deg);
+  position: relative;
+  width: 19%;
+  aspect-ratio: 9 / 18.5;
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(var(--fan)) rotateX(var(--lift));
+  transition: transform 0.95s cubic-bezier(0.25, 1.4, 0.4, 1) calc(0.45s + var(--i) * 0.16s),
+    filter 0.3s ease;
+  outline: none;
+}
+.is-open .popbook-phone { --lift: -54deg; }
+.is-open .popbook-phone:hover,
+.is-open .popbook-phone:focus-visible {
+  --lift: -60deg;
+  transition-delay: 0s;
+  filter: brightness(1.15);
+}
+.popbook-phone:focus-visible .popbook-phone-body { outline: 2px solid #ffd77a; outline-offset: 3px; }
+
+.popbook-phone-body {
+  container-type: inline-size;
+  position: absolute;
+  inset: 0;
+  padding: 5%;
+  border-radius: 16% / 8%;
+  background: linear-gradient(145deg, #2a3248, #0a0e18 45%, #1b2236);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 26px var(--glow), 0 18px 30px -12px rgba(0, 0, 0, 0.8);
+}
+.popbook-notch {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  z-index: 2;
+  width: 26%;
+  height: 3.2%;
+  border-radius: 99px;
+  background: #000;
+  transform: translateX(-50%);
+}
+.popbook-screen {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4cqw;
+  overflow: hidden;
+  border-radius: 12% / 6%;
+  background: var(--screen);
+  color: #fff;
+  text-align: center;
+}
+.popbook-screen-top svg { width: 20cqw; height: 20cqw; }
+.popbook-avatar {
+  position: relative;
+  width: 48cqw;
+  height: 48cqw;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.6cqw rgba(255, 255, 255, 0.92), 0 0 6cqw var(--glow);
+}
+.popbook-name { font-size: 10cqw; font-weight: 700; line-height: 1.1; }
+.popbook-handle { max-width: 92%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 8cqw; opacity: 0.9; }
+.popbook-follow {
+  margin-top: 1cqw;
+  padding: 2cqw 7cqw;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #0a0e18;
+  font-size: 7.5cqw;
+  font-weight: 700;
+}
+/* a holographic sweep across the glass */
+.popbook-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.4) 48%, rgba(160, 230, 255, 0.25) 52%, transparent 62%);
+  background-size: 260% 100%;
+  animation: popbook-sheen 4.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.7s);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+@keyframes popbook-sheen {
+  0%, 55% { background-position: 120% 0; }
+  100% { background-position: -40% 0; }
+}
+/* the glowing paper fold the phone stands on */
+.popbook-hinge {
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--glow), transparent);
+  box-shadow: 0 0 10px var(--glow);
+}
+
+.popbook-phone--instagram {
+  --glow: rgba(214, 41, 118, 0.7);
+  --screen: linear-gradient(160deg, #4f5bd5 0%, #962fbf 30%, #d62976 60%, #fa7e1e 86%, #feda75 100%);
+}
+.popbook-phone--facebook {
+  --glow: rgba(24, 119, 242, 0.75);
+  --screen: radial-gradient(circle at 30% 10%, rgba(255, 255, 255, 0.25), transparent 45%),
+    linear-gradient(165deg, #0a4fb8 0%, #1877f2 55%, #4c9dff 100%);
+}
+.popbook-phone--tiktok {
+  --glow: rgba(37, 244, 238, 0.6);
+  --screen: radial-gradient(circle at 15% 15%, rgba(37, 244, 238, 0.4), transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(254, 44, 85, 0.45), transparent 50%), #050505;
+}
+.popbook-phone--tiktok .popbook-name { text-shadow: -0.6cqw 0 rgba(37, 244, 238, 0.9), 0.6cqw 0 rgba(254, 44, 85, 0.9); }
+
+/* four-point glints twinkling around the book */
+.popbook-sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #fff 0%, #ffe9b0 40%, transparent 70%);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 4px #ffd77a);
+  opacity: 0;
+  animation: popbook-twinkle 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes popbook-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  45% { opacity: 1; transform: scale(1) rotate(45deg); }
+  60% { opacity: 0.7; transform: scale(0.8) rotate(60deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popbook, .popbook-page, .popbook-phone { transition: none; }
+  .popbook-sheen, .popbook-sparkle { animation: none; }
+  .popbook-sparkle { opacity: 0.6; }
+}

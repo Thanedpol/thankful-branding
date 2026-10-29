@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Reveal from "./Reveal";
+import SocialPopBook from "./SocialPopBook";
 import { useT } from "@/components/providers/AppProvider";
 import {
   THEME_LINKS,
@@ -292,7 +293,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
         </Reveal>
 
         {/* ── selected series ── */}
-        <Reveal delay={100} className="glass overflow-hidden">
+        <Reveal delay={100} className="glass overflow-hidden lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <div className="p-5 pb-4">
             <span
               className="inline-block rounded-full px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider"
@@ -401,6 +402,11 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
               <YtIcon className="h-3.5 w-3.5" /> {t("yt.subscribe")}
             </a>
           </div>
+        </Reveal>
+
+        {/* fills the space under the constellation on wide screens; after the panel on phones */}
+        <Reveal delay={150} className="lg:col-start-1 lg:row-start-2">
+          <SocialPopBook />
         </Reveal>
       </div>
     </section>

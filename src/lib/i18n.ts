@@ -37,6 +37,7 @@ export const dict: Record<Locale, Dict> = {
     "yt.latest": "คลิปล่าสุด",
     "yt.updated": "อัปเดตล่าสุด",
     "yt.hint": "กดที่ดาวแต่ละดวงเพื่อสลับซีรีส์",
+    "social.heading": "ติดตาม Thankful ทุกช่องทาง",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// เกี่ยวกับ",
@@ -137,6 +138,7 @@ export const dict: Record<Locale, Dict> = {
     "yt.latest": "Latest episodes",
     "yt.updated": "Last updated",
     "yt.hint": "Tap a star to switch series",
+    "social.heading": "Follow Thankful everywhere",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// About",
@@ -237,6 +239,7 @@ export const dict: Record<Locale, Dict> = {
     "yt.latest": "最新视频",
     "yt.updated": "最近更新",
     "yt.hint": "点击星星切换系列",
+    "social.heading": "在各平台关注 Thankful",
     "hero.pressKit": "媒体资料",
 
     "about.eyebrow": "// 关于",
