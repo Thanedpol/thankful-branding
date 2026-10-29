@@ -1,19 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useT } from "@/components/providers/AppProvider";
 import { SOCIAL_PROFILES, type SocialProfile } from "@/lib/social";
 
 /**
- * Social profiles as a 3D pop-up book: the spread opens as it scrolls into
- * view and a phone for each profile folds up off the page, one after another,
- * its screen lit in the platform's colours with a holographic sweep and
- * sparkles around the book. Pure CSS 3D — no extra library.
- *
- * Each phone is a real link, and the same links repeat as plain text below
- * the book, because a phone screen this size is decoration first.
+ * Social profiles as a 3D pop-up book with a carousel on its pages: one phone
+ * stands centre stage at full opacity while its neighbours lean away behind it
+ * at 25%. Drag (mouse or finger), use the arrows, the dots or the keyboard to
+ * turn it; opacity follows the live position, so a phone brightens as it
+ * slides into the middle and dims as it passes. Pure CSS 3D — no library.
  */
+
+const N = SOCIAL_PROFILES.length;
+const SIDE_OPACITY = 0.25;
 
 // Fixed positions so the server render and the browser agree.
 const SPARKLES = [
@@ -22,10 +23,25 @@ const SPARKLES = [
   [38, 60, 3.1], [66, 40, 3.4], [12, 44, 2.7], [88, 44, 0.2],
 ] as const;
 
+/** Signed distance from the centre, wrapped so the ring has no ends: −N/2…N/2. */
+function offsetOf(i: number, pos: number) {
+  let d = (((i - pos) % N) + N) % N;
+  if (d > N / 2) d -= N;
+  return d;
+}
+
 export default function SocialPopBook() {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState(0); // fractional carousel position; integer = a phone centred
+
+  const posRef = useRef(0);
+  const anim = useRef<number | null>(null);
+  const drag = useRef<{ x: number; start: number; moved: number; id: number } | null>(null);
+  const lastDragMoved = useRef(0); // survives pointerup, read by the click that follows
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -47,13 +63,94 @@ export default function SocialPopBook() {
     return () => io.disconnect();
   }, []);
 
+  useEffect(() => () => void (anim.current && cancelAnimationFrame(anim.current)), []);
+
+  const apply = (p: number) => {
+    posRef.current = p;
+    setPos(p);
+  };
+
+  /** Ease to a resting index (unbounded — the ring wraps visually). */
+  const glideTo = useCallback((target: number) => {
+    if (anim.current) cancelAnimationFrame(anim.current);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return apply(target);
+    const step = () => {
+      const p = posRef.current;
+      const next = p + (target - p) * 0.18;
+      if (Math.abs(target - next) < 0.002) {
+        apply(target);
+        anim.current = null;
+        return;
+      }
+      apply(next);
+      anim.current = requestAnimationFrame(step);
+    };
+    anim.current = requestAnimationFrame(step);
+  }, []);
+
+  const go = (delta: number) => glideTo(Math.round(posRef.current) + delta);
+  const goToIndex = (i: number) => {
+    const p = posRef.current;
+    glideTo(p + offsetOf(i, p)); // shortest way round
+  };
+
+  // ─ dragging ─
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (anim.current) cancelAnimationFrame(anim.current);
+    drag.current = { x: e.clientX, start: posRef.current, moved: 0, id: e.pointerId };
+    lastDragMoved.current = 0;
+  }
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    d.moved = Math.max(d.moved, Math.abs(dx));
+    // Capture only once it is really a drag: capturing on pointerdown would
+    // retarget the click to the stage, and tapping a phone would stop opening it.
+    if (d.moved > 6 && !e.currentTarget.hasPointerCapture(d.id)) {
+      e.currentTarget.setPointerCapture(d.id);
+      setDragging(true);
+    }
+    // one phone's travel ≈ 28% of the stage width
+    const w = sceneRef.current?.offsetWidth ?? 500;
+    apply(d.start - dx / (w * 0.28));
+  }
+  function endDrag() {
+    if (!drag.current) return;
+    lastDragMoved.current = drag.current.moved;
+    drag.current = null;
+    setDragging(false);
+    glideTo(Math.round(posRef.current));
+  }
+
+  const active = ((Math.round(pos) % N) + N) % N;
+
   return (
     <div ref={ref} className="relative mx-auto w-full max-w-[560px]">
       <p className="mb-3 text-center font-mono text-[11px] uppercase tracking-[0.3em] text-[#ffd77a]">
         {t("social.heading")}
       </p>
 
-      <div className={`popbook-scene ${open ? "is-open" : ""}`}>
+      <div
+        ref={sceneRef}
+        className={`popbook-scene select-none ${open ? "is-open" : ""}`}
+        style={{ touchAction: "pan-y", cursor: dragging ? "grabbing" : "grab" }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onLostPointerCapture={endDrag}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={t("social.heading")}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight") go(1);
+          else if (e.key === "ArrowLeft") go(-1);
+        }}
+      >
         {SPARKLES.map(([x, y, d], i) => (
           <span
             key={i}
@@ -69,43 +166,112 @@ export default function SocialPopBook() {
           <div className="popbook-spine" aria-hidden />
 
           <div className="popbook-phones">
-            {SOCIAL_PROFILES.map((p, i) => (
-              <Phone key={p.url} profile={p} index={i} />
-            ))}
+            {SOCIAL_PROFILES.map((p, i) => {
+              const d = offsetOf(i, pos);
+              const a = Math.abs(d);
+              // full at the centre, 25% one step out; the phone wrapping round
+              // the back fades away so it never jumps across the stage
+              const o = a <= 1 ? 1 - (1 - SIDE_OPACITY) * a : SIDE_OPACITY * Math.max(0, 1 - (a - 1) * 1.6);
+              return (
+                <div
+                  key={p.url}
+                  className="popbook-slot"
+                  style={{
+                    ["--x" as string]: `${d * 95}%`,
+                    ["--y" as string]: `${-Math.min(a, 1.5) * 26}%`, // back along the page, away from the viewer
+                    ["--ry" as string]: `${-d * 32}deg`,
+                    ["--s" as string]: 1 - Math.min(a, 1.5) * 0.16,
+                    ["--o" as string]: o,
+                    zIndex: Math.round(10 - a * 3),
+                    pointerEvents: a > 1.5 ? "none" : undefined,
+                  }}
+                >
+                  <Phone
+                    profile={p}
+                    index={i}
+                    centred={a < 0.5}
+                    onPick={() => {
+                      // a drag must not count as a tap
+                      if (lastDragMoved.current > 6) return false;
+                      if (a >= 0.5) {
+                        goToIndex(i);
+                        return false; // side phone: bring it to the centre first
+                      }
+                      return true;
+                    }}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
+
+        <button type="button" aria-label="ก่อนหน้า" className="popbook-arrow popbook-arrow--prev" onPointerDown={(e) => e.stopPropagation()} onClick={() => go(-1)}>
+          ‹
+        </button>
+        <button type="button" aria-label="ถัดไป" className="popbook-arrow popbook-arrow--next" onPointerDown={(e) => e.stopPropagation()} onClick={() => go(1)}>
+          ›
+        </button>
       </div>
 
-      {/* readable, accessible copies of the same links */}
-      <ul className="mt-4 flex flex-wrap justify-center gap-2">
-        {SOCIAL_PROFILES.map((p) => (
-          <li key={p.url}>
-            <a
-              href={p.url}
-              target="_blank"
-              rel="noopener noreferrer me"
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-[#050a18]/85 px-3 py-1.5 text-xs text-white/85 backdrop-blur-md transition-colors hover:border-white/40 hover:text-white"
-            >
-              <PlatformIcon platform={p.platform} className="h-3.5 w-3.5" />
-              {p.handle}
-            </a>
-          </li>
-        ))}
-      </ul>
+      {/* the centred profile, readable, plus dots to jump */}
+      <div className="mt-3 flex flex-col items-center gap-2.5">
+        <a
+          href={SOCIAL_PROFILES[active].url}
+          target="_blank"
+          rel="noopener noreferrer me"
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#050a18]/85 px-4 py-2 text-sm text-white backdrop-blur-md transition-colors hover:border-white/50"
+        >
+          <PlatformIcon platform={SOCIAL_PROFILES[active].platform} className="h-4 w-4" />
+          <span className="font-semibold">{SOCIAL_PROFILES[active].label}</span>
+          <span className="text-white/70">{SOCIAL_PROFILES[active].handle}</span>
+          <span aria-hidden>↗</span>
+        </a>
+        <div className="flex gap-2" role="tablist" aria-label="เลือกช่องทาง">
+          {SOCIAL_PROFILES.map((p, i) => (
+            <button
+              key={p.url}
+              type="button"
+              role="tab"
+              aria-selected={i === active}
+              aria-label={`${p.label} ${p.handle}`}
+              onClick={() => goToIndex(i)}
+              className={`h-2 rounded-full transition-all ${i === active ? "w-6 bg-[#ffd77a]" : "w-2 bg-white/30 hover:bg-white/60"}`}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function Phone({ profile: p, index }: { profile: SocialProfile; index: number }) {
+function Phone({
+  profile: p,
+  index,
+  centred,
+  onPick,
+}: {
+  profile: SocialProfile;
+  index: number;
+  centred: boolean;
+  onPick: () => boolean;
+}) {
   return (
     <a
       href={p.url}
       target="_blank"
       rel="noopener noreferrer me"
       aria-label={`${p.label} — ${p.handle}`}
-      className={`popbook-phone popbook-phone--${p.platform}`}
+      tabIndex={centred ? 0 : -1}
+      draggable={false}
+      onClick={(e) => {
+        if (!onPick()) e.preventDefault();
+      }}
+      className={`popbook-phone popbook-phone--${p.platform} ${centred ? "is-centred" : ""}`}
       style={{ ["--i" as string]: index }}
     >
+      {/* turns the phone about its own upright axis, after it has stood up */}
+      <span className="popbook-yaw">
       <span className="popbook-phone-body">
         <span className="popbook-notch" aria-hidden />
         <span className="popbook-screen">
@@ -113,7 +279,7 @@ function Phone({ profile: p, index }: { profile: SocialProfile; index: number })
             <PlatformIcon platform={p.platform} />
           </span>
           <span className="popbook-avatar">
-            <Image src="/thankful-logo.png" alt="" fill sizes="64px" className="object-cover" />
+            <Image src="/thankful-logo.png" alt="" fill sizes="96px" className="object-cover" draggable={false} />
           </span>
           <span className="popbook-name">{p.label}</span>
           <span className="popbook-handle">{p.handle}</span>
@@ -121,7 +287,7 @@ function Phone({ profile: p, index }: { profile: SocialProfile; index: number })
           <span className="popbook-sheen" aria-hidden />
         </span>
       </span>
-      {/* the paper fold that holds the phone up off the page */}
+      </span>
       <span className="popbook-hinge" aria-hidden />
     </a>
   );

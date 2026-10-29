@@ -684,7 +684,7 @@ body {
    and folds up by −54°, so it ends nearly upright, facing the viewer. */
 .popbook-scene {
   position: relative;
-  aspect-ratio: 16 / 10.5;
+  aspect-ratio: 16 / 11.5;
   perspective: 1100px;
   perspective-origin: 50% 15%;
 }
@@ -740,37 +740,74 @@ body {
 .popbook-phones {
   position: absolute;
   inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 4%;
-  padding-bottom: 16%; /* the fold line sits a little in from the near edge */
   transform-style: preserve-3d;
+}
+/* Carousel position, driven per frame from the component. Opacity is NOT set
+   here: opacity on a 3D container flattens its children onto the page, so it
+   is applied to the leaf elements through --o instead. */
+.popbook-slot {
+  position: absolute;
+  left: 50%;
+  bottom: 16%; /* the fold line, a little in from the near edge */
+  width: 23%;
+  aspect-ratio: 9 / 18.5;
+  transform-style: preserve-3d;
+  /* x across the page, y back along it — both in the page's own plane, so
+     neighbours step behind the centre phone rather than sinking into the book */
+  transform: translateX(calc(-50% + var(--x, 0%))) translateY(var(--y, 0%)) scale(var(--s, 1));
+}
+.popbook-yaw {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateY(var(--ry, 0deg));
 }
 .popbook-phone {
   --lift: 0deg;
-  --fan: calc((var(--i) - 1.5) * -9deg);
-  position: relative;
-  width: 19%;
-  aspect-ratio: 9 / 18.5;
+  position: absolute;
+  inset: 0;
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
-  transform: rotateY(var(--fan)) rotateX(var(--lift));
-  transition: transform 0.95s cubic-bezier(0.25, 1.4, 0.4, 1) calc(0.45s + var(--i) * 0.16s),
-    filter 0.3s ease;
+  transform: rotateX(var(--lift));
+  transition: transform 0.95s cubic-bezier(0.25, 1.4, 0.4, 1) calc(0.45s + var(--i) * 0.14s);
   outline: none;
+  -webkit-user-drag: none;
 }
-.is-open .popbook-phone { --lift: -54deg; }
-.is-open .popbook-phone:hover,
-.is-open .popbook-phone:focus-visible {
-  --lift: -60deg;
+.is-open .popbook-phone { --lift: -56deg; }
+.is-open .popbook-phone.is-centred:hover,
+.is-open .popbook-phone.is-centred:focus-visible {
+  --lift: -61deg;
   transition-delay: 0s;
-  filter: brightness(1.15);
 }
 .popbook-phone:focus-visible .popbook-phone-body { outline: 2px solid #ffd77a; outline-offset: 3px; }
 
+.popbook-arrow {
+  position: absolute;
+  top: 46%;
+  z-index: 20;
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(5, 10, 24, 0.85);
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+  transition: border-color 0.2s, background 0.2s;
+}
+.popbook-arrow:hover { border-color: rgba(255, 215, 122, 0.7); background: rgba(20, 28, 54, 0.95); }
+.popbook-arrow--prev { left: 0.25rem; }
+.popbook-arrow--next { right: 0.25rem; }
+
+.popbook-phone-body { outline: 2px solid #ffd77a; outline-offset: 3px; }
+
 .popbook-phone-body {
   container-type: inline-size;
+  opacity: var(--o, 1);
   position: absolute;
   inset: 0;
   padding: 5%;
@@ -840,6 +877,7 @@ body {
 }
 /* the glowing paper fold the phone stands on */
 .popbook-hinge {
+  opacity: var(--o, 1);
   position: absolute;
   left: -8%;
   right: -8%;
