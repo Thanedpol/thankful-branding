@@ -1,12 +1,14 @@
 import { SITE_URL } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured, demoBlogPreviews } from "@/lib/demo-data";
+import { listPublishedProducts } from "@/lib/shop-queries";
+import { LLMS_INTRO, pagesSection, seriesSection, TEXT_HEADERS } from "@/lib/llms";
 import type { BlogPreview } from "@/lib/types";
 
 export const revalidate = 3600;
 
-// llms.txt — a plain-text/markdown guide for LLMs and AI crawlers (AEO/GEO).
-// Spec: https://llmstxt.org
+// llms.txt — the short guide for LLMs and AI crawlers. Spec: https://llmstxt.org
+// The long companion with every article's full text is /llms-full.txt.
 export async function GET() {
   let posts: BlogPreview[] = demoBlogPreviews;
   if (isSupabaseConfigured()) {
@@ -17,51 +19,34 @@ export async function GET() {
       .order("published_at", { ascending: false });
     posts = (data as BlogPreview[]) ?? [];
   }
+  const products = await listPublishedProducts();
 
   const postLines = posts
     .map((p) => {
-      const date = p.published_at
-        ? new Date(p.published_at).toISOString().slice(0, 10)
-        : "";
-      const tags = p.tags?.length ? ` · tags: ${p.tags.join(", ")}` : "";
-      const meta = date ? ` — ${date}${tags}` : tags;
-      return `- [${p.title}](${SITE_URL}/blog/${p.slug})${meta}: ${p.excerpt ?? ""}`;
+      const date = p.published_at ? new Date(p.published_at).toISOString().slice(0, 10) : "";
+      const tags = p.tags?.length ? ` · ${p.tags.join(", ")}` : "";
+      // Many posts have no excerpt; leave the line clean rather than ending
+      // it with an empty ": ".
+      const excerpt = p.excerpt?.trim() ? `: ${p.excerpt.trim()}` : "";
+      return `- [${p.title}](${SITE_URL}/blog/${p.slug}) — ${date}${tags}${excerpt}`;
     })
     .join("\n");
 
-  const body = `# Thank Thanedpol
+  const productLines = products.length
+    ? `\n\n## Shop\n${products
+        .map((p) => `- [${p.title}](${SITE_URL}/shop/${p.slug})${p.tagline ? `: ${p.tagline}` : ""}`)
+        .join("\n")}`
+    : "";
 
-> Content creator covering AI & Business news across Thailand and worldwide,
-> plus Science & Technology. Making complex AI and business news simple, timely,
-> and useful. Blog articles are available in Thai, English, and Simplified Chinese.
+  const body = `${LLMS_INTRO}
 
-## About
-- Name: Thank Thanedpol (Thanedpol Dechaduangsakul)
-- Role: Content Creator — AI & Business news · Science & Technology
-- Works for: Insightist AI Transformation Thailand (Solution Insight Transformation Co., Ltd.)
-- Education: Thammasat University; Traimit Wittayalai School
-- Expertise: Artificial Intelligence, AI news, Business, Science & Technology, Content creation, Copywriting, Fact-checking
-- Languages: Thai, English (articles auto-translated to English and Simplified Chinese)
+${pagesSection(products.length > 0)}
 
-## Pages
-- [Home](${SITE_URL}/): Hero, about, featured portfolio, latest writing
-- [Blog](${SITE_URL}/blog): Articles on AI, business, science & technology (TH / EN / 简体中文)
-- [Press Kit](${SITE_URL}/press-kit): Bio, headshot, logos, and downloadable media assets
-- [Portfolio — Insightist](${SITE_URL}/portfolio/insightist): On-site AI & tech event coverage
-- [Portfolio — Snobby Story](${SITE_URL}/portfolio/snobby-story): AI-made kids' storytelling
+${seriesSection()}
 
 ## Blog posts
-${postLines}
-
-## Contact
-- Email: thank.2643@gmail.com
-- Press & media: see the Press Kit page above
+${postLines}${productLines}
 `;
 
-  return new Response(body, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, max-age=3600",
-    },
-  });
+  return new Response(body, { headers: TEXT_HEADERS });
 }

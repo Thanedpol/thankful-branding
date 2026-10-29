@@ -8,7 +8,7 @@ import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
-import { personJsonLd, websiteJsonLd, faqJsonLd } from "@/lib/seo";
+import { personJsonLd, websiteJsonLd, faqJsonLd, brandJsonLd, youtubeSeriesJsonLd } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import {
   isSupabaseConfigured,
@@ -59,7 +59,15 @@ export default async function HomePage() {
 
   return (
     <>
-      <JsonLd data={[websiteJsonLd(), personJsonLd(profile), faqJsonLd()]} />
+      <JsonLd
+        data={[
+          websiteJsonLd(),
+          personJsonLd(profile),
+          brandJsonLd(),
+          youtubeSeriesJsonLd(feeds.series),
+          faqJsonLd(),
+        ]}
+      />
       <Navbar />
       <SpaceBackdrop />
       {/* Content floats over deep space in either site theme, so it takes the

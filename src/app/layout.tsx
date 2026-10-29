@@ -77,7 +77,14 @@ export const metadata: Metadata = {
     },
   },
   robots: { index: true, follow: true },
-  verification: { google: "qn8OHedMHOxPLuILt06k6oPP5n-y3ANMMAz6rypMtqM" },
+  verification: {
+    google: "qn8OHedMHOxPLuILt06k6oPP5n-y3ANMMAz6rypMtqM",
+    // Bing Webmaster Tools (feeds ChatGPT search and Copilot). Optional — Bing
+    // can also verify by importing the site from Google Search Console.
+    ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION && {
+      other: { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION },
+    }),
+  },
   // Browser-tab / bookmark / home-screen icon — the same round Thankful mark the
   // header shows. Served from /public, so dropping in a new file updates both.
   icons: {

@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { pingIndexNow } from "@/lib/indexnow";
 import { Resend } from "resend";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -147,6 +149,7 @@ export async function saveShopProduct(formData: FormData) {
   else await supabase.from("shop_products").insert(row);
 
   refreshShop(slug);
+  if (status === "published") after(() => pingIndexNow([`/shop/${slug}`, "/shop"]));
 }
 
 export async function deleteShopProduct(formData: FormData) {

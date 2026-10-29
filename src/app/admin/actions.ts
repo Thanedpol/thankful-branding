@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { pingIndexNow } from "@/lib/indexnow";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasContent } from "@/lib/portfolio-sessions";
@@ -181,6 +183,11 @@ export async function saveBlog(
 
   refreshPublic();
   revalidatePath("/admin/blog");
+  // Announce a live public post to search engines once the response is sent.
+  // Scheduled posts (publish date still ahead) wait for their first crawl.
+  if (status === "published" && row.is_public && publishedAt && Date.parse(publishedAt) <= Date.now()) {
+    after(() => pingIndexNow([`/blog/${slug}`, "/blog", "/llms.txt", "/llms-full.txt"]));
+  }
   return { id: postId };
 }
 

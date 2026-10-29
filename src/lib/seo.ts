@@ -1,4 +1,5 @@
 import type { SiteProfile, BlogPost, BlogPreview } from "@/lib/types";
+import { YT_CHANNEL_URL, type SeriesFeed } from "@/lib/youtube";
 
 /** Canonical site URL (no trailing slash). Set NEXT_PUBLIC_SITE_URL in prod. */
 export const SITE_URL = (
@@ -10,6 +11,8 @@ const ALT_NAME = "Thanedpol Dechaduangsakul";
 const ROLE = "Content Creator — AI & Business · SCI & Technology";
 
 export const SITE_NAME = NAME;
+/** The public brand the site, the YouTube channel and the logo all carry. */
+export const BRAND = "Thankful";
 export const SITE_DESCRIPTION =
   "Thank Thanedpol — content creator covering AI, business, science and technology news across Thailand and worldwide. Made simple, timely, and useful.";
 
@@ -58,6 +61,10 @@ export function personJsonLd(profile: SiteProfile | null) {
     social?.tiktok,
     social?.facebook,
     "https://github.com/Thanedpol",
+    // The YouTube channel is where most people meet the work — linking it is
+    // what lets search and answer engines join the channel and this site into
+    // one entity.
+    YT_CHANNEL_URL,
     // Add a Wikidata entity URL here once it exists, e.g.
     // "https://www.wikidata.org/wiki/Qxxxxxxx",
   ].filter((u): u is string => !!u);
@@ -75,6 +82,7 @@ export function personJsonLd(profile: SiteProfile | null) {
       ? new URL(profile.avatar_url, SITE_URL).toString()
       : undefined,
     worksFor: EMPLOYER,
+    brand: { "@id": `${SITE_URL}/#brand` },
     alumniOf: EDUCATION,
     knowsAbout: KNOWS_ABOUT,
     knowsLanguage: ["th", "en"],
@@ -93,10 +101,73 @@ export function websiteJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: `${NAME} — Portfolio & Blog`,
+    alternateName: [BRAND, "Thankful Branding"],
     url: SITE_URL,
     inLanguage: ["th", "en", "zh"],
     description: SITE_DESCRIPTION,
     publisher: { "@type": "Person", name: NAME, url: SITE_URL },
+  };
+}
+
+/**
+ * "Thankful" as an entity of its own — the brand on the site, the logo and the
+ * YouTube channel — founded by the person above. Without it, a model reading
+ * the channel name has nothing tying "Thankful" back to this site.
+ */
+export function brandJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#brand`,
+    name: BRAND,
+    alternateName: ["Thankful Branding", "Thankful2026"],
+    url: SITE_URL,
+    logo: `${SITE_URL}/thankful-logo.png`,
+    description:
+      "Thai-language AI, business, science and technology news and explainers by Thank Thanedpol — on the web and on YouTube.",
+    founder: { "@type": "Person", name: NAME, alternateName: ALT_NAME, url: SITE_URL },
+    sameAs: [YT_CHANNEL_URL],
+    knowsAbout: KNOWS_ABOUT,
+  };
+}
+
+/**
+ * The YouTube series as an ItemList of CreativeWorkSeries, each carrying its
+ * newest episode as a VideoObject. Plain, crawlable facts about what the
+ * channel covers — the kind of thing an answer engine quotes.
+ */
+export function youtubeSeriesJsonLd(series: SeriesFeed[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${BRAND} YouTube series`,
+    url: `${SITE_URL}/#youtube`,
+    itemListElement: series.map((s, i) => {
+      const v = s.videos[0];
+      return {
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "CreativeWorkSeries",
+          name: s.title,
+          description: s.blurb,
+          url: `https://www.youtube.com/playlist?list=${s.playlistId}`,
+          inLanguage: "th",
+          author: { "@id": `${SITE_URL}/#brand` },
+          ...(v && {
+            hasPart: {
+              "@type": "VideoObject",
+              name: v.title,
+              description: `${s.title}: ${v.title}`,
+              thumbnailUrl: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
+              uploadDate: v.published,
+              contentUrl: `https://www.youtube.com/watch?v=${v.id}`,
+              embedUrl: `https://www.youtube.com/embed/${v.id}`,
+            },
+          }),
+        },
+      };
+    }),
   };
 }
 
