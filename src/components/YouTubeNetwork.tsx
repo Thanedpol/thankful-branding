@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
@@ -49,10 +49,72 @@ function layout(n: number) {
   });
 }
 
+/** How often to re-check playlist covers while the section is on screen. */
+const COVER_POLL_MS = 60_000;
+
 export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[]; shared: SharedLink[] }) {
   const t = useT();
   const [activeId, setActiveId] = useState(series[0]?.id ?? "");
   const [playing, setPlaying] = useState<string | null>(null); // video id loaded in the player
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Playlist covers, keyed by playlist id. Seeded from the server render, then
+  // refreshed while someone is looking, so a cover changed in YouTube Studio
+  // shows up without a reload.
+  const [covers, setCovers] = useState<Record<string, string | null>>(() =>
+    Object.fromEntries(series.map((s) => [s.playlistId, s.cover]))
+  );
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    let visible = false;
+    let timer: number | undefined;
+
+    const check = async () => {
+      try {
+        const res = await fetch("/api/youtube-covers");
+        if (!res.ok) return;
+        const { covers: next } = (await res.json()) as { covers: Record<string, string | null> };
+        // A cover that failed to load this round keeps its last known image.
+        setCovers((prev) => {
+          let changed = false;
+          const out = { ...prev };
+          for (const [id, url] of Object.entries(next)) {
+            if (url && url !== prev[id]) {
+              out[id] = url;
+              changed = true;
+            }
+          }
+          return changed ? out : prev;
+        });
+      } catch {
+        // Offline or blocked: keep what is on screen.
+      }
+    };
+    const schedule = () => {
+      window.clearInterval(timer);
+      timer = undefined;
+      if (visible && !document.hidden) timer = window.setInterval(check, COVER_POLL_MS);
+    };
+    const io = new IntersectionObserver(([e]) => {
+      const was = visible;
+      visible = e.isIntersecting;
+      if (visible && !was) check(); // catch up the moment it scrolls into view
+      schedule();
+    });
+    io.observe(el);
+    const onVis = () => {
+      if (!document.hidden && visible) check();
+      schedule();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      io.disconnect();
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, []);
 
   const pos = useMemo(() => layout(series.length), [series.length]);
   const index = useMemo(() => Object.fromEntries(series.map((s, i) => [s.id, i])), [series]);
@@ -101,7 +163,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
   const g = GROUP[active.group];
 
   return (
-    <section id="youtube" className="section-pad scroll-mt-20">
+    <section ref={sectionRef} id="youtube" className="section-pad scroll-mt-20">
       <Reveal className="space-plate mb-10 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">{t("yt.eyebrow")}</p>
@@ -189,6 +251,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
             const on = s.id === activeId;
             const gg = GROUP[s.group];
             const v = s.videos[0];
+            const img = covers[s.playlistId] ?? (v ? thumb(v.id, "mq") : null);
             return (
               <button
                 key={s.id}
@@ -207,8 +270,8 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
                     background: "#0a1226",
                   }}
                 >
-                  {v && (
-                    <Image src={thumb(v.id, "mq")} alt="" fill unoptimized sizes="72px" className="object-cover" />
+                  {img && (
+                    <Image key={img} src={img} alt="" fill unoptimized sizes="72px" className="object-cover" />
                   )}
                 </span>
                 <span
