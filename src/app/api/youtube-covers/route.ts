@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { SERIES, fetchPlaylistCover } from "@/lib/youtube";
+import { SERIES } from "@/lib/youtube";
+import { fetchPlaylistCover } from "@/lib/youtube-feeds";
 
 /**
  * Current cover of each series playlist, for the home page to poll so a cover
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const entries = await Promise.all(
-    SERIES.map(async (s) => [s.playlistId, await fetchPlaylistCover(s.playlistId, { stream: true })] as const)
+    SERIES.map(async (s) => [s.playlistId, await fetchPlaylistCover(s.playlistId)] as const)
   );
   return NextResponse.json(
     { covers: Object.fromEntries(entries), checkedAt: new Date().toISOString() },

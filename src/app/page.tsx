@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SpaceBackdrop from "@/components/space/SpaceBackdrop";
 import YouTubeNetwork from "@/components/YouTubeNetwork";
-import { getSeriesFeeds } from "@/lib/youtube";
+import { getSeriesFeeds } from "@/lib/youtube-feeds";
 import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
