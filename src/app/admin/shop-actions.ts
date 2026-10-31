@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { SHOP_TAG } from "@/lib/shop-flag";
 import { after } from "next/server";
 import { pingIndexNow } from "@/lib/indexnow";
 import { Resend } from "resend";
@@ -90,6 +91,7 @@ function jsonList(v: FormDataEntryValue | null): string[] {
 }
 
 function refreshShop(slug?: string | null) {
+  revalidateTag(SHOP_TAG); // the Shop menu item appears/disappears with stock
   revalidatePath("/shop");
   revalidatePath("/admin/shop");
   revalidatePath("/admin/shop/orders");

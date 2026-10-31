@@ -129,7 +129,7 @@ export default function SocialPopBook() {
 
   return (
     <div ref={ref} className="relative mx-auto w-full max-w-[560px]">
-      <p className="mb-3 text-center font-mono text-[11px] uppercase tracking-[0.3em] text-[#ffd77a]">
+      <p className="text-gold mb-3 text-center font-mono text-[11px] uppercase tracking-[0.3em]">
         {t("social.heading")}
       </p>
 
@@ -236,7 +236,7 @@ export default function SocialPopBook() {
               aria-selected={i === active}
               aria-label={`${p.label} ${p.handle}`}
               onClick={() => goToIndex(i)}
-              className={`h-2 rounded-full transition-all ${i === active ? "w-6 bg-[#ffd77a]" : "w-2 bg-white/30 hover:bg-white/60"}`}
+              className={`h-2 rounded-full transition-all ${i === active ? "bg-gold w-6" : "w-2 bg-ink/25 hover:bg-ink/50"}`}
             />
           ))}
         </div>

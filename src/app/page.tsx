@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import SpaceBackdrop from "@/components/space/SpaceBackdrop";
 import YouTubeNetwork from "@/components/YouTubeNetwork";
+import LatestUpdates from "@/components/LatestUpdates";
 import { getSeriesFeeds } from "@/lib/youtube-feeds";
 import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
@@ -69,11 +69,9 @@ export default async function HomePage() {
         ]}
       />
       <Navbar />
-      <SpaceBackdrop />
-      {/* Content floats over deep space in either site theme, so it takes the
-          dark tokens; header and footer keep the visitor's chosen theme. */}
-      <main data-theme="dark" className="space-scope relative text-ink">
+      <main className="relative text-ink">
         <Hero profile={profile} />
+        <LatestUpdates series={feeds.series} posts={posts} />
         <YouTubeNetwork series={feeds.series} shared={feeds.shared} />
         <About profile={profile} />
         <PortfolioSection

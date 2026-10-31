@@ -8,6 +8,8 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/components/providers/AppProvider";
+import SiteBackdrop from "@/components/space/SiteBackdrop";
+import { hasPublishedProducts } from "@/lib/shop-flag";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/seo";
 
 const SITE_TITLE = "Thank Thanedpol — AI, Business & Technology News";
@@ -111,20 +113,25 @@ export const metadata: Metadata = {
 // Applies the saved theme before paint to avoid a flash of the wrong mode.
 const noFlashTheme = `(function(){try{var t=localStorage.getItem('theme')||'dark';document.documentElement.dataset.theme=t;var l=localStorage.getItem('locale');if(l)document.documentElement.lang=l;}catch(e){document.documentElement.dataset.theme='dark';}})();`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const hasShop = await hasPublishedProducts();
+
   return (
     <html lang="th" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashTheme }} />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${shareTechMono.variable} ${notoThai.variable} ${notoSC.variable} font-body antialiased`}
+        className={`${spaceGrotesk.variable} ${inter.variable} ${shareTechMono.variable} ${notoThai.variable} ${notoSC.variable} font-body antialiased space-scope`}
       >
-        <AppProvider>{children}</AppProvider>
+        <AppProvider hasShop={hasShop}>
+          <SiteBackdrop />
+          {children}
+        </AppProvider>
       </body>
     </html>
   );

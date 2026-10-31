@@ -11,11 +11,13 @@ interface AppCtx {
   locale: Locale;
   setLocale: (l: Locale) => void;
   t: (key: string) => string;
+  /** Whether the shop has anything published — decided on the server. */
+  hasShop: boolean;
 }
 
 const Ctx = createContext<AppCtx | null>(null);
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
+export function AppProvider({ children, hasShop = false }: { children: React.ReactNode; hasShop?: boolean }) {
   const [theme, setTheme] = useState<Theme>("dark");
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
@@ -50,7 +52,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <Ctx.Provider value={{ theme, toggleTheme, locale, setLocale, t }}>
+    <Ctx.Provider value={{ theme, toggleTheme, locale, setLocale, t, hasShop }}>
       {children}
     </Ctx.Provider>
   );

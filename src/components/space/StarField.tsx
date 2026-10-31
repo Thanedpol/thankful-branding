@@ -25,7 +25,8 @@ interface Meteor {
 const HUES = ["255,255,255", "255,255,255", "255,255,255", "170,205,255", "255,214,150"];
 
 /** Twinkling, slowly drifting starfield with the odd shooting star. */
-export default function StarField({ className = "" }: { className?: string }) {
+/** `quiet` thins the stars and drops the shooting stars — for reading pages. */
+export default function StarField({ className = "", quiet = false }: { className?: string; quiet?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useAnimationLoop(ref, () => {
@@ -46,7 +47,7 @@ export default function StarField({ className = "" }: { className?: string }) {
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.min(520, Math.floor((w * h) / 2600));
+      const count = Math.min(quiet ? 220 : 520, Math.floor((w * h) / (quiet ? 6500 : 2600)));
       stars = Array.from({ length: count }, () => {
         const depth = Math.random();
         return {
@@ -86,7 +87,7 @@ export default function StarField({ className = "" }: { className?: string }) {
       }
 
       nextMeteor -= dt;
-      if (nextMeteor <= 0 && dt > 0) {
+      if (!quiet && nextMeteor <= 0 && dt > 0) {
         nextMeteor = 6 + Math.random() * 8;
         const speed = 700 + Math.random() * 400;
         meteors.push({
@@ -119,7 +120,7 @@ export default function StarField({ className = "" }: { className?: string }) {
       }
     };
     return { frame, dispose: () => ro.disconnect() };
-  });
+  }, [quiet]);
 
   return <canvas ref={ref} aria-hidden className={`pointer-events-none h-full w-full ${className}`} />;
 }

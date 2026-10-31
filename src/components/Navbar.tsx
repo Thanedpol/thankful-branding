@@ -5,10 +5,12 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useT } from "@/components/providers/AppProvider";
+import { useApp } from "@/components/providers/AppProvider";
+import { YT_SUBSCRIBE_URL } from "@/lib/youtube";
 import { ThemeToggle, LanguageSwitcher } from "@/components/Controls";
 
-const LINKS = [
+const ALL_LINKS = [
+  { href: "/#youtube", key: "nav.youtube" },
   { href: "/#about", key: "nav.about" },
   { href: "/#portfolio", key: "nav.portfolio" },
   { href: "/blog", key: "nav.blog" },
@@ -16,10 +18,28 @@ const LINKS = [
   { href: "/press-kit", key: "nav.pressKit" },
 ];
 
+function SubscribeButton({ className = "", label }: { className?: string; label: string }) {
+  return (
+    <a
+      href={YT_SUBSCRIBE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex items-center gap-1.5 rounded-full bg-[#ff0033] px-3.5 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(255,0,51,0.35)] transition-transform hover:scale-[1.04] ${className}`}
+    >
+      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
+        <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z" />
+      </svg>
+      {label}
+    </a>
+  );
+}
+
 export default function Navbar() {
   const router = useRouter();
   const supabase = createClient();
-  const t = useT();
+  const { t, hasShop } = useApp();
+  // An empty shop is a dead end — the item appears once something is for sale.
+  const LINKS = ALL_LINKS.filter((l) => l.href !== "/shop" || hasShop);
   const [email, setEmail] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -73,7 +93,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-6 lg:gap-8 md:flex">
           {LINKS.map((l) => (
             <Link
               key={l.href}
@@ -86,6 +106,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <SubscribeButton label={t("yt.subscribe")} className="hidden lg:inline-flex" />
           <LanguageSwitcher />
           <ThemeToggle />
           {email ? (
@@ -115,6 +136,7 @@ export default function Navbar() {
       {open && (
         <div className="border-t border-line/[0.06] bg-space-light px-6 py-4 md:hidden">
           <div className="flex flex-col gap-4">
+            <SubscribeButton label={t("yt.subscribe")} className="self-start" />
             {LINKS.map((l) => (
               <Link
                 key={l.href}

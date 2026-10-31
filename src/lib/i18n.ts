@@ -12,6 +12,7 @@ type Dict = Record<string, string>;
 
 export const dict: Record<Locale, Dict> = {
   th: {
+    "nav.youtube": "ซีรีส์ YouTube",
     "nav.about": "เกี่ยวกับ",
     "nav.portfolio": "ผลงาน",
     "nav.blog": "บทความ",
@@ -38,6 +39,9 @@ export const dict: Record<Locale, Dict> = {
     "yt.updated": "อัปเดตล่าสุด",
     "yt.hint": "กดที่ดาวแต่ละดวงเพื่อสลับซีรีส์",
     "social.heading": "ติดตาม Thankful ทุกช่องทาง",
+    "latest.heading": "อัปเดตล่าสุด",
+    "latest.article": "บทความ",
+    "latest.all": "ดูทั้งหมดบน YouTube",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// เกี่ยวกับ",
@@ -113,6 +117,7 @@ export const dict: Record<Locale, Dict> = {
     "ui.lang": "เปลี่ยนภาษา",
   },
   en: {
+    "nav.youtube": "YouTube Series",
     "nav.about": "About",
     "nav.portfolio": "Portfolio",
     "nav.blog": "Blog",
@@ -139,6 +144,9 @@ export const dict: Record<Locale, Dict> = {
     "yt.updated": "Last updated",
     "yt.hint": "Tap a star to switch series",
     "social.heading": "Follow Thankful everywhere",
+    "latest.heading": "Latest updates",
+    "latest.article": "Article",
+    "latest.all": "View all on YouTube",
     "hero.pressKit": "Press Kit",
 
     "about.eyebrow": "// About",
@@ -214,6 +222,7 @@ export const dict: Record<Locale, Dict> = {
     "ui.lang": "Change language",
   },
   zh: {
+    "nav.youtube": "YouTube 系列",
     "nav.about": "关于",
     "nav.portfolio": "作品",
     "nav.blog": "博客",
@@ -240,6 +249,9 @@ export const dict: Record<Locale, Dict> = {
     "yt.updated": "最近更新",
     "yt.hint": "点击星星切换系列",
     "social.heading": "在各平台关注 Thankful",
+    "latest.heading": "最新动态",
+    "latest.article": "文章",
+    "latest.all": "在 YouTube 查看全部",
     "hero.pressKit": "媒体资料",
 
     "about.eyebrow": "// 关于",

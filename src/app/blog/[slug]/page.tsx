@@ -289,7 +289,7 @@ function PublishedPost({
       <Navbar />
       <main className="min-h-screen pt-32">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 pb-24 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
-          <article className="mx-auto w-full min-w-0 max-w-3xl">
+          <article className="reading-surface mx-auto w-full min-w-0 max-w-3xl">
           <Link
             href="/blog"
             className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
@@ -429,7 +429,8 @@ function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
       <JsonLd data={blogPostingJsonLd(preview)} />
       <Navbar />
       <main className="min-h-screen pt-32">
-        <article className="mx-auto max-w-3xl px-6 pb-24">
+        <div className="mx-auto max-w-3xl px-6 pb-24">
+        <article className="reading-surface">
           <Link
             href="/blog"
             className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
@@ -490,6 +491,7 @@ function LockedPost({ preview, slug }: { preview: BlogPreview; slug: string }) {
             </div>
           </div>
         </article>
+        </div>
       </main>
       <Footer />
     </>

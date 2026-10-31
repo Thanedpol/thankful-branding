@@ -22,6 +22,20 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --field-bg: rgba(255, 255, 255, 0.03);
   --field-border: rgba(255, 255, 255, 0.1);
+
+  /* sky-dependent accents */
+  --gold: #f5c45e;
+  --gold-a: #ffd77a;
+  --gold-b: #f5b941;
+  --gold-c: #ffcf6b;
+  --plate-bg: rgba(4, 8, 20, 0.7);
+  --plate-border: rgba(140, 180, 255, 0.12);
+  --hero-plate: radial-gradient(ellipse 52% 48% at 46% 50%, rgba(3, 6, 15, 0.78) 0%, rgba(3, 6, 15, 0.55) 55%, transparent 100%);
+  --horizon-bg: radial-gradient(ellipse 50% 50% at 50% 50%, #071027 0%, #050b1c 60%, #03060f 100%);
+  --horizon-glow: 0 -2px 0 rgba(140, 200, 255, 0.55), 0 -10px 40px rgba(70, 150, 255, 0.55), 0 -40px 120px rgba(40, 110, 255, 0.35);
+  --net-gold: #ffcf73;
+  --net-cyan: #4fe3ff;
+  --net-spoke: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme="light"] {
@@ -39,6 +53,20 @@
   --glass-border: rgba(15, 23, 42, 0.1);
   --field-bg: rgba(255, 255, 255, 0.85);
   --field-border: rgba(15, 23, 42, 0.15);
+
+  /* daytime sky: deeper golds and dark text so everything reads on blue */
+  --gold: #7a3d00;
+  --gold-a: #92400e;
+  --gold-b: #8a4500;
+  --gold-c: #7a3d00;
+  --plate-bg: rgba(255, 255, 255, 0.78);
+  --plate-border: rgba(15, 23, 42, 0.08);
+  --hero-plate: radial-gradient(ellipse 52% 48% at 46% 50%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.45) 55%, transparent 100%);
+  --horizon-bg: radial-gradient(ellipse 50% 50% at 50% 50%, #ffffff 0%, #f4f8fd 60%, #e8f1fb 100%);
+  --horizon-glow: 0 -2px 0 rgba(255, 255, 255, 0.95), 0 -16px 50px rgba(150, 195, 240, 0.6), 0 -50px 140px rgba(120, 175, 235, 0.35);
+  --net-gold: #c2700a;
+  --net-cyan: #0e7490;
+  --net-spoke: rgba(15, 23, 42, 0.18);
 }
 
 * {
@@ -624,47 +652,109 @@ body {
   .space-spin, .space-pulse, .space-float, .space-flare, .space-rise { animation: none; }
 }
 
-/* ── Home: content floating over the space backdrop ────────────────────────
-   Unlayered on purpose, so these win over the component-layer theme rules
-   (e.g. the light-mode .btn-neon recolour) inside the home page's <main>. */
+/* ── Content floating over the site backdrop ────────────────────────────────
+   Every public page sits on the same sky: deep space in the dark theme, a
+   daytime sky in the light one. `.space-scope` is on <body>. Unlayered on
+   purpose, so these win over the component-layer theme rules. */
 
-/* Cards keep a solid surface: portfolio and blog cards should read as panels,
-   not as windows onto the stars behind them. */
-.space-scope .glass {
+/* Cards keep a solid surface: portfolio and blog cards read as panels, not as
+   windows onto the sky behind them. */
+[data-theme="dark"] .space-scope .glass {
   background: rgba(8, 12, 26, 0.9);
   border-color: rgba(140, 180, 255, 0.14);
 }
+[data-theme="light"] .space-scope .glass {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 30px -18px rgba(30, 64, 120, 0.35);
+}
 
 /* Buttons get their own fill so their labels never sit straight on the sky. */
-.space-scope .btn-neon {
+[data-theme="dark"] .space-scope .btn-neon {
   color: rgb(var(--accent));
   background: rgba(3, 26, 36, 0.85);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
-.space-scope .btn-ghost {
+[data-theme="dark"] .space-scope .btn-ghost {
   color: rgba(255, 255, 255, 0.88);
   background: rgba(6, 10, 22, 0.8);
   border-color: rgba(255, 255, 255, 0.24);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
-.space-scope .btn-ghost:hover {
+[data-theme="dark"] .space-scope .btn-ghost:hover {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.5);
 }
-.space-scope .tag {
+[data-theme="light"] .space-scope .btn-neon,
+[data-theme="light"] .space-scope .btn-ghost {
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+[data-theme="dark"] .space-scope .tag {
   color: rgb(var(--accent));
 }
 
-/* A dark, slightly frosted backing for headings and copy over the stars. */
+/* A frosted backing for headings and copy over the sky. */
 .space-plate {
   border-radius: 1.25rem;
   padding: 1.5rem 1.75rem;
-  background: rgba(4, 8, 20, 0.7);
-  border: 1px solid rgba(140, 180, 255, 0.12);
+  background: var(--plate-bg);
+  border: 1px solid var(--plate-border);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+}
+
+/* Text colours that must change with the sky behind them. */
+.text-gold { color: var(--gold); }
+.bg-gold { background-color: var(--gold); }
+.hero-gold-text {
+  background-image: linear-gradient(90deg, var(--gold-a), var(--gold-b), var(--gold-c));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Site backdrop: night sky and day sky, swapped by theme ─────────────── */
+.sky-night { display: block; }
+.sky-day { display: none; }
+[data-theme="light"] .sky-night { display: none; }
+[data-theme="light"] .sky-day { display: block; }
+
+.sky-day {
+  background: linear-gradient(180deg, #6fb0f0 0%, #9ccbf6 28%, #cfe5fb 58%, #eef5fc 82%, #fbf6ea 100%);
+}
+.sky-sun {
+  position: absolute;
+  top: -12vmax;
+  right: -8vmax;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 252, 235, 0.95) 0%, rgba(255, 240, 200, 0.55) 18%, rgba(255, 225, 160, 0.18) 40%, transparent 68%);
+}
+.sky-cloud {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 40%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(6px);
+  animation: sky-drift var(--drift, 140s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes sky-drift {
+  from { transform: translateX(-30vw); }
+  to   { transform: translateX(130vw); }
+}
+/* reading pages: quieter sky so long text stays comfortable */
+.sky-dim-night { background: rgba(3, 6, 15, 0.55); }
+.sky-dim-day { background: rgba(255, 255, 255, 0.5); }
+
+/* Hero pieces with a day variant */
+[data-theme="light"] .hero-galaxy { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .sky-cloud { animation: none; }
 }
 
 /* ── YouTube network: links flowing toward the selected series ──────────── */
@@ -927,3 +1017,13 @@ body {
   .popbook-sheen, .popbook-sparkle { animation: none; }
   .popbook-sparkle { opacity: 0.6; }
 }
+
+/* ── Reading surface: long articles sit on a near-solid panel over the sky ── */
+.reading-surface {
+  border-radius: 1.25rem;
+  border: 1px solid var(--plate-border);
+  background: rgba(6, 10, 22, 0.92);
+  padding: 1.5rem 1.25rem;
+}
+[data-theme="light"] .reading-surface { background: rgba(255, 255, 255, 0.95); }
+@media (min-width: 640px) { .reading-surface { padding: 2.25rem 2.5rem; } }

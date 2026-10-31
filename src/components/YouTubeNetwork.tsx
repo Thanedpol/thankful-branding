@@ -171,7 +171,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
           <h2 className="font-display text-3xl font-bold md:text-4xl text-gradient">{t("yt.heading")}</h2>
           <p className="mt-3 max-w-2xl text-muted">{t("yt.sub")}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-white/70">
+        <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-muted">
           <span>{series.length} ซีรีส์</span>
           {latestUpload && (
             <span>
@@ -201,7 +201,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
                 y1={50}
                 x2={p.x}
                 y2={p.y}
-                stroke={series[i].id === activeId ? GROUP[series[i].group].line : "rgba(255,255,255,0.12)"}
+                style={{ stroke: series[i].id === activeId ? GROUP[series[i].group].line : "var(--net-spoke)" }}
                 strokeWidth={series[i].id === activeId ? 0.45 : 0.2}
                 strokeDasharray="0.6 1.2"
               />
@@ -211,19 +211,19 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
               const a = pos[index[l.a]];
               const b = pos[index[l.b]];
               const on = l.a === activeId || l.b === activeId;
-              const color = l.kind === "shared" ? "#4fe3ff" : "#ffcf73";
+              const color = l.kind === "shared" ? "var(--net-cyan)" : "var(--net-gold)";
               const d = `M ${a.x} ${a.y} Q 50 50 ${b.x} ${b.y}`;
               return (
                 <g key={`l${i}`}>
                   <path
                     d={d}
                     fill="none"
-                    stroke={color}
+                    style={{ stroke: color }}
                     strokeOpacity={on ? 0.95 : 0.3}
                     strokeWidth={on ? 0.55 : 0.3}
                     className={on ? "yt-flow" : undefined}
                   />
-                  <circle r={on ? 0.9 : 0.6} fill={color} opacity={on ? 1 : 0.6}>
+                  <circle r={on ? 0.9 : 0.6} style={{ fill: color }} opacity={on ? 1 : 0.6}>
                     <animateMotion dur={`${5 + (i % 4)}s`} repeatCount="indefinite" path={d} />
                   </circle>
                 </g>
@@ -287,7 +287,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
             );
           })}
 
-          <p className="pointer-events-none absolute inset-x-0 -bottom-2 text-center font-mono text-[10px] text-white/50">
+          <p className="pointer-events-none absolute inset-x-0 -bottom-2 text-center font-mono text-[10px] text-muted">
             {t("yt.hint")}
           </p>
         </Reveal>
@@ -301,7 +301,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
             >
               {g.label}
             </span>
-            <h3 className="mt-2 font-display text-2xl font-bold text-white">{active.title}</h3>
+            <h3 className="mt-2 font-display text-2xl font-bold text-ink">{active.title}</h3>
             <p className="mt-1 text-sm text-muted">{active.blurb}</p>
           </div>
 
@@ -351,13 +351,13 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
                   key={v.id}
                   type="button"
                   onClick={() => setPlaying(v.id)}
-                  className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-white/5"
+                  className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-ink/5"
                 >
                   <span className="relative aspect-video w-24 shrink-0 overflow-hidden rounded-md">
                     <Image src={thumb(v.id, "mq")} alt="" fill unoptimized sizes="96px" className="object-cover" />
                   </span>
                   <span className="min-w-0">
-                    <span className="line-clamp-2 text-xs text-white/90">{v.title}</span>
+                    <span className="line-clamp-2 text-xs text-ink/90">{v.title}</span>
                     <span className="font-mono text-[10px] text-muted">{fmtDate(v.published)}</span>
                   </span>
                 </button>
@@ -366,7 +366,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
           )}
 
           {neighbours.length > 0 && (
-            <div className="border-t border-white/10 p-5 pb-4">
+            <div className="border-t border-line/10 p-5 pb-4">
               <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted">{t("yt.next")} →</p>
               <div className="flex flex-wrap gap-2">
                 {neighbours.map((n) => (
@@ -374,7 +374,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
                     key={n.id}
                     type="button"
                     onClick={() => pick(n.id)}
-                    className="rounded-full border px-3 py-1 text-xs text-white/85 transition-colors hover:bg-white/10"
+                    className="rounded-full border px-3 py-1 text-xs text-ink/85 transition-colors hover:bg-ink/5"
                     style={{ borderColor: `${GROUP[n.group].ring}80` }}
                   >
                     {n.title}
@@ -384,7 +384,7 @@ export default function YouTubeNetwork({ series, shared }: { series: SeriesFeed[
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2 border-t border-white/10 p-5">
+          <div className="flex flex-wrap gap-2 border-t border-line/10 p-5">
             <a
               href={`https://www.youtube.com/playlist?list=${active.playlistId}`}
               target="_blank"

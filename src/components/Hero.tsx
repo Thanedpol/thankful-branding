@@ -31,12 +31,12 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
   const name = profile?.name ?? "Thank Thanedpol";
 
   return (
-    <section className="relative isolate flex min-h-screen items-center overflow-hidden pb-24 pt-28 text-white md:pt-24">
+    <section className="relative isolate flex min-h-screen items-center overflow-hidden pb-24 pt-28 text-ink md:pt-24">
       {/* a far galaxy, turning very slowly — squashed on the outer box so the
           spin on the inner one doesn't overwrite the tilt */}
       <div
         aria-hidden
-        className="pointer-events-none absolute right-[3%] top-[14%] -z-10 hidden aspect-square w-[11vw] max-w-[170px] opacity-80 md:block"
+        className="hero-galaxy pointer-events-none absolute right-[3%] top-[14%] -z-10 hidden aspect-square w-[11vw] max-w-[170px] opacity-80 md:block"
         style={{ transform: "scaleY(0.55) rotate(-20deg)" }}
       >
         <div
@@ -55,12 +55,8 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[46%]">
         <div
           className="absolute left-[-35%] top-[38%] h-[220%] w-[150%] rounded-[50%]"
-          style={{
-            background:
-              "radial-gradient(ellipse 50% 50% at 50% 50%, #071027 0%, #050b1c 60%, #03060f 100%)",
-            boxShadow:
-              "0 -2px 0 rgba(140,200,255,0.55), 0 -10px 40px rgba(70,150,255,0.55), 0 -40px 120px rgba(40,110,255,0.35)",
-          }}
+          // the curve of the planet at night, a bright haze horizon by day
+          style={{ background: "var(--horizon-bg)", boxShadow: "var(--horizon-glow)" }}
         />
         <div
           className="space-flare absolute left-[38%] top-[38%] h-40 -translate-x-1/2 -translate-y-1/2 w-[34rem] max-w-[70vw] rounded-full"
@@ -78,12 +74,9 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
           <div
             aria-hidden
             className="pointer-events-none absolute -inset-x-10 -inset-y-12 -z-10 rounded-[3rem]"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 62% at 42% 50%, rgba(3,6,15,0.78) 0%, rgba(3,6,15,0.55) 55%, transparent 100%)",
-            }}
+            style={{ background: "var(--hero-plate)" }}
           />
-          <p className="space-rise font-mono text-xs uppercase tracking-[0.55em] text-[#f5c45e] sm:text-sm">
+          <p className="space-rise text-gold font-mono text-xs uppercase tracking-[0.55em] sm:text-sm">
             Thankful
           </p>
 
@@ -91,29 +84,29 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
             className="space-rise mt-5 font-display font-bold leading-[1.02] tracking-tight"
             style={{ animationDelay: "0.08s" }}
           >
-            <span className="block text-[2.6rem] text-white drop-shadow-[0_0_24px_rgba(120,180,255,0.35)] sm:text-6xl lg:text-7xl">
-              BEYOND AI<span className="text-[#f5c45e]">.</span>
+            <span className="block text-[2.6rem] text-ink drop-shadow-[0_0_24px_rgba(120,180,255,0.35)] sm:text-6xl lg:text-7xl">
+              BEYOND AI<span className="text-gold">.</span>
             </span>
-            <span className="mt-1 block bg-gradient-to-r from-[#ffd77a] via-[#f5b941] to-[#ffcf6b] bg-clip-text text-[2.15rem] text-transparent sm:text-5xl lg:text-[4rem]">
+            <span className="hero-gold-text mt-1 block text-[2.15rem] sm:text-5xl lg:text-[4rem]">
               EXPLORE THE UNIVERSE.
             </span>
             <span className="sr-only"> — {name}</span>
           </h1>
 
           <p
-            className="space-rise mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] tracking-[0.42em] text-white/85 sm:text-sm"
+            className="space-rise mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] tracking-[0.42em] text-ink/85 sm:text-sm"
             style={{ animationDelay: "0.16s" }}
           >
             {PILLARS.map((p, i) => (
               <span key={p} className="flex items-center gap-3">
-                {i > 0 && <span className="text-white/50">•</span>}
+                {i > 0 && <span className="text-ink/50">•</span>}
                 {p}
               </span>
             ))}
           </p>
 
           <p
-            className="space-rise mt-5 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base"
+            className="space-rise mt-5 max-w-xl text-sm leading-relaxed text-ink/75 sm:text-base"
             style={{ animationDelay: "0.22s" }}
           >
             {t("hero.tagline")}
@@ -135,7 +128,7 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
               href={YT_CHANNEL_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 rounded-full border border-white/70 bg-[#050a18]/80 px-6 py-3.5 font-semibold text-white backdrop-blur-md transition-colors hover:border-white hover:bg-[#0b1530]/90"
+              className="inline-flex items-center gap-2.5 rounded-full border border-ink/20 bg-white/85 px-6 py-3.5 font-semibold text-ink backdrop-blur-md transition-colors hover:border-ink/40 dark:border-white/70 dark:bg-[#050a18]/80 dark:text-white dark:hover:border-white dark:hover:bg-[#0b1530]/90"
             >
               <span className="flex h-5 w-7 items-center justify-center rounded-md bg-[#ff0033]">
                 <svg viewBox="0 0 24 24" className="ml-0.5 h-3 w-3 fill-white" aria-hidden>

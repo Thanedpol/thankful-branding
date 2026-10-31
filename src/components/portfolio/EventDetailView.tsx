@@ -24,7 +24,8 @@ export default function EventDetailView({
     <>
       <Navbar />
       <main className="min-h-screen pt-32">
-        <article className="mx-auto max-w-3xl px-6 pb-24">
+        <div className="mx-auto max-w-3xl px-6 pb-24">
+        <article className="reading-surface">
           <Link
             href={backHref}
             className="font-mono text-xs uppercase tracking-wider text-cyan hover:text-ink"
@@ -66,6 +67,7 @@ export default function EventDetailView({
             </a>
           )}
         </article>
+        </div>
       </main>
       <Footer />
     </>

@@ -20,7 +20,11 @@ export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
     { label: "LinkedIn", href: social?.linkedin },
     { label: "GitHub", href: social?.github },
     { label: "Email", href: social?.email ? `mailto:${social.email}` : undefined },
-  ].filter((l): l is { label: string; href: string } => Boolean(l.href));
+  ]
+    .filter((l): l is { label: string; href: string } => Boolean(l.href))
+    // A profile URL with no path ("https://x.com/") is an unfilled placeholder
+    // in the profile settings, not a profile — linking it sends people nowhere.
+    .filter((l) => l.href.startsWith("mailto:") || /^https?:\/\/[^/]+\/[^/?#]+/.test(l.href));
 
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-line/10 bg-space">

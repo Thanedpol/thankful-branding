@@ -20,7 +20,7 @@ export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
           </div>
           <Link
             href="/blog"
-            className="hidden rounded-full border border-cyan/30 bg-[#050a18]/80 px-4 py-2 font-mono text-xs uppercase tracking-wider text-cyan backdrop-blur-md hover:text-ink sm:block"
+            className="hidden rounded-full border border-cyan/30 bg-white/85 px-4 py-2 font-mono text-xs uppercase tracking-wider text-cyan backdrop-blur-md hover:text-ink dark:bg-[#050a18]/80 sm:block"
           >
             {t("blog.all")}
           </Link>
