@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import TikTokLatest from "./TikTokLatest";
 import { useApp } from "@/components/providers/AppProvider";
 import { YT_CHANNEL_URL, type SeriesFeed } from "@/lib/youtube";
 import type { BlogPreview } from "@/lib/types";
@@ -108,7 +109,8 @@ export default function LatestUpdates({ series, posts }: { series: SeriesFeed[];
   return (
     <section aria-labelledby="latest-heading" className="relative mx-auto -mt-10 max-w-7xl px-6 pb-6">
       <div className="space-plate flex flex-col gap-4 !p-4 sm:!p-5 lg:flex-row lg:items-center">
-        <div className="flex shrink-0 items-center gap-3 lg:w-44">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 lg:w-44 lg:flex-col lg:items-start lg:justify-center">
+          <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan/40 text-cyan shadow-[0_0_18px_rgb(var(--accent)/0.3)]">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
               <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
@@ -117,9 +119,20 @@ export default function LatestUpdates({ series, posts }: { series: SeriesFeed[];
           <h2 id="latest-heading" className="font-display text-lg font-bold text-ink">
             {t("latest.heading")}
           </h2>
+          </div>
+          {/* Under the heading rather than after the list, so the list keeps
+              the width it needs for four items on wide screens. */}
+          <a
+            href={YT_CHANNEL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-line/15 px-4 py-2 text-xs font-medium text-ink transition-colors hover:border-cyan/50 hover:text-cyan"
+          >
+            {t("latest.all")} →
+          </a>
         </div>
 
-        <ul className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 lg:grid lg:flex-1 lg:grid-cols-4 lg:overflow-visible lg:pb-0">
+        <ul className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 lg:grid lg:flex-1 lg:grid-cols-2 lg:overflow-visible lg:pb-0 xl:grid-cols-4">
           {items.map((it) => {
             const inner = (
               <>
@@ -156,16 +169,9 @@ export default function LatestUpdates({ series, posts }: { series: SeriesFeed[];
             );
           })}
         </ul>
-
-        <a
-          href={YT_CHANNEL_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 self-start rounded-full border border-line/15 px-4 py-2 text-xs font-medium text-ink transition-colors hover:border-cyan/50 hover:text-cyan lg:self-center"
-        >
-          {t("latest.all")} →
-        </a>
       </div>
+
+      <TikTokLatest />
     </section>
   );
 }

@@ -24,8 +24,10 @@ interface Meteor {
 
 const HUES = ["255,255,255", "255,255,255", "255,255,255", "170,205,255", "255,214,150"];
 
-/** Twinkling, slowly drifting starfield with the odd shooting star. */
-/** `quiet` thins the stars and drops the shooting stars — for reading pages. */
+/**
+ * Twinkling, slowly drifting starfield with the odd shooting star. `quiet`
+ * thins the stars and drops the shooting stars — for reading pages.
+ */
 export default function StarField({ className = "", quiet = false }: { className?: string; quiet?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
