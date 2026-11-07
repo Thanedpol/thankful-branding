@@ -11,10 +11,13 @@ export default function PortfolioSection({
   items,
   cvThUrl,
   cvEnUrl,
+  showResume = false,
 }: {
   items: Portfolio[];
   cvThUrl?: string | null;
   cvEnUrl?: string | null;
+  /** Off unless switched on in the admin Profile page. */
+  showResume?: boolean;
 }) {
   const t = useT();
   const [active, setActive] = useState<Portfolio | null>(null);
@@ -37,6 +40,7 @@ export default function PortfolioSection({
   return (
     <section id="portfolio" className="section-pad scroll-mt-20">
       <Reveal className="space-plate mb-12 inline-block">
+        {showResume && (
         <div className="mb-8 flex flex-wrap items-center gap-3">
           <span className="font-mono text-xs uppercase tracking-wider text-muted">
             {t("nav.cv")}:
@@ -58,6 +62,7 @@ export default function PortfolioSection({
             {t("cv.en")}
           </a>
         </div>
+        )}
         <p className="eyebrow">{t("portfolio.eyebrow")}</p>
         <h2 className="font-display text-3xl font-bold md:text-4xl text-gradient">
           {t("portfolio.heading")}

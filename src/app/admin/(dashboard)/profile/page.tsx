@@ -49,6 +49,19 @@ export default async function AdminProfilePage() {
         <p className="pt-2 font-mono text-[11px] uppercase tracking-wider text-cyan/70">
           Resume — ปุ่ม “ดู Resume” หน้าแรก
         </p>
+        <label className="flex items-start gap-2 font-mono text-xs text-muted">
+          <input
+            type="checkbox"
+            name="show_resume"
+            defaultChecked={p?.show_resume === true}
+            className="mt-0.5 accent-cyan"
+          />
+          <span>
+            แสดงปุ่ม Resume บนหน้าแรก (เหนือหัวข้อผลงานเด่น) — ปิดไว้ = ซ่อน
+            <br />
+            <span className="text-ink/40">ต้องรัน supabase/add-show-resume.sql ครั้งเดียวก่อน ถ้ายังไม่รัน ปุ่มจะถูกซ่อนเสมอ</span>
+          </span>
+        </label>
         <PublicFileUpload
           name="cv_th_url"
           defaultValue={p?.cv_th_url ?? ""}

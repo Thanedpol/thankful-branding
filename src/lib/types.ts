@@ -128,6 +128,9 @@ export interface SiteProfile {
   cv_en_url?: string | null;
   /** Standalone portfolio page shown by the About button. */
   portfolio_url?: string | null;
+  /** Show the Resume buttons above the portfolio on the home page. Absent
+   *  (column not migrated yet) counts as hidden. */
+  show_resume?: boolean | null;
 }
 
 /** Social metrics for a collection event (e.g. a Facebook post's numbers).

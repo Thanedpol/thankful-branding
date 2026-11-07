@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import YouTubeNetwork from "@/components/YouTubeNetwork";
 import LatestUpdates from "@/components/LatestUpdates";
+import HireSection from "@/components/HireSection";
 import { getSeriesFeeds } from "@/lib/youtube-feeds";
 import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
@@ -74,10 +75,12 @@ export default async function HomePage() {
         <LatestUpdates series={feeds.series} posts={posts} />
         <YouTubeNetwork series={feeds.series} shared={feeds.shared} />
         <About profile={profile} />
+        <HireSection />
         <PortfolioSection
           items={portfolios}
           cvThUrl={profile?.cv_th_url}
           cvEnUrl={profile?.cv_en_url}
+          showResume={profile?.show_resume === true}
         />
         <BlogPreview posts={posts} />
       </main>

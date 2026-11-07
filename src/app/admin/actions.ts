@@ -522,6 +522,14 @@ export async function saveProfile(formData: FormData) {
     .eq("id", 1);
   if (cvErr) console.error("[saveProfile] CV/portfolio columns not migrated?", cvErr.message);
 
+  // Separate again: add-show-resume.sql may not have been run yet, and a
+  // missing column must not block the rest of the profile from saving.
+  const { error: resumeErr } = await supabase
+    .from("site_profile")
+    .update({ show_resume: formData.get("show_resume") === "on" })
+    .eq("id", 1);
+  if (resumeErr) console.error("[saveProfile] show_resume column not migrated?", resumeErr.message);
+
   refreshPublic();
   revalidatePath("/admin/profile");
 }
