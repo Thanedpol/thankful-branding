@@ -8,15 +8,20 @@ import { HIRE_CONTACT_EMAIL, HIRE_WORKS, tiktokVideoId } from "@/lib/hire";
 /**
  * "รับงาน" — sample work, shown just before the featured portfolio.
  *
- * Each clip uses TikTok's official embed player (player/v1), which shows the
- * cover with a play button until it plays. Hovering with a mouse starts a
- * muted preview through the player's postMessage API — browsers only allow
- * muted playback without a click — and leaving pauses it again. Pressing the
- * player's own play button plays with sound.
+ * Each clip uses TikTok's official embed player (player/v1). Until it has
+ * been clicked once that player is only a poster and ignores the postMessage
+ * API, so it is loaded with muted autoplay — browsers allow that without a
+ * click — and paused the moment it reports ready, leaving the cover frame on
+ * screen with a live player behind it. Then:
+ *   - mouse hover plays a muted preview; leaving pauses it again;
+ *   - clicking the clip turns the sound on and plays.
+ * A click inside a cross-origin iframe can't be observed directly, but it
+ * moves focus into the frame, which blurs this window — that is the signal.
  */
 
 const PLAYER_PARAMS = new URLSearchParams({
-  autoplay: "0",
+  autoplay: "1",
+  muted: "1",
   loop: "1",
   rel: "0",
   music_info: "0",
@@ -26,6 +31,9 @@ const PLAYER_PARAMS = new URLSearchParams({
 }).toString();
 
 type PlayerMessage = { "x-tiktok-player"?: boolean; type?: string; value?: unknown };
+type Command = "play" | "pause" | "mute" | "unMute";
+
+const PLAYING = 1;
 
 function parse(data: unknown): PlayerMessage | null {
   if (data && typeof data === "object") return data as PlayerMessage;
@@ -44,36 +52,54 @@ function TikTokPlayerCard({ url, label }: { url: string; label: string }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const ready = useRef(false);
   const hovering = useRef(false);
-  // A hover preview is muted and ours to stop. Once the viewer unmutes or
-  // presses play themselves, leaving the card must not interrupt them.
-  const previewing = useRef(false);
+  const state = useRef(-1);
+  const muted = useRef(true);
   const [failed, setFailed] = useState(false);
 
-  const send = (type: "play" | "pause" | "mute") =>
+  const send = (type: Command) =>
     frame.current?.contentWindow?.postMessage({ type, value: undefined, "x-tiktok-player": true }, "*");
-
-  const startPreview = () => {
-    previewing.current = true;
-    send("mute");
-    send("play");
-  };
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow) return;
       const msg = parse(e.data);
       if (!msg?.["x-tiktok-player"]) return;
-      if (msg.type === "onPlayerReady") {
-        ready.current = true;
-        if (hovering.current) startPreview(); // hovered before the player was up
-      } else if (msg.type === "onMute" && msg.value === false) {
-        previewing.current = false; // the viewer turned the sound on
-      } else if (msg.type === "onPlayerError") {
-        setFailed(true);
+      switch (msg.type) {
+        case "onPlayerReady":
+          ready.current = true;
+          if (!hovering.current) send("pause"); // stop the autoplay on the cover
+          break;
+        case "onStateChange":
+          state.current = Number(msg.value);
+          break;
+        case "onMute":
+          muted.current = msg.value === true;
+          break;
+        case "onPlayerError": {
+          // Playback/autoplay hiccups (3xxx) leave a usable player; anything
+          // else means the clip can't be shown here.
+          const code = Number((msg.value as { errorCode?: number } | undefined)?.errorCode);
+          if (!(code >= 3000)) setFailed(true);
+          break;
+        }
       }
     };
+
+    // Focus moved into the player: the visitor clicked it. Play with sound —
+    // unless it is already doing that, in which case their click was a pause.
+    const onBlur = () => {
+      if (!ready.current || document.activeElement !== frame.current) return;
+      if (state.current === PLAYING && !muted.current) return;
+      send("unMute");
+      send("play");
+    };
+
     window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("message", onMessage);
+      window.removeEventListener("blur", onBlur);
+    };
   }, []);
 
   if (!id || failed) {
@@ -93,14 +119,19 @@ function TikTokPlayerCard({ url, label }: { url: string; label: string }) {
     <div
       className="glass overflow-hidden !rounded-2xl p-1.5"
       onPointerEnter={(e) => {
-        if (e.pointerType !== "mouse") return; // touch: use the play button
+        if (e.pointerType !== "mouse") return; // touch: tap the clip instead
         hovering.current = true;
-        if (ready.current) startPreview();
+        if (ready.current && state.current !== PLAYING) {
+          send("mute");
+          send("play");
+        }
       }}
       onPointerLeave={(e) => {
         if (e.pointerType !== "mouse") return;
         hovering.current = false;
-        if (ready.current && previewing.current) send("pause");
+        // Only a muted preview is ours to stop; never cut off a clip someone
+        // is listening to.
+        if (ready.current && muted.current) send("pause");
       }}
     >
       <iframe
