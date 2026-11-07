@@ -12,7 +12,9 @@ import { HIRE_CONTACT_EMAIL, HIRE_WORKS, tiktokVideoId } from "@/lib/hire";
  * been clicked once that player is only a poster and ignores the postMessage
  * API, so it is loaded with muted autoplay — browsers allow that without a
  * click — and paused the moment it reports ready, leaving the cover frame on
- * screen with a live player behind it. Then:
+ * screen with a live player behind it (the pause is repeated on the first
+ * real start, since a pause sent on "ready" can land before autoplay does).
+ * Then:
  *   - mouse hover plays a muted preview; leaving pauses it again;
  *   - clicking the clip turns the sound on and plays.
  * A click inside a cross-origin iframe can't be observed directly, but it
@@ -54,6 +56,9 @@ function TikTokPlayerCard({ url, label }: { url: string; label: string }) {
   const hovering = useRef(false);
   const state = useRef(-1);
   const muted = useRef(true);
+  // The muted autoplay is only there to wake the player; it is stopped the
+  // first time it actually starts playing.
+  const settled = useRef(false);
   const [failed, setFailed] = useState(false);
 
   const send = (type: Command) =>
@@ -67,10 +72,16 @@ function TikTokPlayerCard({ url, label }: { url: string; label: string }) {
       switch (msg.type) {
         case "onPlayerReady":
           ready.current = true;
-          if (!hovering.current) send("pause"); // stop the autoplay on the cover
+          if (!hovering.current) send("pause");
           break;
         case "onStateChange":
           state.current = Number(msg.value);
+          // "ready" can arrive before the autoplay begins, and a pause sent
+          // then is lost — so also stop it here, on its first real start.
+          if (state.current === PLAYING && !settled.current) {
+            settled.current = true;
+            if (!hovering.current) send("pause");
+          }
           break;
         case "onMute":
           muted.current = msg.value === true;
@@ -89,6 +100,7 @@ function TikTokPlayerCard({ url, label }: { url: string; label: string }) {
     // unless it is already doing that, in which case their click was a pause.
     const onBlur = () => {
       if (!ready.current || document.activeElement !== frame.current) return;
+      settled.current = true;
       if (state.current === PLAYING && !muted.current) return;
       send("unMute");
       send("play");
