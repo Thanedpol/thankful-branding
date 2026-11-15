@@ -146,9 +146,13 @@ export default function LatestUpdates({ series, posts }: { series: SeriesFeed[];
                     {it.label}
                   </span>
                   <span className="line-clamp-2 text-xs font-medium leading-snug text-ink">{it.title}</span>
-                  <span className="mt-0.5 block font-mono text-[10px] text-muted" suppressHydrationWarning>
+                  <time
+                    dateTime={it.date || undefined}
+                    className="mt-0.5 block font-mono text-[10px] text-muted"
+                    suppressHydrationWarning
+                  >
                     {now && it.date ? relative(it.date, locale, now) : absolute(it.date, locale)}
-                  </span>
+                  </time>
                 </span>
               </>
             );

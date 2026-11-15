@@ -227,6 +227,10 @@ export default function SocialPopBook() {
           <span className="text-white/70">{SOCIAL_PROFILES[active].handle}</span>
           <span aria-hidden>↗</span>
         </a>
+        {/* Announces the profile now in front after an arrow, swipe or dot. */}
+        <p className="sr-only" role="status" aria-live="polite">
+          {`${SOCIAL_PROFILES[active].label} ${SOCIAL_PROFILES[active].handle} — ${active + 1} / ${N}`}
+        </p>
         <div className="flex gap-2" role="tablist" aria-label="เลือกช่องทาง">
           {SOCIAL_PROFILES.map((p, i) => (
             <button

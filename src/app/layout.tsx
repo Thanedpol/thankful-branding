@@ -10,9 +10,7 @@ import "./globals.css";
 import { AppProvider } from "@/components/providers/AppProvider";
 import SiteBackdrop from "@/components/space/SiteBackdrop";
 import { hasPublishedProducts } from "@/lib/shop-flag";
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/seo";
-
-const SITE_TITLE = "Thank Thanedpol — AI, Business & Technology News";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/seo";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],

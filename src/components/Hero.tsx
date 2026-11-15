@@ -76,9 +76,11 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
             className="pointer-events-none absolute -inset-x-10 -inset-y-12 -z-10 rounded-[3rem]"
             style={{ background: "var(--hero-plate)" }}
           />
-          <p className="space-rise text-gold font-mono text-xs uppercase tracking-[0.55em] sm:text-sm">
+          {/* Not <p>: a one-word label, and the first paragraph of the page
+              should be the tagline that actually says something. */}
+          <div className="space-rise text-gold font-mono text-xs uppercase tracking-[0.55em] sm:text-sm">
             Thankful
-          </p>
+          </div>
 
           <h1
             className="space-rise mt-5 font-display font-bold leading-[1.02] tracking-tight"
@@ -93,7 +95,7 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
             <span className="sr-only"> — {name}</span>
           </h1>
 
-          <p
+          <div
             className="space-rise mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] tracking-[0.42em] text-ink/85 sm:text-sm"
             style={{ animationDelay: "0.16s" }}
           >
@@ -103,7 +105,7 @@ export default function Hero({ profile }: { profile: SiteProfile | null }) {
                 {p}
               </span>
             ))}
-          </p>
+          </div>
 
           <p
             className="space-rise mt-5 max-w-xl text-sm leading-relaxed text-ink/75 sm:text-base"

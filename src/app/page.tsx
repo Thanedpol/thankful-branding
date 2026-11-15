@@ -9,7 +9,17 @@ import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
-import { personJsonLd, websiteJsonLd, faqJsonLd, brandJsonLd, youtubeSeriesJsonLd } from "@/lib/seo";
+import FaqSection from "@/components/FaqSection";
+import {
+  personJsonLd,
+  websiteJsonLd,
+  faqJsonLd,
+  brandJsonLd,
+  youtubeSeriesJsonLd,
+  homePageJsonLd,
+  jsonLdGraph,
+  WHO_IS,
+} from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import {
   isSupabaseConfigured,
@@ -58,23 +68,34 @@ export default async function HomePage() {
 
   const feeds = await feedsPromise;
 
+  // The page changes whenever an episode or article lands; say so, so
+  // engines that weigh freshness see a date instead of none.
+  const dateModified = [
+    ...feeds.series.flatMap((s) => s.videos.map((v) => v.published)),
+    ...posts.map((p) => p.published_at ?? ""),
+  ]
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+
   return (
     <>
       <JsonLd
-        data={[
+        data={jsonLdGraph([
+          homePageJsonLd(dateModified),
           websiteJsonLd(),
           personJsonLd(profile),
           brandJsonLd(),
           youtubeSeriesJsonLd(feeds.series),
           faqJsonLd(),
-        ]}
+        ])}
       />
       <Navbar />
       <main className="relative text-ink">
         <Hero profile={profile} />
         <LatestUpdates series={feeds.series} posts={posts} />
         <YouTubeNetwork series={feeds.series} shared={feeds.shared} />
-        <About profile={profile} />
+        <About profile={profile} whoIs={WHO_IS} />
         <HireSection />
         <PortfolioSection
           items={portfolios}
@@ -83,6 +104,7 @@ export default async function HomePage() {
           showResume={profile?.show_resume === true}
         />
         <BlogPreview posts={posts} />
+        <FaqSection />
       </main>
       <Footer social={profile?.social_links} />
     </>

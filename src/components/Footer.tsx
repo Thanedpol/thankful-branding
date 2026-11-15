@@ -3,12 +3,19 @@
 import Link from "next/link";
 import { useT } from "@/components/providers/AppProvider";
 import type { SocialLinks } from "@/lib/types";
+import { LINKEDIN_URL, GITHUB_URL } from "@/lib/social";
 
 const NAV = [
-  { href: "/#about", key: "nav.about" },
+  { href: "/about", key: "nav.about" },
   { href: "/#portfolio", key: "nav.portfolio" },
   { href: "/blog", key: "nav.blog" },
   { href: "/press-kit", key: "nav.pressKit" },
+  { href: "/#faq", key: "footer.faq" },
+];
+
+const LEGAL = [
+  { href: "/privacy", key: "footer.privacy" },
+  { href: "/terms", key: "footer.terms" },
 ];
 
 export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
@@ -17,8 +24,10 @@ export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
     { label: "TikTok", href: social?.tiktok },
     { label: "Facebook", href: social?.facebook },
     { label: "X", href: social?.x },
-    { label: "LinkedIn", href: social?.linkedin },
-    { label: "GitHub", href: social?.github },
+    // Fall back to the known profiles, so pages rendered without the
+    // profile row still link them (rel="me" ties them to this site).
+    { label: "LinkedIn", href: social?.linkedin || LINKEDIN_URL },
+    { label: "GitHub", href: social?.github || GITHUB_URL },
     { label: "Email", href: social?.email ? `mailto:${social.email}` : undefined },
   ]
     .filter((l): l is { label: string; href: string } => Boolean(l.href))
@@ -76,7 +85,7 @@ export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
                     <a
                       href={l.href}
                       target={l.href.startsWith("http") ? "_blank" : undefined}
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer me"
                       className="footer-link"
                     >
                       <span className="footer-link-bar" />
@@ -91,9 +100,18 @@ export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
 
         {/* Bottom bar */}
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-line/10 pt-6 sm:flex-row">
-          <p className="font-mono text-xs text-muted">
-            © {new Date().getFullYear()} Thank Thanedpol · {t("footer.rights")}
-          </p>
+          <div className="flex flex-col items-center gap-2 sm:items-start">
+            <p className="font-mono text-xs text-muted">
+              © {new Date().getFullYear()} Thank Thanedpol · {t("footer.rights")}
+            </p>
+            <nav aria-label="Legal" className="flex gap-4">
+              {LEGAL.map((l) => (
+                <Link key={l.href} href={l.href} className="font-mono text-xs text-muted transition-colors hover:text-cyan">
+                  {t(l.key)}
+                </Link>
+              ))}
+            </nav>
+          </div>
           <div className="flex items-center gap-4">
             <button
               type="button"

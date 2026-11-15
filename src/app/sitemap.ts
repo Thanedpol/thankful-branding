@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/seo";
+import { SITE_URL, ABOUT_UPDATED, LEGAL_UPDATED } from "@/lib/seo";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured, demoBlogPreviews } from "@/lib/demo-data";
 import { COLLECTION_SLUGS, getCollectionEventSlugs } from "@/lib/portfolio-collections";
@@ -44,7 +44,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/shop`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${SITE_URL}/about`, lastModified: new Date(ABOUT_UPDATED), changeFrequency: "monthly", priority: 0.9 },
     { url: `${SITE_URL}/press-kit`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE_URL}/privacy`, lastModified: new Date(LEGAL_UPDATED), changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/terms`, lastModified: new Date(LEGAL_UPDATED), changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/portfolio/snobby-story`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/portfolio/insightist`, changeFrequency: "monthly", priority: 0.6 },
   ];

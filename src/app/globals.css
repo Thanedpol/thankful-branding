@@ -1027,3 +1027,11 @@ body {
 }
 [data-theme="light"] .reading-surface { background: rgba(255, 255, 255, 0.95); }
 @media (min-width: 640px) { .reading-surface { padding: 2.25rem 2.5rem; } }
+
+/* /privacy and /terms — plain readable prose */
+.legal-prose h2 { margin-top: 2.25rem; font-size: 1.25rem; font-weight: 700; color: rgb(var(--text)); }
+.legal-prose p,
+.legal-prose li { margin-top: 0.75rem; line-height: 1.75; color: rgb(var(--muted)); }
+.legal-prose ul { list-style: disc; padding-left: 1.25rem; }
+.legal-prose a { color: rgb(var(--accent)); }
+.legal-prose a:hover { text-decoration: underline; }

@@ -1,6 +1,6 @@
 import type { SiteProfile, BlogPost, BlogPreview } from "@/lib/types";
-import { YT_CHANNEL_URL, type SeriesFeed } from "@/lib/youtube";
-import { SOCIAL_PROFILES } from "@/lib/social";
+import { YT_CHANNEL_URL, SERIES, type SeriesFeed } from "@/lib/youtube";
+import { SOCIAL_PROFILES, LINKEDIN_URL, GITHUB_URL } from "@/lib/social";
 
 /** Canonical site URL (no trailing slash). Set NEXT_PUBLIC_SITE_URL in prod. */
 export const SITE_URL = (
@@ -8,6 +8,7 @@ export const SITE_URL = (
 ).replace(/\/$/, "");
 
 const NAME = "Thank Thanedpol";
+export const SITE_TITLE = "Thank Thanedpol — AI, Business & Technology News";
 const ALT_NAME = "Thanedpol Dechaduangsakul";
 /** The Thai spelling, stated outright. Without it, search and answer engines
  *  transliterate "Thanedpol" themselves and get it wrong (Google's AI Overview
@@ -19,6 +20,14 @@ const ROLE = "Content Creator — AI & Business · SCI & Technology";
 export const SITE_NAME = NAME;
 /** The public brand the site, the YouTube channel and the logo all carry. */
 export const BRAND = "Thankful";
+// ── Stable node ids. Every page's structured data points at the same person,
+// brand and website through these, so engines merge them into one entity
+// instead of reading a dozen unrelated "Person" objects. ─────────────────────
+export const PERSON_ID = `${SITE_URL}/#person`;
+export const BRAND_ID = `${SITE_URL}/#brand`;
+export const WEBSITE_ID = `${SITE_URL}/#website`;
+const PERSON_LINK = { "@id": PERSON_ID };
+
 export const SITE_DESCRIPTION =
   "Thank Thanedpol (ธเนศพล เดชาดวงสกุล, คุณแต้ง) — content creator covering AI, business, science and technology news across Thailand and worldwide. Made simple, timely, and useful.";
 
@@ -35,7 +44,7 @@ const EDUCATION = [
   { "@type": "HighSchool", name: "Traimit Wittayalai School" },
 ];
 
-const CREDENTIALS: { name: string; by: string }[] = [
+export const CREDENTIALS: { name: string; by: string }[] = [
   { name: "Claude 101", by: "Anthropic" },
   { name: "Claude Foundations", by: "Rangsit University" },
   { name: "OKMD Career Bootcamp — Creative Writing Prompt", by: "OKMD" },
@@ -66,7 +75,8 @@ export function personJsonLd(profile: SiteProfile | null) {
     social?.x,
     social?.tiktok,
     social?.facebook,
-    "https://github.com/Thanedpol",
+    GITHUB_URL,
+    LINKEDIN_URL,
     // The YouTube channel is where most people meet the work — linking it is
     // what lets search and answer engines join the channel and this site into
     // one entity.
@@ -79,6 +89,7 @@ export function personJsonLd(profile: SiteProfile | null) {
   return {
     "@context": "https://schema.org",
     "@type": "Person",
+    "@id": PERSON_ID,
     name: profile?.name ?? NAME,
     alternateName: [ALT_NAME, NAME_TH, `คุณ${NICKNAME_TH}`, `${NICKNAME_TH} ${NAME_TH}`],
     givenName: "Thanedpol",
@@ -91,7 +102,8 @@ export function personJsonLd(profile: SiteProfile | null) {
       ? new URL(profile.avatar_url, SITE_URL).toString()
       : undefined,
     worksFor: EMPLOYER,
-    brand: { "@id": `${SITE_URL}/#brand` },
+    brand: { "@id": BRAND_ID },
+    mainEntityOfPage: `${SITE_URL}/about`,
     alumniOf: EDUCATION,
     knowsAbout: KNOWS_ABOUT,
     knowsLanguage: ["th", "en"],
@@ -109,12 +121,15 @@ export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": WEBSITE_ID,
     name: `${NAME} — Portfolio & Blog`,
     alternateName: [BRAND, "Thankful Branding"],
     url: SITE_URL,
     inLanguage: ["th", "en", "zh"],
     description: SITE_DESCRIPTION,
-    publisher: { "@type": "Person", name: NAME, url: SITE_URL },
+    publisher: PERSON_LINK,
+    author: PERSON_LINK,
+    about: { "@id": BRAND_ID },
   };
 }
 
@@ -127,15 +142,16 @@ export function brandJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": `${SITE_URL}/#brand`,
+    "@id": BRAND_ID,
     name: BRAND,
     alternateName: ["Thankful Branding", "Thankful2026"],
     url: SITE_URL,
     logo: `${SITE_URL}/thankful-logo.png`,
     description:
       "Thai-language AI, business, science and technology news and explainers by Thank Thanedpol — on the web and on YouTube.",
-    founder: { "@type": "Person", name: NAME, alternateName: [ALT_NAME, NAME_TH], url: SITE_URL },
-    sameAs: [YT_CHANNEL_URL],
+    founder: PERSON_LINK,
+    // The channel and the TikTok account both carry the brand's own name.
+    sameAs: [YT_CHANNEL_URL, ...SOCIAL_PROFILES.filter((p) => p.platform === "tiktok").map((p) => p.url)],
     knowsAbout: KNOWS_ABOUT,
   };
 }
@@ -162,7 +178,7 @@ export function youtubeSeriesJsonLd(series: SeriesFeed[]) {
           description: s.blurb,
           url: `https://www.youtube.com/playlist?list=${s.playlistId}`,
           inLanguage: "th",
-          author: { "@id": `${SITE_URL}/#brand` },
+          author: { "@id": BRAND_ID },
           ...(v && {
             hasPart: {
               "@type": "VideoObject",
@@ -195,8 +211,9 @@ export function blogPostingJsonLd(post: BlogPost | BlogPreview) {
     inLanguage: "th",
     keywords: post.tags?.join(", ") || undefined,
     articleSection: post.tags?.[0] || undefined,
-    author: { "@type": "Person", name: NAME, url: SITE_URL },
-    publisher: { "@type": "Person", name: NAME, url: SITE_URL },
+    author: PERSON_REF,
+    publisher: PERSON_REF,
+    isPartOf: { "@id": WEBSITE_ID },
   };
 }
 
@@ -205,11 +222,15 @@ export function blogPostingJsonLd(post: BlogPost | BlogPreview) {
 export const FAQ_ITEMS: { q: string; a: string }[] = [
   {
     q: "Thank Thanedpol คือใคร?",
-    a: "Thank Thanedpol คือคุณแต้ง ธเนศพล เดชาดวงสกุล (Thanedpol Dechaduangsakul) คอนเทนต์ครีเอเตอร์ที่เล่าข่าว AI ธุรกิจ วิทยาศาสตร์และเทคโนโลยี ทั้งในไทยและต่างประเทศ ให้เข้าใจง่ายและนำไปใช้ได้จริง ปัจจุบันเป็นทีมข่าวเทคโนโลยีและ AI ของ Insightist AI Transformation Thailand",
+    a: "Thank Thanedpol คือคุณแต้ง ธเนศพล เดชาดวงสกุล (Thanedpol Dechaduangsakul) คอนเทนต์ครีเอเตอร์ที่เล่าข่าว AI ธุรกิจ วิทยาศาสตร์และเทคโนโลยีเป็นภาษาไทย ทั้งในไทยและต่างประเทศ ให้เข้าใจง่ายและนำไปใช้ได้จริง ทำช่อง YouTube ชื่อ Thankful (@Thankful2026) และเป็นทีมข่าวเทคโนโลยีและ AI ของ Insightist AI Transformation Thailand",
   },
   {
     q: "Thank Thanedpol ชื่อภาษาไทยสะกดอย่างไร?",
-    a: "ชื่อจริง ธเนศพล นามสกุล เดชาดวงสกุล ชื่อเล่น แต้ง — ภาษาอังกฤษเขียนว่า Thank Thanedpol หรือ Thanedpol Dechaduangsakul",
+    a: "ชื่อจริง ธเนศพล นามสกุล เดชาดวงสกุล ชื่อเล่น แต้ง (คุณแต้ง) — ภาษาอังกฤษเขียนว่า Thank Thanedpol หรือ Thanedpol Dechaduangsakul",
+  },
+  {
+    q: "ช่อง YouTube ของ Thank Thanedpol มีซีรีส์อะไรบ้าง?",
+    a: `ช่อง Thankful (@Thankful2026) มี ${SERIES.length} ซีรีส์ ได้แก่ ${SERIES.map((x) => x.title).join(", ")} — ดูทั้งหมดได้ที่ ${YT_CHANNEL_URL}`,
   },
   {
     q: "บล็อกนี้มีเนื้อหาเกี่ยวกับอะไร?",
@@ -220,8 +241,8 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
     a: "อ่านได้ 3 ภาษา — ไทย อังกฤษ และจีน (ตัวย่อ) สลับภาษาได้จากปุ่มเปลี่ยนภาษามุมขวาบนของเว็บ",
   },
   {
-    q: "ติดต่อหรือร่วมงานกับ Thank Thanedpol ได้อย่างไร?",
-    a: "ติดต่อผ่านฟอร์มติดต่อบนเว็บไซต์ หรืออีเมล thank.2643@gmail.com และดูข้อมูลสำหรับสื่อได้ที่หน้า Press Kit",
+    q: "ติดต่อหรือจ้างงาน Thank Thanedpol ได้อย่างไร?",
+    a: "ดูตัวอย่างผลงานได้ที่หัวข้อ \"รับงาน\" บนหน้าแรก แล้วติดต่อทางอีเมล thank.2643@gmail.com หรือ LinkedIn ส่วนข้อมูลสำหรับสื่อ (ประวัติ รูป โลโก้) อยู่ที่หน้า Press Kit",
   },
 ];
 
@@ -229,6 +250,8 @@ export function faqJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": `${SITE_URL}/#faq`,
+    isPartOf: { "@id": HOME_PAGE_ID },
     mainEntity: FAQ_ITEMS.map((f) => ({
       "@type": "Question",
       name: f.q,
@@ -237,7 +260,7 @@ export function faqJsonLd() {
   };
 }
 
-const PERSON_REF = { "@type": "Person", name: NAME, url: SITE_URL } as const;
+const PERSON_REF = { "@type": "Person", "@id": PERSON_ID, name: NAME, url: `${SITE_URL}/about` } as const;
 const strip = (s?: string | null) => (s ? s.replace(/<[^>]*>/g, "").trim() : undefined);
 
 /** Breadcrumb trail — helps engines understand where a page sits in the site. */
@@ -264,6 +287,7 @@ export function blogListJsonLd(posts: BlogPreview[]) {
     description: "Articles on AI, business, science and technology.",
     inLanguage: ["th", "en", "zh"],
     publisher: PERSON_REF,
+    isPartOf: { "@id": WEBSITE_ID },
     blogPost: posts.slice(0, 20).map((p) => ({
       "@type": "BlogPosting",
       headline: p.title,
@@ -300,7 +324,7 @@ export function collectionPageJsonLd(c: {
     description: strip(c.intro),
     about: c.category || undefined,
     inLanguage: "th",
-    isPartOf: { "@type": "WebSite", name: `${NAME} — Portfolio & Blog`, url: SITE_URL },
+    isPartOf: { "@id": WEBSITE_ID },
     author: PERSON_REF,
     creator: PERSON_REF,
   };
@@ -327,5 +351,86 @@ export function creativeWorkJsonLd(opts: {
     isPartOf: opts.partOf
       ? { "@type": "CollectionPage", name: opts.partOf.name, url: `${SITE_URL}${opts.partOf.path}` }
       : undefined,
+  };
+}
+
+// ── Answer-first passages ────────────────────────────────────────────────────
+// One self-contained paragraph that answers "who is Thank Thanedpol?" with
+// checkable facts, in the shape answer engines lift whole (≈40–80 words).
+// Shown on the home page (About) and on /about, and marked speakable.
+
+export const WHO_IS_TH = `Thank Thanedpol หรือคุณแต้ง ธเนศพล เดชาดวงสกุล (Thanedpol Dechaduangsakul) เป็นคอนเทนต์ครีเอเตอร์ที่เล่าข่าว AI และธุรกิจเป็นภาษาไทย ทั้งข่าวในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง คุณแต้งทำช่อง YouTube ชื่อ Thankful (@Thankful2026) ที่มี ${SERIES.length} ซีรีส์ เช่น AI ฉับไว News, AI Apps และ Physical AI & Robotics News เขียนบทความบนเว็บนี้ซึ่งอ่านได้ 3 ภาษา และทำงานในทีมข่าวเทคโนโลยีและ AI ของ Insightist AI Transformation Thailand`;
+
+export const WHO_IS_EN = `Thank Thanedpol (Thanedpol Dechaduangsakul; Thai: ธเนศพล เดชาดวงสกุล, nickname แต้ง) is a Thai content creator who explains AI and business news in Thai, from Thailand and around the world, so that it is clear, timely and useful. Thank runs the Thankful YouTube channel (@Thankful2026) with ${SERIES.length} series, including AI ฉับไว News, AI Apps and Physical AI & Robotics News, writes the articles on this site in 3 languages, and works on the technology and AI news team at Insightist AI Transformation Thailand.`;
+
+export const WHO_IS_ZH = `Thank Thanedpol（Thanedpol Dechaduangsakul，泰文名 ธเนศพล เดชาดวงสกุล，昵称 แต้ง）是一位泰国内容创作者，用泰语讲解泰国及全球的 AI 与商业新闻，力求清晰、及时、实用。Thank 运营 YouTube 频道 Thankful（@Thankful2026），共有 ${SERIES.length} 个系列，包括 AI ฉับไว News、AI Apps 和 Physical AI & Robotics News；在本站撰写可用 3 种语言阅读的文章，并任职于 Insightist AI Transformation Thailand 的科技与 AI 新闻团队。`;
+
+export type WhoIs = { th: string; en: string; zh: string };
+export const WHO_IS: WhoIs = { th: WHO_IS_TH, en: WHO_IS_EN, zh: WHO_IS_ZH };
+
+/** When the /about facts and the legal pages were last reviewed. */
+export const ABOUT_UPDATED = "2026-11-15";
+export const LEGAL_UPDATED = "2026-11-15";
+
+const HOME_PAGE_ID = `${SITE_URL}/#webpage`;
+
+/** The home page itself: about the person, part of the website, dated by its
+ *  newest episode or article, with the answer-first passage marked speakable. */
+export function homePageJsonLd(dateModified?: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": HOME_PAGE_ID,
+    url: `${SITE_URL}/`,
+    name: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    inLanguage: "th",
+    isPartOf: { "@id": WEBSITE_ID },
+    about: PERSON_LINK,
+    mainEntity: PERSON_LINK,
+    author: PERSON_LINK,
+    primaryImageOfPage: `${SITE_URL}/opengraph-image`,
+    dateModified,
+    speakable: { "@type": "SpeakableSpecification", cssSelector: ["#who-is-thank", "#faq"] },
+  };
+}
+
+/** /about — the fact page for the person. */
+export function aboutPageJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": `${SITE_URL}/about#webpage`,
+    url: `${SITE_URL}/about`,
+    name: `เกี่ยวกับ ${NAME} (${NAME_TH})`,
+    inLanguage: ["th", "en"],
+    isPartOf: { "@id": WEBSITE_ID },
+    about: PERSON_LINK,
+    mainEntity: PERSON_LINK,
+    dateModified: ABOUT_UPDATED,
+    speakable: { "@type": "SpeakableSpecification", cssSelector: ["#who-is-thank"] },
+  };
+}
+
+/** /privacy and /terms. */
+export function legalPageJsonLd(path: string, name: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${SITE_URL}${path}#webpage`,
+    url: `${SITE_URL}${path}`,
+    name,
+    inLanguage: "th",
+    isPartOf: { "@id": WEBSITE_ID },
+    publisher: PERSON_LINK,
+    dateModified: LEGAL_UPDATED,
+  };
+}
+
+/** Several nodes as one JSON-LD @graph, so the @id links resolve in one place. */
+export function jsonLdGraph(nodes: Record<string, unknown>[]) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": nodes.map(({ "@context": _ctx, ...node }) => node),
   };
 }

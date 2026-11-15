@@ -25,6 +25,16 @@ const AI_AGENTS = [
   "Applebot-Extended",
   // Microsoft Copilot and ChatGPT search both lean on Bing's index
   "Bingbot",
+  // Apple (Siri / Spotlight / Apple Intelligence answers)
+  "Applebot",
+  // Meta AI's search index and live fetches
+  "meta-webindexer",
+  "meta-externalfetcher",
+  // Amazon (Alexa / Rufus) search index and live fetches
+  "Amzn-SearchBot",
+  "Amzn-User",
+  // Mistral Le Chat's search index
+  "MistralAI-Index",
   // Others that feed widely used models
   "CCBot",
   "meta-externalagent",

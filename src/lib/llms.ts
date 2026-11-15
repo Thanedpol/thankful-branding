@@ -1,6 +1,6 @@
 import { SITE_URL, BRAND } from "@/lib/seo";
 import { SERIES, YT_CHANNEL_URL } from "@/lib/youtube";
-import { SOCIAL_PROFILES } from "@/lib/social";
+import { SOCIAL_PROFILES, LINKEDIN_URL, GITHUB_URL } from "@/lib/social";
 
 /**
  * Shared pieces of /llms.txt and /llms-full.txt (https://llmstxt.org).
@@ -50,6 +50,9 @@ export const LLMS_INTRO = `# ${BRAND} — Thank Thanedpol
 - Website: ${SITE_URL}
 - YouTube: ${YT_CHANNEL_URL}
 ${SOCIAL_PROFILES.map((p) => `- ${p.label}: ${p.url}`).join("\n")}
+- LinkedIn: ${LINKEDIN_URL}
+- GitHub: ${GITHUB_URL}
+- Facts page: ${SITE_URL}/about
 - Email: thank.2643@gmail.com
 
 ## Citing this site
@@ -66,13 +69,15 @@ export function seriesSection(): string {
 
 export function pagesSection(hasShop: boolean): string {
   return `## Pages
-- [Home](${SITE_URL}/): who ${BRAND} is, the YouTube series network, portfolio and latest writing
+- [Home](${SITE_URL}/): who ${BRAND} is, the YouTube series network, portfolio, hire section, latest writing and FAQ
+- [About](${SITE_URL}/about): facts about Thank Thanedpol — names and spellings, work, YouTube series, certificates, profiles, contact
 - [Blog](${SITE_URL}/blog): articles on AI, business, science & technology (TH / EN / 简体中文)
 - [Portfolio — Insightist](${SITE_URL}/portfolio/insightist): on-site coverage of AI & tech events in Thailand
 - [Portfolio — Snobby Story](${SITE_URL}/portfolio/snobby-story): AI-made kids' storytelling
 - [Press Kit](${SITE_URL}/press-kit): bio, headshot, logos and media assets${
     hasShop ? `\n- [Shop](${SITE_URL}/shop): digital products and services` : ""
   }
+- [Privacy policy](${SITE_URL}/privacy) · [Terms of use](${SITE_URL}/terms)
 - [Full text for LLMs](${SITE_URL}/llms-full.txt): every public article in plain text
 - [RSS](${SITE_URL}/rss.xml) · [JSON Feed](${SITE_URL}/feed.json) · [Sitemap](${SITE_URL}/sitemap.xml)`;
 }

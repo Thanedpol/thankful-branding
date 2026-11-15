@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Reveal from "./Reveal";
-import { useT } from "@/components/providers/AppProvider";
+import { useApp } from "@/components/providers/AppProvider";
 import type { SiteProfile } from "@/lib/types";
+import type { WhoIs } from "@/lib/seo";
 
-export default function About({ profile }: { profile: SiteProfile | null }) {
-  const t = useT();
+export default function About({ profile, whoIs }: { profile: SiteProfile | null; whoIs: WhoIs }) {
+  const { t, locale } = useApp();
   const [imgOk, setImgOk] = useState(true);
   const showPhoto = !!profile?.avatar_url && imgOk;
 
@@ -58,9 +60,17 @@ export default function About({ profile }: { profile: SiteProfile | null }) {
           >
             {t("about.portfolio")} →
           </a>
-          <p className="whitespace-pre-line text-lg leading-relaxed text-muted">
-            {t("about.bio")}
+          {/* The answer-first passage: one self-contained paragraph of
+              checkable facts, the shape answer engines quote whole. */}
+          <p id="who-is-thank" className="text-lg leading-relaxed text-muted">
+            {whoIs[locale as keyof WhoIs] ?? whoIs.th}
           </p>
+          <Link
+            href="/about"
+            className="mt-4 inline-block font-mono text-xs text-cyan underline-offset-4 hover:underline"
+          >
+            {t("about.more")} →
+          </Link>
         </Reveal>
       </div>
     </section>

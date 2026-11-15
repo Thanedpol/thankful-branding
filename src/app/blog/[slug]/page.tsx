@@ -311,7 +311,10 @@ function PublishedPost({
           <LocalizedTitle title={post.title} translations={post.translations} />
           <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-xs text-muted">
             <span className="text-ink/80">
-              <T k="blog.by" /> {authorName}
+              <T k="blog.by" />{" "}
+              <Link href="/about" rel="author" className="hover:text-cyan hover:underline">
+                {authorName}
+              </Link>
             </span>
             {post.published_at && (
               <>
