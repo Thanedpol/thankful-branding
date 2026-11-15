@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Don't announce the framework in every response header.
+  poweredByHeader: false,
   experimental: {
     // Admin collection saves post a JSON payload that can exceed the 1 MB
     // default (a medium collection with full session bodies), so give it room.
