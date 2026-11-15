@@ -3,11 +3,12 @@
 import Link from "next/link";
 import Reveal from "./Reveal";
 import BlogCard from "./BlogCard";
-import { useT } from "@/components/providers/AppProvider";
+import { useApp } from "@/components/providers/AppProvider";
 import type { BlogPreview as BlogPreviewType } from "@/lib/types";
+import type { Localized } from "@/lib/passages";
 
-export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
-  const t = useT();
+export default function BlogPreview({ posts, intro }: { posts: BlogPreviewType[]; intro?: Localized }) {
+  const { t, locale } = useApp();
   return (
     <section id="blog" className="section-pad scroll-mt-20">
       <Reveal>
@@ -17,6 +18,11 @@ export default function BlogPreview({ posts }: { posts: BlogPreviewType[] }) {
             <h2 className="font-display text-3xl font-bold md:text-4xl text-gradient">
               {t("blog.heading")}
             </h2>
+            {intro && (
+              <p id="blog-summary" className="mt-3 max-w-3xl leading-relaxed text-muted">
+                {intro[locale as keyof Localized] ?? intro.th}
+              </p>
+            )}
           </div>
           <Link
             href="/blog"

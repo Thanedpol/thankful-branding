@@ -230,7 +230,7 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "ช่อง YouTube ของ Thank Thanedpol มีซีรีส์อะไรบ้าง?",
-    a: `ช่อง Thankful (@Thankful2026) มี ${SERIES.length} ซีรีส์ ได้แก่ ${SERIES.map((x) => x.title).join(", ")} — ดูทั้งหมดได้ที่ ${YT_CHANNEL_URL}`,
+    a: `ช่อง Thankful (@Thankful2026) มี ${SERIES.length} ซีรีส์ แบ่งเป็นข่าว AI ${SERIES.filter((x) => x.group === "news").length} ซีรีส์ เรียนรู้ ${SERIES.filter((x) => x.group === "learn").length} ซีรีส์ และสรุปงานอีเวนต์ ${SERIES.filter((x) => x.group === "event").length} ซีรีส์ ได้แก่ ${SERIES.map((x) => x.title).join(", ")} — ดูทั้งหมดได้ที่ ${YT_CHANNEL_URL}`,
   },
   {
     q: "บล็อกนี้มีเนื้อหาเกี่ยวกับอะไร?",
@@ -238,11 +238,11 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "อ่านบทความเป็นภาษาอะไรได้บ้าง?",
-    a: "อ่านได้ 3 ภาษา — ไทย อังกฤษ และจีน (ตัวย่อ) สลับภาษาได้จากปุ่มเปลี่ยนภาษามุมขวาบนของเว็บ",
+    a: "บทความเขียนเป็นภาษาไทย ส่วนเมนูและข้อความบนหน้าเว็บสลับเป็นภาษาอังกฤษหรือจีน (ตัวย่อ) ได้จากปุ่มเปลี่ยนภาษามุมขวาบน",
   },
   {
     q: "ติดต่อหรือจ้างงาน Thank Thanedpol ได้อย่างไร?",
-    a: "ดูตัวอย่างผลงานได้ที่หัวข้อ \"รับงาน\" บนหน้าแรก แล้วติดต่อทางอีเมล thank.2643@gmail.com หรือ LinkedIn ส่วนข้อมูลสำหรับสื่อ (ประวัติ รูป โลโก้) อยู่ที่หน้า Press Kit",
+    a: "ดูตัวอย่างผลงานได้ที่หัวข้อ \"รับงาน\" บนหน้าแรก แล้วติดต่อทางอีเมล thank.2643@gmail.com หรือทาง LinkedIn ของคุณแต้ง ส่วนข้อมูลสำหรับสื่อ เช่น ประวัติ รูปถ่าย และโลโก้ อยู่ที่หน้า Press Kit ของเว็บนี้",
   },
 ];
 
@@ -284,8 +284,8 @@ export function blogListJsonLd(posts: BlogPreview[]) {
     "@type": "Blog",
     name: `${NAME} — Blog`,
     url: `${SITE_URL}/blog`,
-    description: "Articles on AI, business, science and technology.",
-    inLanguage: ["th", "en", "zh"],
+    description: "Thai-language articles on AI, business, science and technology.",
+    inLanguage: "th",
     publisher: PERSON_REF,
     isPartOf: { "@id": WEBSITE_ID },
     blogPost: posts.slice(0, 20).map((p) => ({
@@ -359,11 +359,11 @@ export function creativeWorkJsonLd(opts: {
 // checkable facts, in the shape answer engines lift whole (≈40–80 words).
 // Shown on the home page (About) and on /about, and marked speakable.
 
-export const WHO_IS_TH = `Thank Thanedpol หรือคุณแต้ง ธเนศพล เดชาดวงสกุล (Thanedpol Dechaduangsakul) เป็นคอนเทนต์ครีเอเตอร์ที่เล่าข่าว AI และธุรกิจเป็นภาษาไทย ทั้งข่าวในไทยและต่างประเทศ ให้เข้าใจง่าย ทันเหตุการณ์ และนำไปใช้ได้จริง คุณแต้งทำช่อง YouTube ชื่อ Thankful (@Thankful2026) ที่มี ${SERIES.length} ซีรีส์ เช่น AI ฉับไว News, AI Apps และ Physical AI & Robotics News เขียนบทความบนเว็บนี้ซึ่งอ่านได้ 3 ภาษา และทำงานในทีมข่าวเทคโนโลยีและ AI ของ Insightist AI Transformation Thailand`;
+export const WHO_IS_TH = `Thank Thanedpol หรือคุณแต้ง ธเนศพล เดชาดวงสกุล (Thanedpol Dechaduangsakul) คือคอนเทนต์ครีเอเตอร์ที่เล่าข่าว AI และธุรกิจเป็นภาษาไทย ให้เข้าใจง่ายและนำไปใช้ได้จริง เป็นเจ้าของช่อง YouTube Thankful (@Thankful2026) ที่มี ${SERIES.length} ซีรีส์ เช่น AI ฉับไว News และ AI Apps และทำงานในทีมข่าวเทคโนโลยีและ AI ของ Insightist AI Transformation Thailand`;
 
-export const WHO_IS_EN = `Thank Thanedpol (Thanedpol Dechaduangsakul; Thai: ธเนศพล เดชาดวงสกุล, nickname แต้ง) is a Thai content creator who explains AI and business news in Thai, from Thailand and around the world, so that it is clear, timely and useful. Thank runs the Thankful YouTube channel (@Thankful2026) with ${SERIES.length} series, including AI ฉับไว News, AI Apps and Physical AI & Robotics News, writes the articles on this site in 3 languages, and works on the technology and AI news team at Insightist AI Transformation Thailand.`;
+export const WHO_IS_EN = `Thank Thanedpol (Thanedpol Dechaduangsakul; Thai: ธเนศพล เดชาดวงสกุล, nickname แต้ง) is a Thai content creator who explains AI and business news in Thai so that it is clear, timely and useful. Thank runs the Thankful YouTube channel (@Thankful2026) with ${SERIES.length} series, including AI ฉับไว News and AI Apps, writes Thai-language articles on this site, and works on the technology and AI news team at Insightist AI Transformation Thailand.`;
 
-export const WHO_IS_ZH = `Thank Thanedpol（Thanedpol Dechaduangsakul，泰文名 ธเนศพล เดชาดวงสกุล，昵称 แต้ง）是一位泰国内容创作者，用泰语讲解泰国及全球的 AI 与商业新闻，力求清晰、及时、实用。Thank 运营 YouTube 频道 Thankful（@Thankful2026），共有 ${SERIES.length} 个系列，包括 AI ฉับไว News、AI Apps 和 Physical AI & Robotics News；在本站撰写可用 3 种语言阅读的文章，并任职于 Insightist AI Transformation Thailand 的科技与 AI 新闻团队。`;
+export const WHO_IS_ZH = `Thank Thanedpol（Thanedpol Dechaduangsakul，泰文名 ธเนศพล เดชาดวงสกุล，昵称 แต้ง）是一位泰国内容创作者，用泰语讲解泰国及全球的 AI 与商业新闻，力求清晰、及时、实用。Thank 运营 YouTube 频道 Thankful（@Thankful2026），共有 ${SERIES.length} 个系列，包括 AI ฉับไว News、AI Apps 和 Physical AI & Robotics News；在本站撰写泰语文章，并任职于 Insightist AI Transformation Thailand 的科技与 AI 新闻团队。`;
 
 export type WhoIs = { th: string; en: string; zh: string };
 export const WHO_IS: WhoIs = { th: WHO_IS_TH, en: WHO_IS_EN, zh: WHO_IS_ZH };
@@ -391,7 +391,7 @@ export function homePageJsonLd(dateModified?: string) {
     author: PERSON_LINK,
     primaryImageOfPage: `${SITE_URL}/opengraph-image`,
     dateModified,
-    speakable: { "@type": "SpeakableSpecification", cssSelector: ["#who-is-thank", "#faq"] },
+    speakable: { "@type": "SpeakableSpecification", cssSelector: ["#who-is-thank", "#series-summary", "#blog-summary", "#faq"] },
   };
 }
 

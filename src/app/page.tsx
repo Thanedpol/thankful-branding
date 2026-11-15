@@ -10,6 +10,8 @@ import BlogPreview from "@/components/BlogPreview";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
+import SeriesCompare from "@/components/SeriesCompare";
+import { seriesPassage, blogPassage } from "@/lib/passages";
 import {
   personJsonLd,
   websiteJsonLd,
@@ -38,12 +40,13 @@ export default async function HomePage() {
   let profile: SiteProfile | null;
   let portfolios: Portfolio[];
   let posts: BlogPreviewType[];
+  let postTotal: number;
   // Fetched alongside the database reads; cached an hour, never fatal.
   const feedsPromise = getSeriesFeeds();
 
   if (isSupabaseConfigured()) {
     const supabase = createPublicClient();
-    const [p, f, b] = await Promise.all([
+    const [p, f, b, c] = await Promise.all([
       supabase.from("site_profile").select("*").eq("id", 1).single(),
       // Every portfolio (not just featured), ordered by display order.
       supabase
@@ -56,14 +59,18 @@ export default async function HomePage() {
         .select("*")
         .order("published_at", { ascending: false })
         .limit(3),
+      // Just the count, for the blog section's intro.
+      supabase.from("blog_previews").select("id", { count: "exact", head: true }),
     ]);
     profile = p.data as SiteProfile | null;
     portfolios = (f.data as Portfolio[]) ?? [];
     posts = (b.data as BlogPreviewType[]) ?? [];
+    postTotal = c.count ?? posts.length;
   } else {
     profile = demoProfile;
     portfolios = demoPortfolio;
     posts = demoBlogPreviews;
+    postTotal = demoBlogPreviews.length;
   }
 
   const feeds = await feedsPromise;
@@ -95,6 +102,7 @@ export default async function HomePage() {
         <Hero profile={profile} />
         <LatestUpdates series={feeds.series} posts={posts} />
         <YouTubeNetwork series={feeds.series} shared={feeds.shared} />
+        <SeriesCompare series={feeds.series} intro={seriesPassage(feeds.series)} />
         <About profile={profile} whoIs={WHO_IS} />
         <HireSection />
         <PortfolioSection
@@ -103,7 +111,7 @@ export default async function HomePage() {
           cvEnUrl={profile?.cv_en_url}
           showResume={profile?.show_resume === true}
         />
-        <BlogPreview posts={posts} />
+        <BlogPreview posts={posts} intro={blogPassage(postTotal, posts.length, posts[0]?.published_at)} />
         <FaqSection />
       </main>
       <Footer social={profile?.social_links} />

@@ -69,7 +69,7 @@ const FACTS: { label: string; value: React.ReactNode }[] = [
     label: "บทความ",
     value: (
       <Link href="/blog" className="text-cyan hover:underline">
-        บล็อกบนเว็บนี้ — อ่านได้ 3 ภาษา (ไทย อังกฤษ จีน)
+        บทความภาษาไทยบนบล็อกของเว็บนี้
       </Link>
     ),
   },

@@ -13,3 +13,7 @@
 | 2026-11-15 | /sitemap.xml | Added /about, /privacy, /terms | New pages discovered | Rendered sitemap checked |
 | 2026-11-15 | /llms.txt | Added LinkedIn, GitHub, facts page, About and legal links | LLM guide matches the site | Rendered llms.txt checked |
 | 2026-11-15 | / | `<time datetime>` on latest-update dates; carousel `role="status"` live region | Freshness signal; fixes DYN-01 | Rendered HTML checked |
+| 2026-11-15 | / | Comparison table of all YouTube series (`#series-compare`: group, what it covers, latest episode, date) with an answer-first intro | Meets the "comparison table" criterion (Perplexity, DeepSeek, Qwen); fresh dated rows | Screenshot checked; 1 `<table>`, 14 `<th>` |
+| 2026-11-15 | / | Blog intro passage built from live data (article count, newest date); FAQ series and contact answers lengthened with facts; who-is passage shortened | 6 paragraphs of 40–80 words under both Thai word counters (letter runs, Intl.Segmenter); was 0 | Measured on rendered HTML |
+| 2026-11-15 | /, /about, /terms, llms.txt, schema | Removed the claim that articles read in 3 languages: the `translations` column is not in the database (supabase/add-blog-translations.sql not run), so articles show in Thai only; the interface still switches language | Statements match the site | REST check: column missing |
+| 2026-11-15 | all | Next.js 15.5.19 → 15.5.29 (latest 15.x patch) | Current framework patch level; Rainmojo "tech modernity" | Build passes |

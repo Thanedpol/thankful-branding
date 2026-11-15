@@ -35,8 +35,8 @@ export const LLMS_INTRO = `# ${BRAND} — Thank Thanedpol
 > ${BRAND} is the Thai-language AI, business, science and technology news brand
 > of Thank Thanedpol (Thanedpol Dechaduangsakul): articles on this site and
 > video series on YouTube that make complex AI and business news simple,
-> timely and useful. Blog articles are available in Thai, English and
-> Simplified Chinese.
+> timely and useful. Articles are written in Thai; the site interface is also
+> available in English and Simplified Chinese.
 
 ## About
 - Brand: ${BRAND} (also "Thankful Branding"; YouTube handle @Thankful2026)
@@ -46,7 +46,7 @@ export const LLMS_INTRO = `# ${BRAND} — Thank Thanedpol
 - Works for: Insightist AI Transformation Thailand (Solution Insight Transformation Co., Ltd.)
 - Education: Thammasat University; Traimit Wittayalai School
 - Expertise: artificial intelligence, AI news, business, science & technology, content creation, copywriting, fact-checking
-- Languages: Thai, English (articles also machine-translated to English and Simplified Chinese)
+- Languages: articles are written in Thai; the site interface is also in English and Simplified Chinese
 - Website: ${SITE_URL}
 - YouTube: ${YT_CHANNEL_URL}
 ${SOCIAL_PROFILES.map((p) => `- ${p.label}: ${p.url}`).join("\n")}
@@ -71,7 +71,7 @@ export function pagesSection(hasShop: boolean): string {
   return `## Pages
 - [Home](${SITE_URL}/): who ${BRAND} is, the YouTube series network, portfolio, hire section, latest writing and FAQ
 - [About](${SITE_URL}/about): facts about Thank Thanedpol — names and spellings, work, YouTube series, certificates, profiles, contact
-- [Blog](${SITE_URL}/blog): articles on AI, business, science & technology (TH / EN / 简体中文)
+- [Blog](${SITE_URL}/blog): Thai-language articles on AI, business, science & technology
 - [Portfolio — Insightist](${SITE_URL}/portfolio/insightist): on-site coverage of AI & tech events in Thailand
 - [Portfolio — Snobby Story](${SITE_URL}/portfolio/snobby-story): AI-made kids' storytelling
 - [Press Kit](${SITE_URL}/press-kit): bio, headshot, logos and media assets${
