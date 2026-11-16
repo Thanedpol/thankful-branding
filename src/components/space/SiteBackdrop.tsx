@@ -29,7 +29,8 @@ const CLOUDS = [
 
 export default function SiteBackdrop() {
   const pathname = usePathname() ?? "/";
-  if (pathname.startsWith("/admin")) return null;
+  // The admin and NAQID Group pages keep their own plain surfaces.
+  if (pathname.startsWith("/admin") || pathname.startsWith("/naqid")) return null;
   const quiet = READING.some((r) => r.test(pathname));
 
   return (

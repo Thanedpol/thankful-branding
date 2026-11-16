@@ -1,0 +1,153 @@
+/*
+ * NAQID Group — its own look, separate from the Thankful site.
+ * Colours, type and rules come from the NAQID brand system (business plan,
+ * section 07): Void / Indigo / Quantum Teal / Signal Amber / Bone / Slate,
+ * Poppins 200·300·500 for English and numbers, IBM Plex Sans Thai for Thai,
+ * Thai line height 1.8+, thin 1px lines instead of solid boxes.
+ * The page opens on Bone (cream) so it reads nothing like the dark-space
+ * Thankful site; Void is used for the pillars band and the footer.
+ * Everything is scoped under .naqid because global CSS stays loaded after
+ * client-side navigation away from this route.
+ */
+
+.naqid {
+  --nq-void: #070b18;
+  --nq-indigo: #0f1836;
+  --nq-panel: #131e3e;
+  --nq-bone: #f5f2ea;
+  --nq-bone-2: #ece8dc;
+  --nq-slate: #93a4c4;
+  --nq-teal: #00e0b8;
+  --nq-amber: #ffb020;
+  --nq-violet: #a78bfa;
+  /* Darker versions for text on Bone (WCAG AA at body sizes). */
+  --nq-ink: #070b18;
+  --nq-ink-2: #3f4b66;
+  --nq-teal-ink: #0a6b5b;
+  --nq-amber-ink: #8a5a00;
+  --nq-violet-ink: #5b3fc4;
+  --nq-line: rgba(7, 11, 24, 0.12);
+  --nq-line-dark: rgba(147, 164, 196, 0.18);
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background: var(--nq-bone);
+  color: var(--nq-ink);
+  font-family: var(--font-plex-thai), var(--font-poppins), system-ui, sans-serif;
+  font-weight: 300;
+  line-height: 1.8;
+}
+
+/* The page behind the page: no dark flash on overscroll. */
+body:has(.naqid) {
+  background: #f5f2ea;
+}
+
+.naqid ::selection {
+  background: rgba(0, 224, 184, 0.35);
+  color: var(--nq-ink);
+}
+
+.naqid .nq-disp {
+  font-family: var(--font-poppins), var(--font-plex-thai), system-ui, sans-serif;
+}
+
+.naqid .nq-mono {
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-weight: 500;
+  /* Small: wide tracking breaks Thai vowel and tone marks apart. */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.naqid .nq-hairline {
+  border-color: var(--nq-line);
+}
+
+.naqid .nq-dark {
+  background: var(--nq-void);
+  color: var(--nq-bone);
+}
+.naqid .nq-dark .nq-hairline {
+  border-color: var(--nq-line-dark);
+}
+
+.naqid .nq-grid {
+  background-image: linear-gradient(var(--nq-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nq-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 70% 40%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 60% at 70% 40%, #000 20%, transparent 75%);
+}
+
+.naqid .nq-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0.8rem 1.4rem;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.2;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.naqid .nq-btn-solid {
+  background: var(--nq-void);
+  color: var(--nq-bone);
+}
+.naqid .nq-btn-solid:hover {
+  background: var(--nq-indigo);
+}
+.naqid .nq-btn-line {
+  border: 1px solid var(--nq-ink);
+  color: var(--nq-ink);
+}
+.naqid .nq-btn-line:hover {
+  background: var(--nq-ink);
+  color: var(--nq-bone);
+}
+.naqid a:focus-visible,
+.naqid button:focus-visible {
+  outline: 2px solid var(--nq-teal-ink);
+  outline-offset: 3px;
+}
+.naqid .nq-dark a:focus-visible {
+  outline-color: var(--nq-teal);
+}
+
+.naqid .nq-link {
+  text-decoration: underline;
+  text-decoration-color: var(--nq-line);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease;
+}
+.naqid .nq-link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Prism beams draw in once on load. */
+.naqid .nq-beam {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: nq-draw 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.naqid .nq-beam-1 { animation-delay: 0.1s; }
+.naqid .nq-beam-2 { animation-delay: 0.7s; }
+.naqid .nq-beam-3 { animation-delay: 0.85s; }
+.naqid .nq-beam-4 { animation-delay: 1s; }
+
+@keyframes nq-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .naqid .nq-beam {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
