@@ -233,6 +233,19 @@ export default function NaqidPage() {
                 </div>
               ))}
             </dl>
+            <div className="nq-hairline mt-6 flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center sm:gap-8">
+              <p className="flex items-baseline gap-4">
+                <span lang="ar" dir="rtl" className="text-[44px] leading-none">
+                  ناقد
+                </span>
+                <span className="nq-disp text-[15px] font-medium">naqid</span>
+              </p>
+              <p className="text-[16px] leading-[1.8] text-[color:var(--nq-ink-2)]">
+                ในภาษาอาหรับ คำว่า <i>naqid</i> แปลว่า{" "}
+                <strong className="font-medium text-[color:var(--nq-ink)]">“ผู้พินิจอย่างมีวิจารณญาณ”</strong>{" "}
+                ตรงกับค่านิยม “พูดจริง” ของเรา
+              </p>
+            </div>
             <figure className="mt-14 max-w-3xl border-l-2 border-[color:var(--nq-amber)] pl-6">
               <blockquote className="text-[clamp(1.15rem,2.2vw,1.45rem)] font-normal leading-[1.8]">
                 “เทคโนโลยีที่ดี คือเทคโนโลยีที่คนอยากขอบคุณ ไม่ใช่เทคโนโลยีที่คนต้องทน”
