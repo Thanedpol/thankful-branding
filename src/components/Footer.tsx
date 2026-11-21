@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { useT } from "@/components/providers/AppProvider";
 import type { SocialLinks } from "@/lib/types";
-import { LINKEDIN_URL, GITHUB_URL } from "@/lib/social";
+import { LINKEDIN_URL, GITHUB_URL, SOCIAL_PROFILES } from "@/lib/social";
+import { YT_CHANNEL_URL } from "@/lib/youtube";
 import Prism from "@/components/naqid/Prism";
+
+// Known profiles, used when the profile row in the database leaves a field empty.
+const profileUrl = (platform: string) => SOCIAL_PROFILES.find((p) => p.platform === platform)?.url;
 
 const NAV = [
   { href: "/about", key: "nav.about" },
@@ -22,8 +26,10 @@ const LEGAL = [
 export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
   const t = useT();
   const socials = [
-    { label: "TikTok", href: social?.tiktok },
-    { label: "Facebook", href: social?.facebook },
+    { label: "YouTube", href: YT_CHANNEL_URL },
+    { label: "TikTok", href: social?.tiktok || profileUrl("tiktok") },
+    { label: "Instagram", href: profileUrl("instagram") },
+    { label: "Facebook", href: social?.facebook || profileUrl("facebook") },
     { label: "X", href: social?.x },
     // Fall back to the known profiles, so pages rendered without the
     // profile row still link them (rel="me" ties them to this site).
