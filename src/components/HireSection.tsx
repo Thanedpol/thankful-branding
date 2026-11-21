@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
-import { HIRE_CONTACT_EMAIL, HIRE_WORKS, tiktokVideoId } from "@/lib/hire";
+import { HIRE_CONTACT_EMAIL, HIRE_SERVICES, HIRE_WORKS, tiktokVideoId } from "@/lib/hire";
 
 /**
  * "รับงาน" — sample work, shown just before the featured portfolio.
@@ -179,6 +179,27 @@ export default function HireSection() {
         <a href={`mailto:${HIRE_CONTACT_EMAIL}`} className="btn-neon shrink-0">
           {t("hire.contact")} →
         </a>
+      </Reveal>
+
+      <Reveal className="mb-10">
+        <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">{t("hire.services")}</h3>
+        <ol className="mt-4 grid gap-4 md:grid-cols-2">
+          {HIRE_SERVICES.map((key, i) => (
+            <li key={key} className="glass flex flex-col gap-3 rounded-2xl p-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex gap-4">
+                <span className="font-mono text-sm text-cyan">0{i + 1}</span>
+                <div>
+                  <p className="font-display text-lg font-bold leading-snug">{t(`hire.${key}.title`)}</p>
+                  <p className="mt-1 text-sm text-muted">{t(`hire.${key}.detail`)}</p>
+                </div>
+              </div>
+              <p className="shrink-0 pl-8 sm:pl-0 sm:text-right">
+                <span className="block font-mono text-[11px] text-muted">{t("hire.from")}</span>
+                <span className="font-display text-xl font-bold text-cyan">{t(`hire.${key}.price`)}</span>
+              </p>
+            </li>
+          ))}
+        </ol>
       </Reveal>
 
       <Reveal className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

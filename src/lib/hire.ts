@@ -10,6 +10,10 @@ export const HIRE_WORKS: HireWork[] = [
   { url: "https://www.tiktok.com/@thankful63/video/7699358788184296724" },
 ];
 
+/** Services listed above the clips. Each key has title, detail and price
+ *  strings in i18n.ts (hire.<key>.title / .detail / .price). */
+export const HIRE_SERVICES = ["svc1", "svc2"] as const;
+
 export const HIRE_CONTACT_EMAIL = "thank.2643@gmail.com";
 
 /** The numeric post id at the end of a TikTok video URL. */
