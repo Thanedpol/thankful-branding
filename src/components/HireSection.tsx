@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
-import { HIRE_CONTACT_EMAIL, HIRE_SERVICES, HIRE_WORKS, tiktokVideoId } from "@/lib/hire";
+import { HIRE_CONTACT_EMAIL, HIRE_SERVICES, HIRE_WORKS, HIRE_YOUTUBE, tiktokVideoId, type HireVideo } from "@/lib/hire";
 
 // A bare mailto: does nothing without a mail app, so open a Gmail draft;
 // the full set of options (copy, mail app) is on /sponsor#contact.
@@ -54,7 +54,17 @@ function parse(data: unknown): PlayerMessage | null {
   return null;
 }
 
-function TikTokPlayerCard({ url, label, playLabel }: { url: string; label: string; playLabel: string }) {
+function TikTokPlayerCard({
+  url,
+  cover,
+  label,
+  playLabel,
+}: {
+  url: string;
+  cover?: string;
+  label: string;
+  playLabel: string;
+}) {
   const id = tiktokVideoId(url);
   const frame = useRef<HTMLIFrameElement>(null);
   const ready = useRef(false);
@@ -67,11 +77,15 @@ function TikTokPlayerCard({ url, label, playLabel }: { url: string; label: strin
   // Clicked before the player was up: play with sound once it is.
   const wantsSound = useRef(false);
   const [engaged, setEngaged] = useState(false);
+  const [hoverShown, setHoverShown] = useState(false);
   // The iframe gets its src only after the message listener below is in
   // place; server-rendered, it could load and announce "ready" before
   // hydration and that message would be lost.
   const [listening, setListening] = useState(false);
   const [failed, setFailed] = useState(false);
+  // The cover stays on top until the clip is really playing (a hover preview
+  // or the click), so there is never a black box while the player loads.
+  const [playing, setPlaying] = useState(false);
 
   const send = (type: Command) =>
     frame.current?.contentWindow?.postMessage({ type, value: undefined, "x-tiktok-player": true }, "*");
@@ -95,6 +109,7 @@ function TikTokPlayerCard({ url, label, playLabel }: { url: string; label: strin
           break;
         case "onStateChange":
           state.current = Number(msg.value);
+          setPlaying(state.current === PLAYING);
           if (state.current === PLAYING && !settled.current) {
             settled.current = true;
             if (!hovering.current && !wantsSound.current) send("pause");
@@ -139,6 +154,22 @@ function TikTokPlayerCard({ url, label, playLabel }: { url: string; label: strin
         allowFullScreen
         className="block aspect-[9/16] w-full rounded-xl bg-black"
       />
+      {cover && (
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-1.5 overflow-hidden rounded-xl bg-black transition-opacity duration-300 ${
+            engaged || (playing && hoverShown) ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={cover} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-xl" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={cover} alt="" loading="lazy" className="relative h-full w-full object-contain" />
+          <span className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white">
+            ▶
+          </span>
+        </div>
+      )}
       {!engaged && (
         <button
           type="button"
@@ -147,6 +178,7 @@ function TikTokPlayerCard({ url, label, playLabel }: { url: string; label: strin
           onPointerEnter={(e) => {
             if (e.pointerType !== "mouse") return; // touch: the tap plays it
             hovering.current = true;
+            setHoverShown(true);
             if (ready.current && state.current !== PLAYING) {
               send("mute");
               send("play");
@@ -155,6 +187,7 @@ function TikTokPlayerCard({ url, label, playLabel }: { url: string; label: strin
           onPointerLeave={(e) => {
             if (e.pointerType !== "mouse") return;
             hovering.current = false;
+            setHoverShown(false);
             if (ready.current) send("pause");
           }}
           onClick={() => {
@@ -169,9 +202,86 @@ function TikTokPlayerCard({ url, label, playLabel }: { url: string; label: strin
   );
 }
 
+/**
+ * A YouTube sample: the thumbnail first. Hovering with a mouse loads a muted,
+ * control-free preview over it; leaving removes it again. A click or tap
+ * swaps in the normal player with sound (the click lets the browser allow
+ * sound in the embedded player).
+ */
+function YouTubeCard({ video, playLabel }: { video: HireVideo; playLabel: string }) {
+  const [mode, setMode] = useState<"idle" | "preview" | "play">("idle");
+  const [loaded, setLoaded] = useState(false);
+  const hoverTimer = useRef<number | undefined>(undefined);
+  const base = `https://www.youtube-nocookie.com/embed/${video.id}`;
+  const src =
+    mode === "preview"
+      ? `${base}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&loop=1&playlist=${video.id}`
+      : `${base}?autoplay=1&playsinline=1&rel=0`;
+
+  return (
+    <figure className="glass overflow-hidden !rounded-2xl p-1.5">
+      <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg`}
+          alt={video.title}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {mode !== "idle" && (
+          <iframe
+            key={mode}
+            src={src}
+            title={video.title}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+            onLoad={() => setLoaded(true)}
+            className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
+              loaded || mode === "play" ? "opacity-100" : "opacity-0"
+            } ${mode === "preview" ? "pointer-events-none" : ""}`}
+          />
+        )}
+        {mode !== "play" && (
+          <button
+            type="button"
+            aria-label={`${playLabel}: ${video.title}`}
+            className="group absolute inset-0 z-10 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+            onPointerEnter={(e) => {
+              if (e.pointerType !== "mouse") return; // touch: the tap plays it
+              // A short delay so sweeping the mouse across doesn't load players.
+              hoverTimer.current = window.setTimeout(() => {
+                setLoaded(false);
+                setMode("preview");
+              }, 250);
+            }}
+            onPointerLeave={(e) => {
+              if (e.pointerType !== "mouse") return;
+              window.clearTimeout(hoverTimer.current);
+              setMode((m) => (m === "preview" ? "idle" : m));
+            }}
+            onClick={() => {
+              window.clearTimeout(hoverTimer.current);
+              setMode("play");
+            }}
+          >
+            <span
+              className={`absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white transition-opacity ${
+                mode === "preview" ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              ▶
+            </span>
+          </button>
+        )}
+      </div>
+      <figcaption className="line-clamp-2 px-2 pb-1.5 pt-3 text-sm leading-snug text-ink/90">{video.title}</figcaption>
+    </figure>
+  );
+}
+
 export default function HireSection() {
   const t = useT();
-  if (HIRE_WORKS.length === 0) return null;
+  if (HIRE_WORKS.length === 0 && HIRE_YOUTUBE.length === 0) return null;
 
   return (
     <section id="hire" className="section-pad scroll-mt-20 !pb-0">
@@ -207,9 +317,16 @@ export default function HireSection() {
         </ol>
       </Reveal>
 
+      {HIRE_YOUTUBE.length > 0 && (
+        <Reveal className="mb-4 grid gap-4 sm:grid-cols-2">
+          {HIRE_YOUTUBE.map((v) => (
+            <YouTubeCard key={v.id} video={v} playLabel={t("hire.play")} />
+          ))}
+        </Reveal>
+      )}
       <Reveal className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {HIRE_WORKS.map((w) => (
-          <TikTokPlayerCard key={w.url} url={w.url} label={t("hire.watch")} playLabel={t("hire.play")} />
+          <TikTokPlayerCard key={w.url} url={w.url} cover={w.cover} label={t("hire.watch")} playLabel={t("hire.play")} />
         ))}
       </Reveal>
       <p className="mt-3 font-mono text-[11px] text-muted">{t("hire.hint")}</p>
