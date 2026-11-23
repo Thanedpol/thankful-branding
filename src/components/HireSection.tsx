@@ -131,6 +131,29 @@ function TikTokPlayerCard({
   }, []);
 
   if (!id || failed) {
+    // TikTok sometimes refuses to serve a clip in its embed player (it
+    // answers SERVER_ERROR 2001 and shows "Unable to load player"). Show the
+    // cover as a link to the clip on TikTok instead of an empty box.
+    if (cover) {
+      return (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="glass group relative block overflow-hidden !rounded-2xl p-1.5"
+        >
+          <span className="relative block aspect-[9/16] overflow-hidden rounded-xl bg-black">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={cover} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-xl" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={cover} alt={label} className="relative h-full w-full object-contain" />
+            <span className="absolute inset-x-3 bottom-3 rounded-full bg-black/70 px-3 py-2 text-center text-xs font-semibold text-white transition-colors group-hover:bg-black/85">
+              {label} ↗
+            </span>
+          </span>
+        </a>
+      );
+    }
     return (
       <a
         href={url}
