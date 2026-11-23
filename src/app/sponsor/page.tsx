@@ -69,7 +69,7 @@ const WHY = [
 ];
 
 const STEPS = [
-  ["ส่งรายละเอียด", "ทางอีเมล: งานหรือสินค้าคืออะไร อยากให้คนดูรู้อะไร และวันที่ต้องการ ก่อนส่งรายละเอียด สอบถามเพิ่มเติมได้"],
+  ["ส่งรายละเอียด", "ทาง Messenger (แนะนำ) หรืออีเมล: งานหรือสินค้าคืออะไร อยากให้คนดูรู้อะไร และวันที่ต้องการ ก่อนส่งรายละเอียด สอบถามเพิ่มเติมได้"],
   ["รับใบเสนอราคา", "ระบุชิ้นงาน ช่องทางที่ลง และราคา ตกลงกันก่อนเริ่มงาน"],
   ["ผลิตและเผยแพร่", "ลงในช่องทางที่ตกลงกัน พร้อมบอกคนดูว่าเป็นงานที่ได้รับการสนับสนุน"],
 ];
@@ -78,6 +78,8 @@ const thb = (n: number) => n.toLocaleString("th-TH");
 
 // Opens an Instagram DM thread with @newerathank.
 const IG_DM_URL = "https://ig.me/m/newerathank";
+// Messenger chat with facebook.com/Thankhuge2016 — the preferred way to get in touch.
+const MESSENGER_URL = "https://m.me/Thankhuge2016";
 
 function StatGrid({ stats }: { stats: Stat[] }) {
   return (
@@ -250,11 +252,18 @@ export default async function SponsorPage() {
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               ถ้าคลิปของ Thankful ช่วยให้คุณเข้าใจ AI มากขึ้น และอยากช่วยให้มีคลิปใหม่ต่อไป สนับสนุนได้ทุกจำนวน
-              ทักมาทางอีเมลหรือ DM ทาง Instagram แล้วจะส่ง QR พร้อมเพย์ให้ครับ
+              ทักมาทาง Messenger (แนะนำ) อีเมล หรือ DM ทาง Instagram แล้วจะส่ง QR พร้อมเพย์ให้ครับ
             </p>
             {/* Fan support: no QR on the page yet — people ask and get one privately. */}
+            <div className="mt-5">
+              <a href={MESSENGER_URL} target="_blank" rel="noopener noreferrer" className="btn-neon">
+                ขอ QR ทาง Messenger ↗
+              </a>
+              <span className="ml-3 font-mono text-[11px] text-cyan">แนะนำ</span>
+            </div>
+            <p className="mt-5 font-mono text-[11px] text-muted">หรือทางอีเมล</p>
             <EmailActions
-              className="mt-5"
+              className="mt-2"
               label="ขอ QR ทาง Gmail"
               subject="สนับสนุนช่อง Thankful"
               body="สวัสดีครับคุณแต้ง อยากสนับสนุนช่อง Thankful ขอ QR พร้อมเพย์หน่อยครับ"
@@ -272,12 +281,19 @@ export default async function SponsorPage() {
           <section id="contact" className="mt-8 scroll-mt-28 rounded-2xl border border-cyan/30 p-6 sm:p-8">
             <h2 className="font-display text-xl font-bold text-ink">เริ่มคุยกันได้เลย</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              ก่อนส่งรายละเอียด สามารถสอบถามเพิ่มเติมได้ ส่งรายละเอียดงานมาที่อีเมล ข้อมูลสำหรับสื่อ (ประวัติ รูป โลโก้) อยู่ที่{" "}
+              ก่อนส่งรายละเอียด สามารถสอบถามเพิ่มเติมได้ ส่งรายละเอียดงานมาทาง Messenger (แนะนำ) หรืออีเมล ข้อมูลสำหรับสื่อ (ประวัติ รูป โลโก้) อยู่ที่{" "}
               <Link href="/press-kit" className="text-cyan hover:underline">
                 Press Kit
               </Link>
             </p>
-            <EmailActions className="mt-5" subject="Sponsor / ร่วมงานกับ Thankful" />
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <a href={MESSENGER_URL} target="_blank" rel="noopener noreferrer" className="btn-neon">
+                ทัก Messenger ↗
+              </a>
+              <span className="font-mono text-[11px] text-cyan">แนะนำ · facebook.com/Thankhuge2016</span>
+            </div>
+            <p className="mt-6 font-mono text-[11px] text-muted">หรือทางอีเมล</p>
+            <EmailActions className="mt-2" subject="Sponsor / ร่วมงานกับ Thankful" />
           </section>
         </article>
       </main>
