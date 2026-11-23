@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { SITE_URL, PERSON_ID, breadcrumbJsonLd, jsonLdGraph } from "@/lib/seo";
 import { YT_CHANNEL_URL, SERIES } from "@/lib/youtube";
-import { HIRE_CONTACT_EMAIL } from "@/lib/hire";
+import EmailActions from "@/components/EmailActions";
 import { AUDIENCE, YOUTUBE, YT_PERIOD, EVENTS_COVERED, type Stat } from "@/lib/sponsor";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured, demoProfile } from "@/lib/demo-data";
@@ -80,11 +80,6 @@ function StatGrid({ stats }: { stats: Stat[] }) {
 
 export default async function SponsorPage() {
   const profile = await getProfile();
-  const mail = `mailto:${HIRE_CONTACT_EMAIL}?subject=${encodeURIComponent("Sponsor / ร่วมงานกับ Thankful")}`;
-  // Fan support: no QR on the page yet — people ask and get one privately.
-  const supportMail =
-    `mailto:${HIRE_CONTACT_EMAIL}?subject=${encodeURIComponent("สนับสนุนช่อง Thankful")}` +
-    `&body=${encodeURIComponent("สวัสดีครับคุณแต้ง อยากสนับสนุนช่อง Thankful ขอ QR พร้อมเพย์หน่อยครับ")}`;
 
   return (
     <>
@@ -135,8 +130,8 @@ export default async function SponsorPage() {
             Thai audience interested in AI, business and technology.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href={mail} className="btn-neon">
-              ติดต่อร่วมงาน →
+            <a href="#contact" className="btn-neon">
+              ติดต่อร่วมงาน ↓
             </a>
             <Link href="/#hire" className="btn-ghost">
               ดูตัวอย่างผลงาน
@@ -219,17 +214,24 @@ export default async function SponsorPage() {
               ถ้าคลิปของ Thankful ช่วยให้คุณเข้าใจ AI มากขึ้น และอยากช่วยให้มีคลิปใหม่ต่อไป สนับสนุนได้ทุกจำนวน
               ทักมาทางอีเมลหรือ DM ทาง Instagram แล้วจะส่ง QR พร้อมเพย์ให้ครับ
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <a href={supportMail} className="btn-neon">
-                ขอ QR ทางอีเมล →
-              </a>
-              <a href={IG_DM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                ทัก DM Instagram
-              </a>
-            </div>
+            {/* Fan support: no QR on the page yet — people ask and get one privately. */}
+            <EmailActions
+              className="mt-5"
+              label="ขอ QR ทาง Gmail"
+              subject="สนับสนุนช่อง Thankful"
+              body="สวัสดีครับคุณแต้ง อยากสนับสนุนช่อง Thankful ขอ QR พร้อมเพย์หน่อยครับ"
+            />
+            <a
+              href={IG_DM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block text-sm text-cyan hover:underline"
+            >
+              หรือทัก DM ทาง Instagram ↗
+            </a>
           </section>
 
-          <div className="mt-8 rounded-2xl border border-cyan/30 p-6 sm:p-8">
+          <section id="contact" className="mt-8 scroll-mt-28 rounded-2xl border border-cyan/30 p-6 sm:p-8">
             <h2 className="font-display text-xl font-bold text-ink">เริ่มคุยกันได้เลย</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               ส่งรายละเอียดงานมาที่อีเมล ข้อมูลสำหรับสื่อ (ประวัติ รูป โลโก้) อยู่ที่{" "}
@@ -237,10 +239,8 @@ export default async function SponsorPage() {
                 Press Kit
               </Link>
             </p>
-            <a href={mail} className="btn-neon mt-5 inline-flex">
-              {HIRE_CONTACT_EMAIL} →
-            </a>
-          </div>
+            <EmailActions className="mt-5" subject="Sponsor / ร่วมงานกับ Thankful" />
+          </section>
         </article>
       </main>
       <Footer social={profile?.social_links} />

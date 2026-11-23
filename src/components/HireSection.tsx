@@ -6,6 +6,10 @@ import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
 import { HIRE_CONTACT_EMAIL, HIRE_SERVICES, HIRE_WORKS, tiktokVideoId } from "@/lib/hire";
 
+// A bare mailto: does nothing without a mail app, so open a Gmail draft;
+// the full set of options (copy, mail app) is on /sponsor#contact.
+const HIRE_GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(HIRE_CONTACT_EMAIL)}&su=${encodeURIComponent("ติดต่อรับงาน Thankful")}`;
+
 /**
  * "รับงาน" — sample work, shown just before the featured portfolio.
  *
@@ -177,7 +181,7 @@ export default function HireSection() {
           <h2 className="font-display text-3xl font-bold md:text-4xl text-gradient">{t("hire.heading")}</h2>
           <p className="mt-3 max-w-xl text-muted">{t("hire.sub")}</p>
         </div>
-        <a href={`mailto:${HIRE_CONTACT_EMAIL}`} className="btn-neon shrink-0">
+        <a href={HIRE_GMAIL_URL} target="_blank" rel="noopener noreferrer" className="btn-neon shrink-0">
           {t("hire.contact")} →
         </a>
       </Reveal>
