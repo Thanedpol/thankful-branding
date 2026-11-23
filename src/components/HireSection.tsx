@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import Reveal from "./Reveal";
 import { useT } from "@/components/providers/AppProvider";
 import { HIRE_CONTACT_EMAIL, HIRE_SERVICES, HIRE_WORKS, tiktokVideoId } from "@/lib/hire";
@@ -208,6 +209,9 @@ export default function HireSection() {
         ))}
       </Reveal>
       <p className="mt-3 font-mono text-[11px] text-muted">{t("hire.hint")}</p>
+      <Link href="/sponsor" className="mt-6 inline-flex font-mono text-xs text-cyan hover:underline">
+        {t("hire.mediakit")} →
+      </Link>
     </section>
   );
 }

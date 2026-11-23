@@ -189,7 +189,11 @@ export default async function AboutPage() {
             <Link href="/#hire" className="text-cyan hover:underline">
               รับงาน
             </Link>{" "}
-            บนหน้าแรก แล้วติดต่อทางอีเมล{" "}
+            บนหน้าแรก ดูบริการ ราคา และตัวเลขผู้ติดตามได้ที่{" "}
+            <Link href="/sponsor" className="text-cyan hover:underline">
+              Media Kit
+            </Link>{" "}
+            แล้วติดต่อทางอีเมล{" "}
             <a href="mailto:thank.2643@gmail.com" className="text-cyan hover:underline">
               thank.2643@gmail.com
             </a>{" "}
