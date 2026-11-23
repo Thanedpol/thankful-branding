@@ -589,6 +589,9 @@ const HIRE_MIGRATION_MSG =
 function hireDbError(err: { message?: string; code?: string }): string {
   const msg = err.message ?? "";
   if (err.code === "23505") return "คลิปนี้มีอยู่ในรายการแล้ว";
+  if (/link_only/i.test(msg)) {
+    return "ต้องรันไฟล์ supabase/add-hire-works.sql อีกรอบเพื่อเพิ่มตัวเลือก “ปุ่มดูบน TikTok” (รันซ้ำได้ ข้อมูลไม่หาย)";
+  }
   if (/hire_works/i.test(msg) && /(find|exist|relation)/i.test(msg)) return HIRE_MIGRATION_MSG;
   return msg || "บันทึกไม่สำเร็จ";
 }
@@ -636,6 +639,8 @@ export async function saveHireWork(formData: FormData): Promise<{ error?: string
     video_id: parsed.videoId,
     title,
     cover_url: cover,
+    // Only TikTok has a player that can refuse to play; YouTube always embeds.
+    link_only: parsed.kind === "tiktok" && formData.get("link_only") === "on",
   };
 
   if (id) {

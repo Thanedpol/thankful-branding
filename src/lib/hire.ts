@@ -19,6 +19,9 @@ export interface HireItem {
    *  the video id; TikTok's embed shows nothing until it plays and its oEmbed
    *  no longer returns a poster, so TikTok clips need one uploaded. */
   cover: string | null;
+  /** TikTok only: show the cover with a "watch on TikTok" button instead of
+   *  embedding TikTok's player, which refuses to play some clips. */
+  linkOnly: boolean;
 }
 
 export const DEFAULT_HIRE_ITEMS: HireItem[] = [
@@ -29,6 +32,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "JPq_-LxLya0",
     title: "AI ทำงาน 1 งาน ราคาแค่กาแฟแก้วเดียว & 20+ Use Case จริง สรุปงาน QwenWork: Out of Office",
     cover: null,
+    linkOnly: false,
   },
   {
     id: "default-yt-0kia92uPuVM",
@@ -37,6 +41,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "0kia92uPuVM",
     title: "คนที่ใช้ AI เป็น จะมาแทนคนที่ใช้ AI ไม่เป็น & วิธีทำงาน UXUI เปลี่ยน | สรุปงาน AXONS UXUI Day 2026",
     cover: null,
+    linkOnly: false,
   },
   {
     id: "default-yt-3PECrxJ6sOQ",
@@ -45,6 +50,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "3PECrxJ6sOQ",
     title: "ประชากรไทยอาจเหลือครึ่งเดียวใน 50 ปี | สรุป Spotlight Day 2026 เมื่อกติกาโลกถูกเขียนใหม่",
     cover: null,
+    linkOnly: false,
   },
   {
     id: "default-yt-uqzxMQN7OO0",
@@ -53,6 +59,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "uqzxMQN7OO0",
     title: "ค่าไฟไทยแพงกว่าเวียดนาม-อินโดนีเซีย? | สรุป Spotlight Day 2026 ไฟสะอาดคือ ใบอนุญาตส่งออก",
     cover: null,
+    linkOnly: false,
   },
   {
     id: "default-tt-7699358788184296724",
@@ -61,6 +68,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "7699358788184296724",
     title: "นวัตกรรมแรกของชีพี ไม่ใช่เครื่องจักร | พิธีเปิด CP Innovation Exposition 2026",
     cover: "/hire/tiktok-7699358788184296724.jpg",
+    linkOnly: false,
   },
   {
     id: "default-tt-7710913831660178694",
@@ -69,6 +77,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "7710913831660178694",
     title: "สรุปงาน Adobe MAX 2026 Ep.1",
     cover: "/hire/tiktok-7710913831660178694.jpg",
+    linkOnly: true,
   },
   {
     id: "default-tt-7710920396559682868",
@@ -77,6 +86,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "7710920396559682868",
     title: "สรุปงาน Adobe MAX 2026 Ep.2",
     cover: "/hire/tiktok-7710920396559682868.jpg",
+    linkOnly: true,
   },
   {
     id: "default-tt-7708331767484157190",
@@ -85,6 +95,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "7708331767484157190",
     title: "หุ้น IBM พุ่ง 5% เพราะ Quantum จริงไหม | สรุปงาน SCBX Quantum Outlook 2026 Ep.1",
     cover: "/hire/tiktok-7708331767484157190.jpg",
+    linkOnly: true,
   },
   {
     id: "default-tt-7708360303121255732",
@@ -93,6 +104,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "7708360303121255732",
     title: "ข้อมูลหลุดวันนี้ ถอดรหัสได้วันหน้า ธนาคารรับมือ Quantum ยังไง | SCBX Quantum Outlook 2026 EP.2",
     cover: "/hire/tiktok-7708360303121255732.jpg",
+    linkOnly: true,
   },
   {
     id: "default-tt-7692010001908452629",
@@ -101,6 +113,7 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     videoId: "7692010001908452629",
     title: "อีก 2 ปี แบรนด์กว่า 60% จะปล่อย AI ออกไปคุยกับลูกค้าเอง | สรุปงาน MKT CON 2026",
     cover: "/hire/tiktok-7692010001908452629.jpg",
+    linkOnly: true,
   },
 ];
 

@@ -51,11 +51,13 @@ function parse(data: unknown): PlayerMessage | null {
 export function TikTokPlayerCard({
   url,
   cover,
+  linkOnly,
   label,
   playLabel,
 }: {
   url: string;
   cover?: string | null;
+  linkOnly?: boolean;
   label: string;
   playLabel: string;
 }) {
@@ -124,10 +126,11 @@ export function TikTokPlayerCard({
     // send/playWithSound only read the frame ref
   }, []);
 
-  if (!id || failed) {
+  if (!id || failed || linkOnly) {
     // TikTok sometimes refuses to serve a clip in its embed player (it
-    // answers SERVER_ERROR 2001 and shows "Unable to load player"). Show the
-    // cover as a link to the clip on TikTok instead of an empty box.
+    // answers SERVER_ERROR 2001 and shows "Unable to load player"), and some
+    // clips don't start when played. Clips marked link-only in Admin, and any
+    // that fail, show the cover as a link to the clip on TikTok instead.
     if (cover) {
       return (
         <a
@@ -326,7 +329,14 @@ export function TikTokGrid({ items, className = "" }: { items: HireItem[]; class
   return (
     <div className={`grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 ${className}`}>
       {items.map((w) => (
-        <TikTokPlayerCard key={w.id} url={w.url} cover={w.cover} label={t("hire.watch")} playLabel={t("hire.play")} />
+        <TikTokPlayerCard
+          key={w.id}
+          url={w.url}
+          cover={w.cover}
+          linkOnly={w.linkOnly}
+          label={t("hire.watch")}
+          playLabel={t("hire.play")}
+        />
       ))}
     </div>
   );

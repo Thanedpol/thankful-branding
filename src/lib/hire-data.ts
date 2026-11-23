@@ -9,6 +9,8 @@ type Row = {
   video_id: string;
   title: string | null;
   cover_url: string | null;
+  /** Missing until the SQL file is re-run to add the column. */
+  link_only?: boolean | null;
 };
 
 export const rowToHireItem = (r: Row): HireItem => ({
@@ -18,6 +20,7 @@ export const rowToHireItem = (r: Row): HireItem => ({
   videoId: r.video_id,
   title: r.title,
   cover: r.cover_url,
+  linkOnly: r.link_only === true,
 });
 
 /**
@@ -28,11 +31,16 @@ export const rowToHireItem = (r: Row): HireItem => ({
  */
 export async function getHireItems(): Promise<HireItem[]> {
   if (!isSupabaseConfigured()) return DEFAULT_HIRE_ITEMS;
-  const { data, error } = await createPublicClient()
-    .from("hire_works")
-    .select("id, kind, url, video_id, title, cover_url")
-    .order("display_order", { ascending: true })
-    .order("created_at", { ascending: true });
-  if (error || !data) return DEFAULT_HIRE_ITEMS;
-  return (data as Row[]).map(rowToHireItem);
+  const db = createPublicClient();
+  const read = (cols: string) =>
+    db
+      .from("hire_works")
+      .select(cols)
+      .order("display_order", { ascending: true })
+      .order("created_at", { ascending: true });
+  let res = await read("id, kind, url, video_id, title, cover_url, link_only");
+  // A table made before the link_only column existed still works without it.
+  if (res.error) res = await read("id, kind, url, video_id, title, cover_url");
+  if (res.error || !res.data) return DEFAULT_HIRE_ITEMS;
+  return (res.data as unknown as Row[]).map(rowToHireItem);
 }

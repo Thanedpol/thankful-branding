@@ -19,6 +19,7 @@ export type HireRow = {
   cover_url: string | null;
   display_order: number;
   hidden: boolean;
+  link_only?: boolean | null;
 };
 
 const field =
@@ -34,7 +35,15 @@ function thumbOf(r: Pick<HireRow, "kind" | "video_id" | "cover_url">) {
   return r.kind === "youtube" ? `https://i.ytimg.com/vi/${r.video_id}/hqdefault.jpg` : null;
 }
 
-export default function HireManager({ rows, ready }: { rows: HireRow[]; ready: boolean }) {
+export default function HireManager({
+  rows,
+  ready,
+  needsColumn = false,
+}: {
+  rows: HireRow[];
+  ready: boolean;
+  needsColumn?: boolean;
+}) {
   // null = closed, "new" = adding, otherwise the row being edited
   const [editing, setEditing] = useState<HireRow | "new" | null>(null);
   const [formUrl, setFormUrl] = useState("");
@@ -109,6 +118,15 @@ export default function HireManager({ rows, ready }: { rows: HireRow[]; ready: b
         </div>
       )}
 
+      {ready && needsColumn && (
+        <div className="mb-6 rounded-xl border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-200">
+          <p className="font-semibold">ต้องรันไฟล์ SQL อีกรอบ เพื่อเพิ่มตัวเลือก “ปุ่มดูบน TikTok”</p>
+          <p className="mt-1">
+            เปิด Supabase › SQL Editor แล้วรัน <code className="font-mono">supabase/add-hire-works.sql</code> อีกครั้ง (รันซ้ำได้ ข้อมูลไม่หาย) จากนั้นรีเฟรชหน้านี้
+          </p>
+        </div>
+      )}
+
       {error && (
         <p role="alert" className="mb-4 rounded-lg border border-red-400/40 bg-red-400/10 px-4 py-3 text-sm text-red-300">
           ⚠ {error}
@@ -147,6 +165,24 @@ export default function HireManager({ rows, ready }: { rows: HireRow[]; ready: b
             <span className={label}>ชื่อคลิป {parsedKind === "youtube" ? "(เว้นว่าง = ดึงจาก YouTube ให้เอง)" : ""}</span>
             <input name="title" defaultValue={editing === "new" ? "" : editing.title ?? ""} className={field} />
           </label>
+
+          {parsedKind === "tiktok" && (
+            <label className="flex items-start gap-3 rounded-lg border border-line/10 bg-surface/[0.03] p-3 text-sm">
+              <input
+                type="checkbox"
+                name="link_only"
+                disabled={needsColumn}
+                defaultChecked={editing === "new" ? true : editing.link_only === true}
+                className="mt-1"
+              />
+              <span>
+                <span className="font-medium">แสดงเป็นภาพปก + ปุ่ม “ดูบน TikTok” (ไม่ฝังตัวเล่น) — แนะนำ</span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  ตัวเล่นของ TikTok เล่นบางคลิปไม่ได้ ติ๊กไว้เพื่อให้คนกดไปดูบน TikTok แน่นอน ต้องมีภาพหน้าปกด้านล่าง
+                </span>
+              </span>
+            </label>
+          )}
 
           <ImageUpload
             name="cover_url"
@@ -220,6 +256,7 @@ export default function HireManager({ rows, ready }: { rows: HireRow[]; ready: b
                       {r.kind === "youtube" ? "YouTube" : "TikTok"}
                     </span>
                     {r.hidden && <span className="mr-2 text-amber-400">ซ่อนอยู่</span>}
+                    {r.kind === "tiktok" && r.link_only && <span className="mr-2 text-cyan/80">ปุ่มดูบน TikTok</span>}
                     <a href={r.url} target="_blank" rel="noopener noreferrer" className="hover:text-cyan">
                       {r.url.replace(/^https?:\/\/(www\.)?/, "")}
                     </a>

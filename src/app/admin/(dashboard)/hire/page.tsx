@@ -10,18 +10,27 @@ export default async function AdminHirePage() {
   // the manager then explains what to run, and the site keeps showing the
   // built-in clips.
   let ready = true;
+  // True when the table exists but predates the link_only column.
+  let needsColumn = false;
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await createAdminClient()
-      .from("hire_works")
-      .select("id, kind, url, video_id, title, cover_url, display_order, hidden")
-      .order("display_order", { ascending: true })
-      .order("created_at", { ascending: true });
-    if (error) ready = false;
-    rows = (data as HireRow[] | null) ?? [];
+    const db = createAdminClient();
+    const read = (cols: string) =>
+      db
+        .from("hire_works")
+        .select(cols)
+        .order("display_order", { ascending: true })
+        .order("created_at", { ascending: true });
+    let res = await read("id, kind, url, video_id, title, cover_url, display_order, hidden, link_only");
+    if (res.error) {
+      res = await read("id, kind, url, video_id, title, cover_url, display_order, hidden");
+      if (res.error) ready = false;
+      else needsColumn = true;
+    }
+    rows = (res.data as unknown as HireRow[] | null) ?? [];
   } else {
     ready = false;
   }
 
-  return <HireManager rows={rows} ready={ready} />;
+  return <HireManager rows={rows} ready={ready} needsColumn={needsColumn} />;
 }

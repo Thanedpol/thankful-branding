@@ -16,9 +16,14 @@ create table if not exists public.hire_works (
   cover_url     text,
   display_order integer not null default 0,
   hidden        boolean not null default false,
+  link_only     boolean not null default false,
   created_at    timestamptz not null default now(),
   unique (kind, video_id)
 );
+
+-- Tables made by an earlier version of this file get the column too.
+alter table public.hire_works
+  add column if not exists link_only boolean not null default false;
 
 alter table public.hire_works enable row level security;
 
@@ -34,31 +39,40 @@ grant select on public.hire_works to anon, authenticated;
 
 -- The clips the site shows today, so nothing disappears when this table
 -- takes over. Re-running does not duplicate them.
-insert into public.hire_works (kind, url, video_id, title, cover_url, display_order) values
+insert into public.hire_works (kind, url, video_id, title, cover_url, display_order, link_only) values
   ('youtube', 'https://www.youtube.com/watch?v=JPq_-LxLya0', 'JPq_-LxLya0',
-   'AI ทำงาน 1 งาน ราคาแค่กาแฟแก้วเดียว & 20+ Use Case จริง สรุปงาน QwenWork: Out of Office', null, 0),
+   'AI ทำงาน 1 งาน ราคาแค่กาแฟแก้วเดียว & 20+ Use Case จริง สรุปงาน QwenWork: Out of Office', null, 0, false),
   ('youtube', 'https://www.youtube.com/watch?v=0kia92uPuVM', '0kia92uPuVM',
-   'คนที่ใช้ AI เป็น จะมาแทนคนที่ใช้ AI ไม่เป็น & วิธีทำงาน UXUI เปลี่ยน | สรุปงาน AXONS UXUI Day 2026', null, 1),
+   'คนที่ใช้ AI เป็น จะมาแทนคนที่ใช้ AI ไม่เป็น & วิธีทำงาน UXUI เปลี่ยน | สรุปงาน AXONS UXUI Day 2026', null, 1, false),
   ('youtube', 'https://www.youtube.com/watch?v=3PECrxJ6sOQ', '3PECrxJ6sOQ',
-   'ประชากรไทยอาจเหลือครึ่งเดียวใน 50 ปี | สรุป Spotlight Day 2026 เมื่อกติกาโลกถูกเขียนใหม่', null, 2),
+   'ประชากรไทยอาจเหลือครึ่งเดียวใน 50 ปี | สรุป Spotlight Day 2026 เมื่อกติกาโลกถูกเขียนใหม่', null, 2, false),
   ('youtube', 'https://www.youtube.com/watch?v=uqzxMQN7OO0', 'uqzxMQN7OO0',
-   'ค่าไฟไทยแพงกว่าเวียดนาม-อินโดนีเซีย? | สรุป Spotlight Day 2026 ไฟสะอาดคือ ใบอนุญาตส่งออก', null, 3),
+   'ค่าไฟไทยแพงกว่าเวียดนาม-อินโดนีเซีย? | สรุป Spotlight Day 2026 ไฟสะอาดคือ ใบอนุญาตส่งออก', null, 3, false),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7699358788184296724', '7699358788184296724',
    'นวัตกรรมแรกของชีพี ไม่ใช่เครื่องจักร | พิธีเปิด CP Innovation Exposition 2026',
-   '/hire/tiktok-7699358788184296724.jpg', 4),
+   '/hire/tiktok-7699358788184296724.jpg', 4, false),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7710913831660178694', '7710913831660178694',
    'สรุปงาน Adobe MAX 2026 Ep.1',
-   '/hire/tiktok-7710913831660178694.jpg', 5),
+   '/hire/tiktok-7710913831660178694.jpg', 5, true),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7710920396559682868', '7710920396559682868',
    'สรุปงาน Adobe MAX 2026 Ep.2',
-   '/hire/tiktok-7710920396559682868.jpg', 6),
+   '/hire/tiktok-7710920396559682868.jpg', 6, true),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7708331767484157190', '7708331767484157190',
    'หุ้น IBM พุ่ง 5% เพราะ Quantum จริงไหม | สรุปงาน SCBX Quantum Outlook 2026 Ep.1',
-   '/hire/tiktok-7708331767484157190.jpg', 7),
+   '/hire/tiktok-7708331767484157190.jpg', 7, true),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7708360303121255732', '7708360303121255732',
    'ข้อมูลหลุดวันนี้ ถอดรหัสได้วันหน้า ธนาคารรับมือ Quantum ยังไง | SCBX Quantum Outlook 2026 EP.2',
-   '/hire/tiktok-7708360303121255732.jpg', 8),
+   '/hire/tiktok-7708360303121255732.jpg', 8, true),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7692010001908452629', '7692010001908452629',
    'อีก 2 ปี แบรนด์กว่า 60% จะปล่อย AI ออกไปคุยกับลูกค้าเอง | สรุปงาน MKT CON 2026',
-   '/hire/tiktok-7692010001908452629.jpg', 9)
+   '/hire/tiktok-7692010001908452629.jpg', 9, true)
 on conflict (kind, video_id) do nothing;
+
+-- TikTok's embedded player will not play some clips, so the five clips added
+-- after the first one open on TikTok instead. This also fixes rows created by an
+-- earlier run of this file. (Re-running turns these five back to link-only.)
+update public.hire_works set link_only = true
+  where kind = 'tiktok' and link_only = false and video_id in (
+    '7710913831660178694', '7710920396559682868', '7708331767484157190',
+    '7708360303121255732', '7692010001908452629');
+
