@@ -19,9 +19,9 @@ import type { SiteProfile } from "@/lib/types";
 
 export const revalidate = 3600;
 
-const TITLE = "ร่วมงานและสปอนเซอร์ — Media Kit ของ Thank Thanedpol";
+const TITLE = "เปิดรับสปอนเซอร์ — Media Kit ของ Thankful (Thank Thanedpol)";
 const DESCRIPTION =
-  "Media Kit ของ Thank Thanedpol (ช่อง Thankful) ตัวเลขผู้ติดตามและยอดวิวจริง บริการสรุปงาน Event ด้าน AI เริ่มต้น 5,000 บาท และคลิปสรุปแอปฯ หรือ Platform เริ่มต้น 2,000 บาทต่อคลิป";
+  "ช่อง Thankful ของ Thank Thanedpol เปิดรับสปอนเซอร์ สรุปงาน Event ที่มีเรื่อง AI เริ่มต้น 5,000 บาท และคลิปสรุปแอปฯ หรือ Platform เริ่มต้น 2,000 บาทต่อคลิป พร้อมตัวเลขผู้ติดตามและยอดวิวจริง";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -49,6 +49,23 @@ const SERVICES = [
     price: 2000,
     unit: "บาท / คลิป",
   },
+];
+
+// Why work with Thankful — each point rests on something checkable on this
+// site or the channel (topics, language, events already covered).
+const WHY = [
+  [
+    "คนดูที่สนใจเรื่องนี้จริง",
+    "ทุกคลิปของช่องเป็นเรื่อง AI ธุรกิจ และเทคโนโลยี คนที่ติดตามจึงเป็นคนที่อยากรู้เรื่องพวกนี้อยู่แล้ว",
+  ],
+  [
+    "เล่าเรื่องยากเป็นภาษาไทยที่เข้าใจง่าย",
+    "แปลศัพท์เทคนิคเป็นภาษาคน บอกว่าใช้ทำอะไร และมีผลกับธุรกิจอย่างไร ให้คนดูจบแล้วเอาไปใช้ต่อได้",
+  ],
+  [
+    "ไปงานจริง สรุปจริง",
+    "เคยสรุปงานมาแล้วหลายงาน ตั้งแต่งานธนาคาร งานสตาร์ทอัพ ไปจนถึงงานการตลาด ดูรายชื่อได้ด้านล่าง",
+  ],
 ];
 
 const STEPS = [
@@ -114,16 +131,16 @@ export default async function SponsorPage() {
       <Navbar />
       <main className="min-h-screen px-4 pb-16 pt-28 sm:px-6">
         <article className="reading-surface mx-auto w-full max-w-3xl">
-          <div className="eyebrow">// ร่วมงาน · Media Kit</div>
+          <div className="eyebrow">// Open for sponsors · Media Kit</div>
           <h1 className="font-display text-3xl font-bold leading-tight text-ink md:text-4xl">
-            ร่วมงานกับ Thankful
-            <span className="block text-2xl text-muted md:text-3xl">สปอนเซอร์ · สรุปงาน Event · คลิปสรุปแอปฯ</span>
+            เปิดรับสปอนเซอร์
+            <span className="mt-1 block text-2xl text-muted md:text-3xl">ให้คนไทยที่สนใจ AI รู้จักงานและแอปของคุณ</span>
           </h1>
 
           <p className="mt-8 text-lg leading-relaxed text-ink/90">
-            Thank Thanedpol (คุณแต้ง) เล่าข่าว AI และธุรกิจเป็นภาษาไทยในช่อง Thankful บน YouTube และ TikTok
-            คอนเทนต์ทำให้คนที่สนใจ AI ธุรกิจ และเทคโนโลยี เข้าใจเรื่องใหม่ได้เร็วและนำไปใช้ได้จริง
-            ถ้าคุณมีงาน Event แอปฯ หรือ Platform ที่อยากให้คนกลุ่มนี้รู้จัก ร่วมงานกันได้
+            ผมแต้ง (Thank Thanedpol) จากช่อง Thankful เล่าข่าว AI และธุรกิจเป็นภาษาไทยบน YouTube และ TikTok
+            ให้คนที่สนใจ AI เข้าใจเรื่องใหม่ได้เร็ว และเอาไปใช้ได้จริง ถ้าคุณมีงาน Event แอปฯ หรือ Platform
+            ที่อยากให้คนกลุ่มนี้รู้จัก มาร่วมงานกันครับ
           </p>
           <p lang="en" className="mt-4 leading-relaxed text-muted">
             Thai-language AI and business news creator. Sponsored event recaps and app or platform explainers for a
@@ -138,7 +155,17 @@ export default async function SponsorPage() {
             </Link>
           </div>
 
-          <h2 className="mt-14 font-display text-2xl font-bold text-ink">ผู้ติดตาม</h2>
+          <h2 className="mt-14 font-display text-2xl font-bold text-ink">ทำไมต้อง Thankful</h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+            {WHY.map(([h, p]) => (
+              <li key={h} className="rounded-xl border border-line/10 p-5">
+                <h3 className="font-display text-base font-bold leading-snug text-ink">{h}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{p}</p>
+              </li>
+            ))}
+          </ul>
+
+          <h2 className="mt-12 font-display text-2xl font-bold text-ink">ผู้ติดตาม</h2>
           <StatGrid stats={AUDIENCE} />
 
           <h2 className="mt-12 font-display text-2xl font-bold text-ink">ผลงานบน YouTube</h2>
