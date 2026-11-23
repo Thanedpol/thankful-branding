@@ -60,18 +60,23 @@ export default function Footer({ social }: { social?: Partial<SocialLinks> }) {
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
               {t("footer.blurb")}
             </p>
-            {/* The founder's other brand, in its own colours (Bone + Void). */}
-            <Link
-              href="/naqid"
-              className="group mt-6 inline-flex items-center gap-3 rounded-full border border-[#070B18]/15 bg-[#F5F2EA] py-2 pl-3 pr-5 text-[#070B18] transition-colors hover:bg-white"
-            >
-              <Prism size={22} />
-              <span className="flex flex-col leading-tight">
-                <span className="text-sm font-medium tracking-[0.18em]">NAQID GROUP</span>
-                <span className="text-[11px] text-[#3F4B66]">{t("footer.naqid")}</span>
-              </span>
-              <span aria-hidden className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
-            </Link>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link href="/sponsor#support" className="btn-ghost !rounded-full !px-5 !py-2.5 text-sm">
+                {t("footer.support")}
+              </Link>
+              {/* The founder's other brand, in its own colours (Bone + Void). */}
+              <Link
+                href="/naqid"
+                className="group inline-flex items-center gap-3 rounded-full border border-[#070B18]/15 bg-[#F5F2EA] py-2 pl-3 pr-5 text-[#070B18] transition-colors hover:bg-white"
+              >
+                <Prism size={22} />
+                <span className="flex flex-col leading-tight">
+                  <span className="text-sm font-medium tracking-[0.18em]">NAQID GROUP</span>
+                  <span className="text-[11px] text-[#3F4B66]">{t("footer.naqid")}</span>
+                </span>
+                <span aria-hidden className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
+              </Link>
+            </div>
           </div>
 
           {/* Explore */}

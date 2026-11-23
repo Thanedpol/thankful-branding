@@ -59,6 +59,9 @@ const STEPS = [
 
 const thb = (n: number) => n.toLocaleString("th-TH");
 
+// Opens an Instagram DM thread with @newerathank.
+const IG_DM_URL = "https://ig.me/m/newerathank";
+
 function StatGrid({ stats }: { stats: Stat[] }) {
   return (
     <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line/10 bg-line/10 sm:grid-cols-4">
@@ -78,6 +81,10 @@ function StatGrid({ stats }: { stats: Stat[] }) {
 export default async function SponsorPage() {
   const profile = await getProfile();
   const mail = `mailto:${HIRE_CONTACT_EMAIL}?subject=${encodeURIComponent("Sponsor / ร่วมงานกับ Thankful")}`;
+  // Fan support: no QR on the page yet — people ask and get one privately.
+  const supportMail =
+    `mailto:${HIRE_CONTACT_EMAIL}?subject=${encodeURIComponent("สนับสนุนช่อง Thankful")}` +
+    `&body=${encodeURIComponent("สวัสดีครับคุณแต้ง อยากสนับสนุนช่อง Thankful ขอ QR พร้อมเพย์หน่อยครับ")}`;
 
   return (
     <>
@@ -204,7 +211,25 @@ export default async function SponsorPage() {
             <li>เล่าตามจริง รวมถึงข้อจำกัดของสินค้า เพราะความน่าเชื่อถือคือสิ่งที่ทำให้คนดูฟัง</li>
           </ul>
 
-          <div className="mt-14 rounded-2xl border border-cyan/30 p-6 sm:p-8">
+          <section id="support" aria-labelledby="support-h" className="mt-14 scroll-mt-28 rounded-2xl border border-line/15 p-6 sm:p-8">
+            <h2 id="support-h" className="font-display text-xl font-bold text-ink">
+              สนับสนุนช่องแบบรายบุคคล
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              ถ้าคลิปของ Thankful ช่วยให้คุณเข้าใจ AI มากขึ้น และอยากช่วยให้มีคลิปใหม่ต่อไป สนับสนุนได้ทุกจำนวน
+              ทักมาทางอีเมลหรือ DM ทาง Instagram แล้วจะส่ง QR พร้อมเพย์ให้ครับ
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href={supportMail} className="btn-neon">
+                ขอ QR ทางอีเมล →
+              </a>
+              <a href={IG_DM_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                ทัก DM Instagram
+              </a>
+            </div>
+          </section>
+
+          <div className="mt-8 rounded-2xl border border-cyan/30 p-6 sm:p-8">
             <h2 className="font-display text-xl font-bold text-ink">เริ่มคุยกันได้เลย</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               ส่งรายละเอียดงานมาที่อีเมล ข้อมูลสำหรับสื่อ (ประวัติ รูป โลโก้) อยู่ที่{" "}
