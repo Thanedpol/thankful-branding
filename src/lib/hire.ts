@@ -62,6 +62,46 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     title: "นวัตกรรมแรกของชีพี ไม่ใช่เครื่องจักร | พิธีเปิด CP Innovation Exposition 2026",
     cover: "/hire/tiktok-7699358788184296724.jpg",
   },
+  {
+    id: "default-tt-7710913831660178694",
+    kind: "tiktok",
+    url: "https://www.tiktok.com/@thankful63/video/7710913831660178694",
+    videoId: "7710913831660178694",
+    title: "สรุปงาน Adobe MAX 2026 Ep.1",
+    cover: "/hire/tiktok-7710913831660178694.jpg",
+  },
+  {
+    id: "default-tt-7710920396559682868",
+    kind: "tiktok",
+    url: "https://www.tiktok.com/@thankful63/video/7710920396559682868",
+    videoId: "7710920396559682868",
+    title: "สรุปงาน Adobe MAX 2026 Ep.2",
+    cover: "/hire/tiktok-7710920396559682868.jpg",
+  },
+  {
+    id: "default-tt-7708331767484157190",
+    kind: "tiktok",
+    url: "https://www.tiktok.com/@thankful63/video/7708331767484157190",
+    videoId: "7708331767484157190",
+    title: "หุ้น IBM พุ่ง 5% เพราะ Quantum จริงไหม | สรุปงาน SCBX Quantum Outlook 2026 Ep.1",
+    cover: "/hire/tiktok-7708331767484157190.jpg",
+  },
+  {
+    id: "default-tt-7708360303121255732",
+    kind: "tiktok",
+    url: "https://www.tiktok.com/@thankful63/video/7708360303121255732",
+    videoId: "7708360303121255732",
+    title: "ข้อมูลหลุดวันนี้ ถอดรหัสได้วันหน้า ธนาคารรับมือ Quantum ยังไง | SCBX Quantum Outlook 2026 EP.2",
+    cover: "/hire/tiktok-7708360303121255732.jpg",
+  },
+  {
+    id: "default-tt-7692010001908452629",
+    kind: "tiktok",
+    url: "https://www.tiktok.com/@thankful63/video/7692010001908452629",
+    videoId: "7692010001908452629",
+    title: "อีก 2 ปี แบรนด์กว่า 60% จะปล่อย AI ออกไปคุยกับลูกค้าเอง | สรุปงาน MKT CON 2026",
+    cover: "/hire/tiktok-7692010001908452629.jpg",
+  },
 ];
 
 /**

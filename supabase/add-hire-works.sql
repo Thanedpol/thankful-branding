@@ -45,5 +45,20 @@ insert into public.hire_works (kind, url, video_id, title, cover_url, display_or
    'ค่าไฟไทยแพงกว่าเวียดนาม-อินโดนีเซีย? | สรุป Spotlight Day 2026 ไฟสะอาดคือ ใบอนุญาตส่งออก', null, 3),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7699358788184296724', '7699358788184296724',
    'นวัตกรรมแรกของชีพี ไม่ใช่เครื่องจักร | พิธีเปิด CP Innovation Exposition 2026',
-   '/hire/tiktok-7699358788184296724.jpg', 4)
+   '/hire/tiktok-7699358788184296724.jpg', 4),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7710913831660178694', '7710913831660178694',
+   'สรุปงาน Adobe MAX 2026 Ep.1',
+   '/hire/tiktok-7710913831660178694.jpg', 5),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7710920396559682868', '7710920396559682868',
+   'สรุปงาน Adobe MAX 2026 Ep.2',
+   '/hire/tiktok-7710920396559682868.jpg', 6),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7708331767484157190', '7708331767484157190',
+   'หุ้น IBM พุ่ง 5% เพราะ Quantum จริงไหม | สรุปงาน SCBX Quantum Outlook 2026 Ep.1',
+   '/hire/tiktok-7708331767484157190.jpg', 7),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7708360303121255732', '7708360303121255732',
+   'ข้อมูลหลุดวันนี้ ถอดรหัสได้วันหน้า ธนาคารรับมือ Quantum ยังไง | SCBX Quantum Outlook 2026 EP.2',
+   '/hire/tiktok-7708360303121255732.jpg', 8),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7692010001908452629', '7692010001908452629',
+   'อีก 2 ปี แบรนด์กว่า 60% จะปล่อย AI ออกไปคุยกับลูกค้าเอง | สรุปงาน MKT CON 2026',
+   '/hire/tiktok-7692010001908452629.jpg', 9)
 on conflict (kind, video_id) do nothing;
