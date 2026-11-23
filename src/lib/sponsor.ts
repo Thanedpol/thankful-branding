@@ -27,11 +27,12 @@ export const YOUTUBE: Stat[] = [
   { value: "88%", label: "คนดูต่อสูงสุดของ Shorts", note: "Stayed to watch" },
 ];
 
-/** Events summarised on the channel (public playlists / videos). */
+/** Events summarised on the channel — shown on /sponsor as "งาน Event ที่เคยสรุป". */
 export const EVENTS_COVERED = [
   "Krungsri Tech Day 2026",
   "Spotlight Day 2026",
-  "AI Preneur Day 2026",
-  "Marketing Oops Summit 2026",
-  "Generation Hackathon Thailand ครั้งที่ 1",
+  "Marketing Conference 2026",
+  "CP Innovation Exposition 2026",
+  "Axons UXUI Day 2026",
+  "Qwenwork: Out of Office",
 ];

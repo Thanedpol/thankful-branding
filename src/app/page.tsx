@@ -4,6 +4,7 @@ import YouTubeNetwork from "@/components/YouTubeNetwork";
 import LatestUpdates from "@/components/LatestUpdates";
 import HireSection from "@/components/HireSection";
 import { getSeriesFeeds } from "@/lib/youtube-feeds";
+import { getHireItems } from "@/lib/hire-data";
 import About from "@/components/About";
 import PortfolioSection from "@/components/PortfolioSection";
 import BlogPreview from "@/components/BlogPreview";
@@ -43,6 +44,7 @@ export default async function HomePage() {
   let postTotal: number;
   // Fetched alongside the database reads; cached an hour, never fatal.
   const feedsPromise = getSeriesFeeds();
+  const hirePromise = getHireItems();
 
   if (isSupabaseConfigured()) {
     const supabase = createPublicClient();
@@ -74,6 +76,7 @@ export default async function HomePage() {
   }
 
   const feeds = await feedsPromise;
+  const hireItems = await hirePromise;
 
   // The page changes whenever an episode or article lands; say so, so
   // engines that weigh freshness see a date instead of none.
@@ -104,7 +107,7 @@ export default async function HomePage() {
         <YouTubeNetwork series={feeds.series} shared={feeds.shared} />
         <SeriesCompare series={feeds.series} intro={seriesPassage(feeds.series)} />
         <About profile={profile} whoIs={WHO_IS} />
-        <HireSection />
+        <HireSection items={hireItems} />
         <PortfolioSection
           items={portfolios}
           cvThUrl={profile?.cv_th_url}

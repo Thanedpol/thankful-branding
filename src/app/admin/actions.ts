@@ -6,6 +6,7 @@ import { pingIndexNow } from "@/lib/indexnow";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasContent } from "@/lib/portfolio-sessions";
+import { parseHireUrl } from "@/lib/hire";
 import { buildEventRows, buildGroupMeta } from "@/lib/portfolio-events";
 import type { PortfolioCategory, PortfolioCollection } from "@/lib/types";
 
@@ -578,4 +579,127 @@ export async function deleteMessage(formData: FormData) {
   await supabase.from("contact_messages").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/messages");
   revalidatePath("/admin");
+}
+
+// ─── Hire works ("รับงาน" sample clips) ─────────────────────────────────────
+const HIRE_MIGRATION_MSG =
+  "ยังไม่ได้สร้างตาราง hire_works — เปิด Supabase › SQL Editor แล้วรันไฟล์ supabase/add-hire-works.sql หนึ่งครั้ง";
+
+/** A missing table surfaces as a PostgREST "could not find the table" error. */
+function hireDbError(err: { message?: string; code?: string }): string {
+  const msg = err.message ?? "";
+  if (err.code === "23505") return "คลิปนี้มีอยู่ในรายการแล้ว";
+  if (/hire_works/i.test(msg) && /(find|exist|relation)/i.test(msg)) return HIRE_MIGRATION_MSG;
+  return msg || "บันทึกไม่สำเร็จ";
+}
+
+function refreshHire() {
+  revalidatePath("/");
+  revalidatePath("/work");
+  revalidatePath("/admin/hire");
+}
+
+/** A YouTube title for a pasted link, via the public oEmbed endpoint. */
+async function youtubeTitle(videoId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://www.youtube.com/oembed?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}&format=json`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { title?: string };
+    return data.title?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveHireWork(formData: FormData): Promise<{ error?: string }> {
+  const supabase = await assertAdmin();
+  const id = String(formData.get("id") ?? "") || null;
+
+  const parsed = parseHireUrl(String(formData.get("url") ?? ""));
+  if (!parsed) {
+    return {
+      error:
+        "ลิงก์ไม่ถูกต้อง — ใส่ลิงก์เต็มของคลิป YouTube (youtube.com/watch?v=… หรือ youtu.be/…) หรือ TikTok (tiktok.com/@ชื่อ/video/…)",
+    };
+  }
+
+  let title = String(formData.get("title") ?? "").trim() || null;
+  if (!title && parsed.kind === "youtube") title = await youtubeTitle(parsed.videoId);
+  const cover = String(formData.get("cover_url") ?? "").trim() || null;
+
+  const row = {
+    kind: parsed.kind,
+    url: parsed.url,
+    video_id: parsed.videoId,
+    title,
+    cover_url: cover,
+  };
+
+  if (id) {
+    const { error } = await supabase.from("hire_works").update(row).eq("id", id);
+    if (error) return { error: hireDbError(error) };
+  } else {
+    const { data: last, error: readErr } = await supabase
+      .from("hire_works")
+      .select("display_order")
+      .order("display_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (readErr) return { error: hireDbError(readErr) };
+    const next = ((last as { display_order: number } | null)?.display_order ?? -1) + 1;
+    const { error } = await supabase.from("hire_works").insert({ ...row, display_order: next });
+    if (error) return { error: hireDbError(error) };
+  }
+
+  refreshHire();
+  return {};
+}
+
+export async function deleteHireWork(formData: FormData): Promise<{ error?: string }> {
+  const supabase = await assertAdmin();
+  const { error } = await supabase.from("hire_works").delete().eq("id", String(formData.get("id")));
+  if (error) return { error: hireDbError(error) };
+  refreshHire();
+  return {};
+}
+
+export async function toggleHireWork(formData: FormData): Promise<{ error?: string }> {
+  const supabase = await assertAdmin();
+  const { error } = await supabase
+    .from("hire_works")
+    .update({ hidden: formData.get("hidden") === "true" })
+    .eq("id", String(formData.get("id")));
+  if (error) return { error: hireDbError(error) };
+  refreshHire();
+  return {};
+}
+
+/** Move one clip up or down; the whole list is renumbered 0..n so the order stays clean. */
+export async function moveHireWork(formData: FormData): Promise<{ error?: string }> {
+  const supabase = await assertAdmin();
+  const id = String(formData.get("id"));
+  const dir = String(formData.get("dir")) === "up" ? -1 : 1;
+
+  const { data, error } = await supabase
+    .from("hire_works")
+    .select("id")
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) return { error: hireDbError(error) };
+
+  const ids = ((data as { id: string }[] | null) ?? []).map((r) => r.id);
+  const from = ids.indexOf(id);
+  const to = from + dir;
+  if (from < 0 || to < 0 || to >= ids.length) return {};
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+
+  for (let i = 0; i < ids.length; i++) {
+    const { error: upErr } = await supabase.from("hire_works").update({ display_order: i }).eq("id", ids[i]);
+    if (upErr) return { error: hireDbError(upErr) };
+  }
+  refreshHire();
+  return {};
 }

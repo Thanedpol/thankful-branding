@@ -1,36 +1,73 @@
 /**
- * Work shown in the "รับงาน" (available for hire) section on the home page.
- * Add a clip by pasting its TikTok URL here.
+ * Sample work for the "รับงาน" (available for hire) section and the /work page.
+ *
+ * The list is edited in Admin → Hire and stored in the `hire_works` table
+ * (supabase/add-hire-works.sql). DEFAULT_HIRE_ITEMS below is what the site
+ * shows until that table exists.
  */
-export interface HireWork {
+export type HireKind = "youtube" | "tiktok";
+
+export interface HireItem {
+  id: string;
+  kind: HireKind;
+  /** Canonical link to the clip. */
   url: string;
-  /** Cover image in /public — TikTok's embed shows no poster of its own
-   *  until it plays, and its oEmbed no longer returns one. */
-  cover?: string;
+  /** YouTube video id, or TikTok post id. */
+  videoId: string;
+  title: string | null;
+  /** Cover image (a URL or a path in /public). YouTube derives its own from
+   *  the video id; TikTok's embed shows nothing until it plays and its oEmbed
+   *  no longer returns a poster, so TikTok clips need one uploaded. */
+  cover: string | null;
 }
 
-export const HIRE_WORKS: HireWork[] = [
+export const DEFAULT_HIRE_ITEMS: HireItem[] = [
   {
+    id: "default-yt-JPq_-LxLya0",
+    kind: "youtube",
+    url: "https://www.youtube.com/watch?v=JPq_-LxLya0",
+    videoId: "JPq_-LxLya0",
+    title: "AI ทำงาน 1 งาน ราคาแค่กาแฟแก้วเดียว & 20+ Use Case จริง สรุปงาน QwenWork: Out of Office",
+    cover: null,
+  },
+  {
+    id: "default-yt-0kia92uPuVM",
+    kind: "youtube",
+    url: "https://www.youtube.com/watch?v=0kia92uPuVM",
+    videoId: "0kia92uPuVM",
+    title: "คนที่ใช้ AI เป็น จะมาแทนคนที่ใช้ AI ไม่เป็น & วิธีทำงาน UXUI เปลี่ยน | สรุปงาน AXONS UXUI Day 2026",
+    cover: null,
+  },
+  {
+    id: "default-yt-3PECrxJ6sOQ",
+    kind: "youtube",
+    url: "https://www.youtube.com/watch?v=3PECrxJ6sOQ",
+    videoId: "3PECrxJ6sOQ",
+    title: "ประชากรไทยอาจเหลือครึ่งเดียวใน 50 ปี | สรุป Spotlight Day 2026 เมื่อกติกาโลกถูกเขียนใหม่",
+    cover: null,
+  },
+  {
+    id: "default-yt-uqzxMQN7OO0",
+    kind: "youtube",
+    url: "https://www.youtube.com/watch?v=uqzxMQN7OO0",
+    videoId: "uqzxMQN7OO0",
+    title: "ค่าไฟไทยแพงกว่าเวียดนาม-อินโดนีเซีย? | สรุป Spotlight Day 2026 ไฟสะอาดคือ ใบอนุญาตส่งออก",
+    cover: null,
+  },
+  {
+    id: "default-tt-7699358788184296724",
+    kind: "tiktok",
     url: "https://www.tiktok.com/@thankful63/video/7699358788184296724",
+    videoId: "7699358788184296724",
+    title: "นวัตกรรมแรกของชีพี ไม่ใช่เครื่องจักร | พิธีเปิด CP Innovation Exposition 2026",
     cover: "/hire/tiktok-7699358788184296724.jpg",
   },
 ];
 
-/** YouTube samples (16:9). Add one with its video id and title. */
-export interface HireVideo {
-  id: string;
-  title: string;
-}
-
-export const HIRE_YOUTUBE: HireVideo[] = [
-  { id: "JPq_-LxLya0", title: "AI ทำงาน 1 งาน ราคาแค่กาแฟแก้วเดียว & 20+ Use Case จริง สรุปงาน QwenWork: Out of Office" },
-  { id: "0kia92uPuVM", title: "คนที่ใช้ AI เป็น จะมาแทนคนที่ใช้ AI ไม่เป็น & วิธีทำงาน UXUI เปลี่ยน | สรุปงาน AXONS UXUI Day 2026" },
-  { id: "3PECrxJ6sOQ", title: "ประชากรไทยอาจเหลือครึ่งเดียวใน 50 ปี | สรุป Spotlight Day 2026 เมื่อกติกาโลกถูกเขียนใหม่" },
-  { id: "uqzxMQN7OO0", title: "ค่าไฟไทยแพงกว่าเวียดนาม-อินโดนีเซีย? | สรุป Spotlight Day 2026 ไฟสะอาดคือ ใบอนุญาตส่งออก" },
-];
-
-/** Services listed above the clips. Each key has title, detail and price
- *  strings in i18n.ts (hire.<key>.title / .detail / .price). */
+/**
+ * Services listed above the clips. Each key has title, detail and price
+ * strings in i18n.ts (hire.<key>.title / .detail / .price).
+ */
 export const HIRE_SERVICES = ["svc1", "svc2"] as const;
 
 export const HIRE_CONTACT_EMAIL = "thank.2643@gmail.com";
@@ -38,4 +75,39 @@ export const HIRE_CONTACT_EMAIL = "thank.2643@gmail.com";
 /** The numeric post id at the end of a TikTok video URL. */
 export function tiktokVideoId(url: string): string | null {
   return url.match(/\/video\/(\d{8,})/)?.[1] ?? null;
+}
+
+/**
+ * Read a pasted clip link. Accepts YouTube (watch, youtu.be, shorts, embed,
+ * live) and full TikTok video links; returns the platform, the clip id and a
+ * clean canonical URL — or null when it isn't a link to one clip. Short TikTok
+ * links (vm.tiktok.com) hide the post id behind a redirect, so they are not
+ * accepted.
+ */
+export function parseHireUrl(input: string): { kind: HireKind; videoId: string; url: string } | null {
+  const raw = input.trim();
+  if (!raw) return null;
+  let u: URL;
+  try {
+    u = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+  } catch {
+    return null;
+  }
+  const host = u.hostname.toLowerCase().replace(/^(www|m|music)\./, "");
+
+  if (host === "youtu.be" || host === "youtube.com" || host === "youtube-nocookie.com") {
+    const ytId =
+      host === "youtu.be"
+        ? u.pathname.split("/")[1]
+        : u.searchParams.get("v") ?? u.pathname.match(/^\/(?:shorts|embed|live|v)\/([^/?#]+)/)?.[1];
+    if (!ytId || !/^[\w-]{11}$/.test(ytId)) return null;
+    return { kind: "youtube", videoId: ytId, url: `https://www.youtube.com/watch?v=${ytId}` };
+  }
+
+  if (host === "tiktok.com") {
+    const m = u.pathname.match(/^\/(@[^/]+)\/video\/(\d{8,})/);
+    if (!m) return null;
+    return { kind: "tiktok", videoId: m[2], url: `https://www.tiktok.com/${m[1]}/video/${m[2]}` };
+  }
+  return null;
 }
