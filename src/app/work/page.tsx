@@ -8,6 +8,7 @@ import { YouTubeGrid, TikTokGrid } from "@/components/HireCards";
 import { getHireItems } from "@/lib/hire-data";
 import { SITE_URL, PERSON_ID, breadcrumbJsonLd, jsonLdGraph } from "@/lib/seo";
 import { YT_CHANNEL_URL } from "@/lib/youtube";
+import { SOCIAL_PROFILES } from "@/lib/social";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured, demoProfile } from "@/lib/demo-data";
 import type { SiteProfile } from "@/lib/types";
@@ -18,6 +19,8 @@ import type { SiteProfile } from "@/lib/types";
  */
 
 export const revalidate = 60;
+
+const TIKTOK = SOCIAL_PROFILES.find((p) => p.platform === "tiktok");
 
 const TITLE = "ผลงานตัวอย่าง — คลิปสรุปงาน Event และแอปฯ AI | Thankful";
 const DESCRIPTION =
@@ -111,6 +114,14 @@ export default async function WorkPage() {
             <a href={YT_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="text-cyan hover:underline">
               YouTube @Thankful2026
             </a>
+            {TIKTOK && (
+              <>
+                {" · "}
+                <a href={TIKTOK.url} target="_blank" rel="noopener noreferrer" className="text-cyan hover:underline">
+                  TikTok {TIKTOK.handle}
+                </a>
+              </>
+            )}
           </p>
 
           <section className="mt-12 rounded-2xl border border-cyan/30 p-6 sm:p-8">
