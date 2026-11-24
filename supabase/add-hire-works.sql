@@ -65,7 +65,22 @@ insert into public.hire_works (kind, url, video_id, title, cover_url, display_or
    '/hire/tiktok-7708360303121255732.jpg', 8, true),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7692010001908452629', '7692010001908452629',
    'อีก 2 ปี แบรนด์กว่า 60% จะปล่อย AI ออกไปคุยกับลูกค้าเอง | สรุปงาน MKT CON 2026',
-   '/hire/tiktok-7692010001908452629.jpg', 9, true)
+   '/hire/tiktok-7692010001908452629.jpg', 9, true),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7702817042843389202', '7702817042843389202',
+   'AI ไม่น่ากลัว แต่คนใช้ผิดทางน่ากลัวกว่า | สรุปงาน TNN Tech Forum 2026 EP.1',
+   '/hire/tiktok-7702817042843389202.jpg', 10, true),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7702820837547609351', '7702820837547609351',
+   'ใช้ AI ไม่เป็น ปีหน้าไม่มีบริษัทไหนรับจริงไหม | สรุปงาน TNN Tech Forum 2026 EP.2',
+   '/hire/tiktok-7702820837547609351.jpg', 11, true),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7706486746506218760', '7706486746506218760',
+   'พนักงานเก่งขึ้น 10 เท่า ด้วย AI ทำได้จริงไหม | สรุปงาน Powerverse in Power Platform 2027 EP.1',
+   '/hire/tiktok-7706486746506218760.jpg', 12, true),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7706494754627915026', '7706494754627915026',
+   'สร้างแอปเสร็จไม่ถึง 1 ชั่วโมงด้วย AI | สรุปงาน Powerverse in Power Platform 2027 EP.2',
+   '/hire/tiktok-7706494754627915026.jpg', 13, true),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7706498261338574098', '7706498261338574098',
+   'ไม่ต้องนั่งเฝ้า Dashboard อีกต่อไป เพราะ AI Agent เฝ้าข้อมูลให้ | สรุปงาน Powerverse in Power Platform 2027 EP.3',
+   '/hire/tiktok-7706498261338574098.jpg', 14, true)
 on conflict (kind, video_id) do nothing;
 
 -- TikTok's embedded player will not play some clips, so the five clips added
