@@ -160,6 +160,24 @@ export const DEFAULT_HIRE_ITEMS: HireItem[] = [
     cover: "/hire/tiktok-7706498261338574098.jpg",
     linkOnly: true,
   },
+  {
+    id: "default-tt-7696073592026664212",
+    kind: "tiktok",
+    url: "https://www.tiktok.com/@thankful63/video/7696073592026664212",
+    videoId: "7696073592026664212",
+    title: "มี AI แล้ว แต่งานยังล้น? | สรุปงาน Claude Thailand Community ครั้งที่ 3",
+    cover: "/hire/tiktok-7696073592026664212.jpg",
+    linkOnly: true,
+  },
+  {
+    id: "default-tt-7695356400209333524",
+    kind: "tiktok",
+    url: "https://www.tiktok.com/@thankful63/video/7695356400209333524",
+    videoId: "7695356400209333524",
+    title: "8 ช่องทางทำเงินด้วย Content + AI ที่คนธรรมดาเริ่มได้จริง | สรุปงาน AI Future Ready ครั้งที่ 3",
+    cover: "/hire/tiktok-7695356400209333524.jpg",
+    linkOnly: true,
+  },
 ];
 
 /**

@@ -80,7 +80,13 @@ insert into public.hire_works (kind, url, video_id, title, cover_url, display_or
    '/hire/tiktok-7706494754627915026.jpg', 13, true),
   ('tiktok', 'https://www.tiktok.com/@thankful63/video/7706498261338574098', '7706498261338574098',
    'ไม่ต้องนั่งเฝ้า Dashboard อีกต่อไป เพราะ AI Agent เฝ้าข้อมูลให้ | สรุปงาน Powerverse in Power Platform 2027 EP.3',
-   '/hire/tiktok-7706498261338574098.jpg', 14, true)
+   '/hire/tiktok-7706498261338574098.jpg', 14, true),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7696073592026664212', '7696073592026664212',
+   'มี AI แล้ว แต่งานยังล้น? | สรุปงาน Claude Thailand Community ครั้งที่ 3',
+   '/hire/tiktok-7696073592026664212.jpg', 15, true),
+  ('tiktok', 'https://www.tiktok.com/@thankful63/video/7695356400209333524', '7695356400209333524',
+   '8 ช่องทางทำเงินด้วย Content + AI ที่คนธรรมดาเริ่มได้จริง | สรุปงาน AI Future Ready ครั้งที่ 3',
+   '/hire/tiktok-7695356400209333524.jpg', 16, true)
 on conflict (kind, video_id) do nothing;
 
 -- TikTok's embedded player will not play some clips, so the five clips added
