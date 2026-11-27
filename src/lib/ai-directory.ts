@@ -12,6 +12,7 @@ export const AI_CHECKED = "2026-11-27";
 export type AiOrigin = "th" | "intl";
 
 export const AI_CATEGORIES = [
+  { id: "apps", label: "แอปใหม่ฝีมือคนไทย" },
   { id: "chat", label: "คุยถาม-ตอบ" },
   { id: "image", label: "สร้างภาพ / ดีไซน์" },
   { id: "video", label: "ทำวิดีโอ" },
@@ -92,6 +93,31 @@ export const AI_TOOLS: AiTool[] = [
 
   th("PyThaiNLP", "https://github.com/PyThaiNLP/pythainlp", "ชุมชน PyThaiNLP", ["dev"],
     "ไลบรารี Python สำหรับประมวลผลภาษาไทย เปิดซอร์สบน GitHub", "ตัดคำ nlp github โอเพนซอร์ส"),
+
+  // ── แอปใหม่ฝีมือคนไทย ───────────────────────────────────────────────────
+  // Public posts in the Claude Thailand Community group, plus apps suggested
+  // to the site owner. No poster's name is published. Not every one of these
+  // uses AI inside the product.
+  th("ThaiPDF", "https://thaipdf.app", "แชร์ในกลุ่ม Claude Thailand Community", ["apps", "work"],
+    "อ่านข้อความจาก PDF ที่สแกนมา ได้ไฟล์ที่ค้นหาและคัดลอกได้", "ocr แปลงไฟล์ เอกสารสแกน word"),
+  th("50 ทวิ ออนไลน์", "https://tawi50.vercel.app", "แชร์ในกลุ่ม Claude Thailand Community", ["apps", "work"],
+    "กรอกแล้วพิมพ์หนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ) ได้ฟรี ไม่ต้องสมัคร", "ภาษี บัญชี หักณที่จ่าย tawi50"),
+  th("กะไหน", "https://kanai-2026.vercel.app", "แชร์ในกลุ่ม Claude Thailand Community", ["apps", "work"],
+    "ตารางกะของคนทำงานเป็นกะ ดูวันเข้ากะ วันหยุด และแจ้งเตือน", "ตารางเวร โรงงาน พยาบาล kanai"),
+  th("Thoth", "https://thothnotes.com", "แชร์ในกลุ่ม Claude Thailand Community", ["apps", "work"],
+    "แอปจดโน้ตโอเพนซอร์ส เก็บเป็นไฟล์ Markdown ในเครื่อง แชร์ได้เมื่อต้องการ", "จดบันทึก note obsidian notion"),
+  th("Journex", "https://journexapp.com", "แชร์ในกลุ่ม Claude Thailand Community", ["apps", "business"],
+    "บันทึกเทรด MT5 อัตโนมัติ แล้วสรุปให้เป็นภาษาคน", "trading journal เทรด forex"),
+  th("OtterEng", "https://ottereng.online", "แชร์ในกลุ่ม Claude Thailand Community", ["apps"],
+    "ซ้อมสอบ TOEIC ฟรี จับเวลาจริง มีเฉลยภาษาไทย", "ภาษาอังกฤษ เรียน สอบ mock toeic"),
+  th("AI GAME TH", "https://aigameth.com", "AI GAME TH", ["apps", "code"],
+    "รวมเกมบนเว็บที่สร้างด้วย AI จากคนไทย เล่นและแชร์เกมได้", "เกม game aigameth"),
+  th("เกมดีดลูกแก้ว 3D", "https://mini-gameball.github.io/-/", "แชร์ในกลุ่ม Claude Thailand Community", ["apps"],
+    "การละเล่นดีดลูกแก้วลานดินไทยแบบ 3 มิติ เล่นกับเพื่อนได้", "เกม game ของเล่นไทย"),
+  th("Plants", "https://www.plants.work", "Plants", ["apps", "business"],
+    "แพลตฟอร์มเติบโตในอาชีพ หางาน คอร์ส และเมนทอร์ มี AI ให้คำปรึกษา", "สมัครงาน career หางาน"),
+  th("BuyMeChocolate.ai", "https://www.buymechocolate.ai", "BuyMeChocolate", ["apps", "chat"],
+    "นิยายแชทกับตัวละคร AI ที่จำบทสนทนาได้ บางเรื่องมีเนื้อหาสำหรับผู้ใหญ่", "นิยาย roleplay แชทตัวละคร"),
 
   // ── ต่างประเทศ ──────────────────────────────────────────────────────────
   intl("ChatGPT", "https://chatgpt.com", "OpenAI", ["chat", "work", "code"],

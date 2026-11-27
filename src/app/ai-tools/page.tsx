@@ -75,7 +75,7 @@ export default async function AiToolsPage() {
             <p className="eyebrow">// AI Directory</p>
             <h1 className="font-display text-3xl font-bold md:text-5xl text-gradient">คลัง AI</h1>
             <p className="mt-3 max-w-2xl text-muted">
-              รวมเว็บและเครื่องมือ AI {AI_TOOLS.length} รายการ ฝีมือคนไทย {TH_COUNT} รายการ และต่างประเทศ{" "}
+              รวมเว็บ เครื่องมือ AI และแอปจากคนไทย {AI_TOOLS.length} รายการ ฝีมือคนไทย {TH_COUNT} รายการ และต่างประเทศ{" "}
               {AI_TOOLS.length - TH_COUNT} รายการ พิมพ์สิ่งที่อยากทำ หรือกดเลือกหมวดงาน
             </p>
             <a href="#community" className="mt-3 inline-block text-sm text-cyan hover:underline">
@@ -124,6 +124,9 @@ export default async function AiToolsPage() {
           </div>
 
           <p className="mt-6 text-xs leading-relaxed text-muted">
+            หมวด “แอปใหม่ฝีมือคนไทย” รวบรวมจากโพสต์สาธารณะในกลุ่ม Claude Thailand Community และที่มีผู้แนะนำ
+            บางแอปไม่ได้ใช้ AI ในตัวแอป เจ้าของผลงานที่ต้องการแก้ไขหรือนำออก ติดต่อทาง Messenger ได้
+            <br />
             ตรวจลิงก์ล่าสุดเมื่อ <time dateTime={AI_CHECKED}>{checkedOn}</time> · รายการนี้ไม่มีใครจ่ายเงินเพื่อให้ขึ้น
             และไม่ใช่การรับรองคุณภาพ · ราคาและเงื่อนไขดูที่เว็บของผู้พัฒนาแต่ละราย
           </p>
