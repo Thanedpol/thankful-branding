@@ -14,6 +14,7 @@ const NAV = [
   { href: "/about", key: "nav.about" },
   { href: "/#portfolio", key: "nav.portfolio" },
   { href: "/blog", key: "nav.blog" },
+  { href: "/ai-tools", key: "nav.aiTools" },
   { href: "/sponsor", key: "footer.sponsor" },
   { href: "/press-kit", key: "nav.pressKit" },
   { href: "/#faq", key: "footer.faq" },

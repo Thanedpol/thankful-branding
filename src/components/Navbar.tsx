@@ -14,6 +14,7 @@ const ALL_LINKS = [
   { href: "/#about", key: "nav.about" },
   { href: "/#portfolio", key: "nav.portfolio" },
   { href: "/blog", key: "nav.blog" },
+  { href: "/ai-tools", key: "nav.aiTools" },
   { href: "/shop", key: "nav.shop" },
   { href: "/press-kit", key: "nav.pressKit" },
 ];
@@ -93,20 +94,20 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-6 lg:gap-8 md:flex">
+        <div className="hidden items-center gap-5 xl:gap-8 lg:flex">
           {LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-cyan"
+              className="whitespace-nowrap font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-cyan"
             >
               {t(l.key)}
             </Link>
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <SubscribeButton label={t("yt.subscribe")} className="hidden lg:inline-flex" />
+        <div className="hidden items-center gap-3 lg:flex">
+          <SubscribeButton label={t("yt.subscribe")} className="hidden xl:inline-flex" />
           <LanguageSwitcher />
           <ThemeToggle />
           {email ? (
@@ -120,7 +121,7 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           <LanguageSwitcher />
           <ThemeToggle />
           <button
@@ -134,7 +135,7 @@ export default function Navbar() {
       </nav>
 
       {open && (
-        <div className="border-t border-line/[0.06] bg-space-light px-6 py-4 md:hidden">
+        <div className="border-t border-line/[0.06] bg-space-light px-6 py-4 lg:hidden">
           <div className="flex flex-col gap-4">
             <SubscribeButton label={t("yt.subscribe")} className="self-start" />
             {LINKS.map((l) => (
